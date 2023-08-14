@@ -77,6 +77,7 @@ LRESULT CALLBACK WindowCallback(HWND hwnd,
         {
             // TODO: that's not pretty -> refactor at some point
             // stop main loop
+            stopLogger(logger);
             running = false;
         }
         break;

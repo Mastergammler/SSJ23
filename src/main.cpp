@@ -1,10 +1,14 @@
 #include "Win32/WindowHandler.cpp"
 #include "globals.h"
+#include "imports.h"
 #include "types.h"
 #include "utils.h"
 #include <memoryapi.h>
+#include <minwindef.h>
 #include <windows.h>
 #include <winnt.h>
+
+using namespace std;
 
 function void InitBuffer(ScreenBuffer* buffer);
 function void RenderBuffer(HDC hdc, ScreenBuffer buffer, Dimension* windowDim);
@@ -21,7 +25,42 @@ int WinMain(HINSTANCE hInstance,
     HWND window = RegisterWindow(buffer, hInstance);
     HDC hdc = GetDC(window);
 
+    initLogger(logger, "log.txt");
+    log(logger, "Test message");
+
+    ifstream myFile("test.txt");
+
+    if (!myFile.is_open())
+    {
+        cout << "Could not read from file" << endl;
+        char buffer[MAX_PATH];
+        GetCurrentDirectoryA(MAX_PATH, buffer);
+        cout << "Tried to open: " << buffer << endl;
+    }
+
+    int id;
+    string name;
+    float money;
+
+    fstream appendingFile;
+    appendingFile.open("outputtest.txt", ios::app);
+
+    // ofstream outFile("outputtest.txt");
+    if (!appendingFile.is_open())
+    {
+        cout << "Could not open output file" << endl;
+    }
+
+    while (myFile >> id >> name >> money)
+    {
+        cout << "FromFile: " << id << "|" << name << "|" << money << endl;
+        appendingFile << id << " " << name << " " << money << endl;
+    }
+
+    appendingFile.close();
+
     Debug("Got window");
+    log(logger, "Got the window");
 
     InitBuffer(&buffer);
 
@@ -31,6 +70,7 @@ int WinMain(HINSTANCE hInstance,
 
     while (running)
     {
+        log(logger, "PerfTest");
         HandleMessages(window);
         if (hasChanges)
         {
