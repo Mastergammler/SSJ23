@@ -24,6 +24,7 @@ model {
             targetPlatform 'windows_x86_64'
             binaries.all {
                 cppCompiler.args '-std=c++20'
+                cppCompiler.args '-g'
                 linker.args '-luser32'
                 linker.args '-lgdi32'
             }
