@@ -8,6 +8,7 @@
 
 typedef unsigned int u32;
 typedef uint8_t u8;
+typedef uint16_t u16;
 
 struct ScreenBuffer
 {
@@ -16,6 +17,7 @@ struct ScreenBuffer
         this->width = width;
         this->height = height;
         this->size = height * width * sizeof(u32);
+        this->pixel_count = height * width;
 
         bitmap_info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
         bitmap_info.bmiHeader.biWidth = width;
@@ -28,6 +30,7 @@ struct ScreenBuffer
     void* memory;
     int width;
     int height;
+    int pixel_count;
     int size;
     BITMAPINFO bitmap_info;
 };

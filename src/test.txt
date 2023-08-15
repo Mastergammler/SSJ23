@@ -1,3 +1,0 @@
-1 hello 17.5
-2 other 47.34
-3 another 34.30

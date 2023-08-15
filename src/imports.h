@@ -14,4 +14,6 @@
 #include <windows.h>
 #include <wingdi.h>
 
+using namespace std;
+
 #endif

@@ -1,6 +1,7 @@
 #include "../globals.h"
+#include "../imports.h"
+#include "../types.h"
 #include "FpsCounter.cpp"
-#include "module.h"
 
 function LRESULT CALLBACK WindowCallback(HWND, UINT, WPARAM, LPARAM);
 
@@ -42,7 +43,7 @@ function Dimension GetWindowDimension(HWND window)
     return result;
 }
 
-function HWND RegisterWindow(ScreenBuffer buffer, HINSTANCE hInstance)
+function HWND RegisterWindow(int width, int height, HINSTANCE hInstance)
 {
     WNDCLASS winClass = {};
     winClass.style = CS_HREDRAW | CS_VREDRAW;
@@ -55,8 +56,8 @@ function HWND RegisterWindow(ScreenBuffer buffer, HINSTANCE hInstance)
                                WS_OVERLAPPEDWINDOW | WS_VISIBLE,
                                CW_USEDEFAULT,
                                CW_USEDEFAULT,
-                               buffer.width,
-                               buffer.height,
+                               width,
+                               height,
                                0,
                                0,
                                hInstance,

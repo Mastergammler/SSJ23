@@ -1,17 +1,14 @@
-#include "Win32/WindowHandler.cpp"
 #include "globals.h"
 #include "imports.h"
+#include "modules.h"
 #include "types.h"
 #include "utils.h"
-#include <memoryapi.h>
-#include <minwindef.h>
-#include <windows.h>
-#include <winnt.h>
-
-using namespace std;
 
 function void InitBuffer(ScreenBuffer* buffer);
+function void WriteToBufferTest(ScreenBuffer* buffer, BitmapBuffer* bitmap);
 function void RenderBuffer(HDC hdc, ScreenBuffer buffer, Dimension* windowDim);
+
+global_var const string ABSOLUTE_RES_PATH = "I:/02 Areas/Dev/Cpp/SSJ23/res/";
 
 /**
  * Entry point for working with the window api
@@ -21,48 +18,25 @@ int WinMain(HINSTANCE hInstance,
             LPSTR lpCmdLine,
             int nShowCmd)
 {
-    ScreenBuffer buffer = {1280, 720};
-    HWND window = RegisterWindow(buffer, hInstance);
+    ScreenBuffer buffer = {320, 180};
+    HWND window = RegisterWindow(1280, 720, hInstance);
     HDC hdc = GetDC(window);
 
     initLogger(logger, "log.txt");
-    log(logger, "Test message");
+    log(logger, "Application started");
+    Debug("Started");
 
-    ifstream myFile("test.txt");
+    vector<PlayerData> players = LoadFile("test.txt");
+    AppendToFile("outputtest.txt", players);
 
-    if (!myFile.is_open())
-    {
-        cout << "Could not read from file" << endl;
-        char buffer[MAX_PATH];
-        GetCurrentDirectoryA(MAX_PATH, buffer);
-        cout << "Tried to open: " << buffer << endl;
-    }
+    log(logger, "Window registered");
 
-    int id;
-    string name;
-    float money;
+    BitmapBuffer bitmap =
+        LoadSprite(ABSOLUTE_RES_PATH + "Test/TileTest.bmp", hInstance, hdc);
+    if (bitmap.loaded) { Debug("Sprite loaded sucessfully"); }
 
-    fstream appendingFile;
-    appendingFile.open("outputtest.txt", ios::app);
-
-    // ofstream outFile("outputtest.txt");
-    if (!appendingFile.is_open())
-    {
-        cout << "Could not open output file" << endl;
-    }
-
-    while (myFile >> id >> name >> money)
-    {
-        cout << "FromFile: " << id << "|" << name << "|" << money << endl;
-        appendingFile << id << " " << name << " " << money << endl;
-    }
-
-    appendingFile.close();
-
-    Debug("Got window");
-    log(logger, "Got the window");
-
-    InitBuffer(&buffer);
+    InitBuffer(buffer);
+    DrawTiles(buffer, bitmap);
 
     FpsCounter counter = {};
     bool hasChanges = true;
@@ -70,7 +44,7 @@ int WinMain(HINSTANCE hInstance,
 
     while (running)
     {
-        log(logger, "PerfTest");
+        // log(logger, "PerfTest");
         HandleMessages(window);
         if (hasChanges)
         {
@@ -78,6 +52,13 @@ int WinMain(HINSTANCE hInstance,
             // WriteBuffer(buffer);
             hasChanges = false;
         }
+        // TODO: rate limiting, by only rendering after a certain time period
+        // that way i can modify the fps (but how to do it in a good way?)
+        // i could do it kind of like vsync?
+        // but this would then still impact performance, cuz of the while loop?
+        // i have to restrict the while loop as well then -> i guess this is
+        // complicated enough for HH? -> it seems like just limiting rendering
+        // works for now
         RenderBuffer(hdc, buffer, &windowDim);
         UpdateTitleFps(window, &counter);
     }
@@ -85,20 +66,12 @@ int WinMain(HINSTANCE hInstance,
     return 0;
 }
 
-function void InitBuffer(ScreenBuffer* buffer)
-{
-    buffer->memory =
-        VirtualAlloc(0, buffer->size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-
-    u32* pixel = (u32*)buffer->memory;
-    for (int i = 0; i < buffer->height * buffer->width; i++)
-    {
-        *pixel++ = 0x365a91;
-    }
-}
-
 function void RenderBuffer(HDC hdc, ScreenBuffer buffer, Dimension* windowDim)
 {
+    // destination is where on the window im painting
+    // source is where from the buffer im taking the stuff to paint
+    // NOTE: destination starts top left
+    // buffer starts bottom left
     StretchDIBits(hdc,
                   0,
                   0,
