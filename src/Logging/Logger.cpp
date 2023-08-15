@@ -13,7 +13,7 @@ struct Logger
     bool running;
 };
 
-void initLogger(Logger& logger, const string& logFilePath)
+void InitLogger(Logger& logger, const string& logFilePath)
 {
     logger.logFile.open(logFilePath, ios::out | ios::app);
     logger.running = true;
@@ -36,9 +36,10 @@ void initLogger(Logger& logger, const string& logFilePath)
             this_thread::sleep_for(chrono::milliseconds(100));
         }
     });
+
 }
 
-void log(Logger& logger, const string& message)
+void Log(Logger& logger, const string& message)
 {
     {
         unique_lock<mutex> lock(logger.logMutex);

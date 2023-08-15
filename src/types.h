@@ -35,6 +35,25 @@ struct ScreenBuffer
     BITMAPINFO bitmap_info;
 };
 
+struct WindowScale
+{
+    int scale;
+    int draw_width;
+    int draw_height;
+    int screen_width;
+    int screen_height;
+
+    WindowScale(int drawWidth, int drawHeight, int scale)
+    {
+        this->scale = scale;
+        this->draw_width = drawWidth;
+        this->draw_height = drawHeight;
+
+        this->screen_width = drawWidth * scale;
+        this->screen_height = drawHeight * scale;
+    }
+};
+
 struct Rect
 {
     int x1, x2, y1, y2;

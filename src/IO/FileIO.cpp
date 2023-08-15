@@ -58,3 +58,10 @@ void AppendToFile(string filePath, vector<PlayerData> players)
 
     appendingFile.close();
 }
+
+void Test_SaveLoadFileIO()
+{
+    // loads from the execution directory
+    vector<PlayerData> players = LoadFile("test.txt");
+    AppendToFile("outputtest.txt", players);
+}

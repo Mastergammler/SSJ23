@@ -87,8 +87,8 @@ function void PrintPixelValues(BitmapBuffer buffer)
  */
 BitmapBuffer LoadSprite(string path, HINSTANCE hInstance, HDC hdc)
 {
-    HBITMAP hBitmap;
-    BITMAP bitmap;
+    HBITMAP hBitmap = {};
+    BITMAP bitmap = {};
 
     hBitmap = (HBITMAP)LoadImage(hInstance,
                                  path.c_str(),
@@ -97,10 +97,9 @@ BitmapBuffer LoadSprite(string path, HINSTANCE hInstance, HDC hdc)
                                  0,
                                  LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 
-    if (hBitmap == NULL)
+    if (!hBitmap)
     {
-        Debug("Didn't find file'");
-        log(logger, "Unable to load the file: " + path);
+        Log(logger, "Unable to load the file: " + path);
         return BitmapBuffer();
     }
 
@@ -126,11 +125,6 @@ BitmapBuffer LoadSprite(string path, HINSTANCE hInstance, HDC hdc)
 
     cout << "Height " << bitmap.bmHeight << " Width: " << bitmap.bmWidth
          << endl;
-    // for (int i = 0; i < 32 * 4; i++)
-    //{
-    //     cout << "Byte value: " << (int)*pixels << endl;
-    //     pixels++;
-    // }
 
     u32* uints = (u32*)pixels;
     for (int i = 0; i < 10; i++)
