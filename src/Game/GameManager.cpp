@@ -1,9 +1,9 @@
 #include "../IO/module.h"
 #include "../Rendering/module.h"
+#include "../Win32/module.h"
 #include "../imports.h"
 #include "../types.h"
 #include "../utils.h"
-#include <chrono>
 
 struct Bitmaps
 {
@@ -115,5 +115,11 @@ void UpdateScreen(ScreenBuffer& buffer)
                 DrawTile(buffer, bitmaps.sheet[9], tileX, tileY);
             }
         }
+    }
+
+    // TODO: do i need to scale it? Because the window is bigger??
+    if (mouse.buttons & MOUSE_LEFT)
+    {
+        DrawRect(buffer, mouse.x, mouse.y, 8, true);
     }
 }

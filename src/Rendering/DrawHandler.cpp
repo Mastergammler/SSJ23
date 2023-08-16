@@ -25,6 +25,46 @@ function void ClearScreen(ScreenBuffer& buffer)
     }
 }
 
+function void DrawRect(ScreenBuffer& buffer,
+                       int targetX,
+                       int targetY,
+                       int size,
+                       bool centered)
+{
+    u32* pixel = (u32*)buffer.memory;
+
+    // calculate the clipping for tiles
+    // else i run out of buffer memory
+
+    if (centered)
+    {
+        targetX -= (size / 2);
+        targetY -= (size / 2);
+
+        targetX = targetX < 0 ? 0 : targetX;
+        targetY = targetY < 0 ? 0 : targetY;
+    }
+    int tileBoundX = targetX + size;
+    int tileBoundY = targetY + size;
+
+    int clipX =
+        tileBoundX > buffer.width ? size - (tileBoundX - buffer.width) : size;
+    int clipY =
+        tileBoundY > buffer.height ? size - (tileBoundY - buffer.height) : size;
+
+    int pointerOffset = targetY * buffer.width + targetX;
+    u32* pointerStart = pixel + pointerOffset;
+
+    for (int y = 0; y < clipY; y++)
+    {
+        u32* rowStart = pointerStart + (y * buffer.width);
+        for (int x = 0; x < clipX; x++)
+        {
+            *rowStart++ = 0xffffff;
+        }
+    }
+}
+
 function void DrawTiles(ScreenBuffer& buffer, BitmapBuffer& bitmap)
 {
     u32* pixel = (u32*)buffer.memory;

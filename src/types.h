@@ -1,7 +1,6 @@
-#include "imports.h"
+#pragma once
 
-#ifndef types
-#define types
+#include "imports.h"
 
 #define global_var static
 #define function static
@@ -9,6 +8,12 @@
 typedef unsigned int u32;
 typedef uint8_t u8;
 typedef uint16_t u16;
+
+struct Dimension
+{
+    int Width;
+    int Height;
+};
 
 struct ScreenBuffer
 {
@@ -37,6 +42,10 @@ struct ScreenBuffer
 
 struct WindowScale
 {
+  private:
+    int window_height;
+
+  public:
     int scale;
     int draw_width;
     int draw_height;
@@ -52,6 +61,20 @@ struct WindowScale
         this->screen_width = drawWidth * scale;
         this->screen_height = drawHeight * scale;
     }
+
+    int GetWindowHeight()
+    {
+        if (!window_height) return screen_height;
+        return window_height;
+    }
+
+    void InitWindowHeight(Dimension& drawableScreen)
+    {
+        int taskbarHeight = this->screen_height - drawableScreen.Height;
+        cout << "Taskbarheight is " << taskbarHeight << endl;
+        drawableScreen.Height = this->screen_height;
+        this->window_height = this->screen_height + taskbarHeight;
+    }
 };
 
 struct Rect
@@ -65,12 +88,6 @@ struct Rect
         this->x2 = x + width;
         this->y2 = y + height;
     }
-};
-
-struct Dimension
-{
-    int Width;
-    int Height;
 };
 
 struct Tilemap
@@ -106,5 +123,3 @@ struct Tilemap
         }
     }
 };
-
-#endif

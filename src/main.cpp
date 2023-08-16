@@ -12,12 +12,16 @@ int WinMain(HINSTANCE hInstance,
             LPSTR lpCmdLine,
             int nShowCmd)
 {
-
-    WindowScale scale = WindowScale(320, 240, 4);
     ScreenBuffer buffer = {scale.draw_width, scale.draw_height};
     HWND window =
         RegisterWindow(scale.screen_width, scale.screen_height, hInstance);
     HDC hdc = GetDC(window);
+    Dimension windowDim = GetWindowDimension(window);
+    scale.InitWindowHeight(windowDim);
+    SendMessage(window,
+                WM_SIZE,
+                SIZE_RESTORED,
+                MAKELPARAM(scale.screen_width, scale.GetWindowHeight()));
 
     InitLogger(logger, "log.txt");
     Log(logger, "Application started");
@@ -26,7 +30,6 @@ int WinMain(HINSTANCE hInstance,
     InitBuffer(buffer);
 
     FpsCounter counter = {};
-    Dimension windowDim = GetWindowDimension(window);
 
     Log(logger, "Starting Main Loop");
 

@@ -1,7 +1,4 @@
-#ifndef win32module
-#define win32module
+#pragma once
 
 // imports the fps counter already
 #include "WindowHandler.cpp"
-
-#endif

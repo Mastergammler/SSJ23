@@ -1,10 +1,8 @@
-#ifndef globals
-#define globals
+#pragma once
 
 #include "Logging/Logger.cpp"
 #include "types.h"
 
 global_var bool running = true;
 global_var Logger logger = {};
-
-#endif
+global_var WindowScale scale = WindowScale(320, 240, 4);
