@@ -60,10 +60,22 @@ function void DrawTile(ScreenBuffer& buffer,
     u32* pixel = bufferStartPos;
     u32* tileValue = (u32*)tile.buffer;
 
-    for (int y = 0; y < tile.height; y++)
+    // calculate the clipping for tiles
+    // else i run out of buffer memory
+    int tileBoundX = bufferX + tile.width;
+    int tileBoundY = bufferY + tile.height;
+
+    int clipX = tileBoundX > buffer.width
+                    ? tile.width - (tileBoundX - buffer.width)
+                    : tile.width;
+    int clipY = tileBoundY > buffer.height
+                    ? tile.height - (tileBoundY - buffer.height)
+                    : tile.height;
+
+    for (int y = 0; y < clipY; y++)
     {
         pixel = bufferStartPos + y * buffer.width;
-        for (int x = 0; x < tile.width; x++)
+        for (int x = 0; x < clipX; x++)
         {
             *pixel++ = *tileValue++;
         }

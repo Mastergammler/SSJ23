@@ -1,6 +1,6 @@
+#include "../globals.h"
 #include "../imports.h"
-
-using namespace std;
+#include "../utils.h"
 
 struct PlayerData
 {
@@ -16,17 +16,67 @@ struct PlayerData
     }
 };
 
+void CheckFile(ifstream& file, string path)
+{
+    if (!file.is_open())
+    {
+        char buffer[MAX_PATH];
+        GetCurrentDirectoryA(MAX_PATH, buffer);
+        Log(logger,
+            "Did not find file: " + path +
+                "\n  Search root: " + string(buffer));
+    }
+}
+
+Tilemap LoadMap(string filePath)
+{
+    ifstream mapFile(filePath);
+    CheckFile(mapFile, filePath);
+
+    int rows, columns;
+    int mapValue;
+
+    if (!(mapFile >> rows >> columns))
+    {
+        Log(logger,
+            "Invalid file format. Expecting row column definition at the "
+            "beginning!");
+        return Tilemap{0, 0};
+    }
+
+    int* values = new int[rows * columns];
+    int* currentValue = values;
+
+    for (int y = 0; y < rows; y++)
+    {
+        for (int x = 0; x < columns; x++)
+        {
+            if (!(mapFile >> mapValue))
+            {
+                char text[256];
+                sprintf(text,
+                        "Expected to find value for (%d,%d), but was "
+                        "missing in the map! Expecting %d rows and %d columns",
+                        x,
+                        y,
+                        rows,
+                        columns);
+                Log(logger, text);
+            }
+
+            *currentValue++ = mapValue;
+        }
+    }
+
+    Tilemap map = {rows, columns};
+    map.AssignMap(values);
+    return map;
+}
+
 vector<PlayerData> LoadFile(string filePath)
 {
     ifstream myFile(filePath);
-
-    if (!myFile.is_open())
-    {
-        cout << "Could not read from file" << endl;
-        char buffer[MAX_PATH];
-        GetCurrentDirectoryA(MAX_PATH, buffer);
-        cout << "Tried to open: " << buffer << endl;
-    }
+    CheckFile(myFile, filePath);
 
     int id;
     string name;

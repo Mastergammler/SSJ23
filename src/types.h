@@ -73,4 +73,38 @@ struct Dimension
     int Height;
 };
 
+struct Tilemap
+{
+    int rows;
+    int columns;
+    int* idMap;
+
+    Tilemap(const int rows, const int columns)
+    {
+        this->rows = rows;
+        this->columns = columns;
+        this->idMap = new int[rows * columns];
+    }
+
+    /**
+     * Size has to match the one in the map
+     * Flips the map horizontally, for rendering
+     * Because rendering stars LL but for definition UL is used
+     */
+    void AssignMap(int* loadedMap)
+    {
+        int* tile = idMap;
+        int* mapStart = loadedMap;
+
+        for (int y = rows - 1; y >= 0; y--)
+        {
+            int* rowStart = mapStart + y * columns;
+            for (int x = 0; x < columns; x++)
+            {
+                *tile++ = *rowStart++;
+            }
+        }
+    }
+};
+
 #endif

@@ -13,7 +13,7 @@ int WinMain(HINSTANCE hInstance,
             int nShowCmd)
 {
 
-    WindowScale scale = WindowScale(480, 360, 3);
+    WindowScale scale = WindowScale(480, 384, 3);
     ScreenBuffer buffer = {scale.draw_width, scale.draw_height};
     HWND window =
         RegisterWindow(scale.screen_width, scale.screen_height, hInstance);
@@ -23,8 +23,8 @@ int WinMain(HINSTANCE hInstance,
     Log(logger, "Application started");
 
     InitGame(hInstance, hdc);
-
     InitBuffer(buffer);
+
     FpsCounter counter = {};
     Dimension windowDim = GetWindowDimension(window);
 
@@ -33,7 +33,7 @@ int WinMain(HINSTANCE hInstance,
     while (running)
     {
         HandleMessages(window);
-        Update(buffer);
+        UpdateScreen(buffer);
         RenderNextFrame(hdc, buffer, windowDim);
         UpdateTitleFps(window, &counter);
     }
