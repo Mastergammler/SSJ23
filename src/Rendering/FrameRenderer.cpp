@@ -1,5 +1,6 @@
 #include "../imports.h"
 #include "../types.h"
+#include <wingdi.h>
 
 function void RenderBuffer(HDC hdc, ScreenBuffer buffer, Dimension& windowDim)
 {

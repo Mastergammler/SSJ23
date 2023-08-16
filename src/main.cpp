@@ -13,7 +13,7 @@ int WinMain(HINSTANCE hInstance,
             int nShowCmd)
 {
 
-    WindowScale scale = WindowScale(480, 384, 3);
+    WindowScale scale = WindowScale(320, 240, 4);
     ScreenBuffer buffer = {scale.draw_width, scale.draw_height};
     HWND window =
         RegisterWindow(scale.screen_width, scale.screen_height, hInstance);

@@ -3,11 +3,22 @@
 #include "../imports.h"
 #include "../types.h"
 #include "../utils.h"
+#include <chrono>
 
 struct Bitmaps
 {
     BitmapBuffer tile_a = {};
     BitmapBuffer tile_b = {};
+
+    int tile_count = 0;
+    bool sheet_loaded = false;
+    BitmapBuffer* sheet = {};
+
+    void SetSheet(BitmapBuffer* sheet)
+    {
+        sheet_loaded = true;
+        this->sheet = sheet;
+    }
 };
 
 // TODO: how to get the real execution path? and resource directories?
@@ -25,6 +36,8 @@ global_var Tilemap map = {0, 0};
  */
 void InitGame(HINSTANCE hInstance, HDC hdc)
 {
+    Log(logger, "Start loading resources ...");
+
     BitmapBuffer bitmap =
         LoadSprite(ABSOLUTE_RES_PATH + "Test/TileTest.bmp", hInstance, hdc);
     if (bitmap.loaded) { bitmaps.tile_a = bitmap; }
@@ -32,9 +45,18 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
         LoadSprite(ABSOLUTE_RES_PATH + "Test/TileTest_2.bmp", hInstance, hdc);
     if (bmp2.loaded) { bitmaps.tile_b = bmp2; }
 
+    BitmapBuffer tilesSheet =
+        LoadSprite(ABSOLUTE_RES_PATH + "Tiles.bmp", hInstance, hdc);
+    if (tilesSheet.loaded)
+    {
+        Log(logger, "Start converting sprite sheet");
+        BitmapBuffer* tiles = ConvertFromSheet(tilesSheet, 16, 16);
+        bitmaps.SetSheet(tiles);
+    }
+
     Log(logger, "Game Resources loaded");
 
-    map = LoadMap(ABSOLUTE_RES_PATH + "Test/Tilemap_12_15.map");
+    map = LoadMap(ABSOLUTE_RES_PATH + "Test/Tilemap_15_20.map");
 
     // FIXME: this is independant from the map init ....
     // just make it load by file
@@ -63,6 +85,17 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
  */
 void UpdateScreen(ScreenBuffer& buffer)
 {
+    // TODO: save tile sive somewhere else
+    int tileSize = 16;
+
+    // FIXME: needs better solution
+    // the data structure kind of falls apart here
+    if (!bitmaps.sheet_loaded)
+    {
+        this_thread::sleep_for(chrono::seconds(5));
+        Debug("Unable to rendere because resources not loaded");
+        return;
+    }
 
     int* tile = map.idMap;
     for (int y = 0; y < map.rows; y++)
@@ -71,16 +104,16 @@ void UpdateScreen(ScreenBuffer& buffer)
         {
             int tileId = *tile++;
             // TODO: use tile size
-            int tileX = x * 32;
-            int tileY = y * 32;
-            if (tileId == 1) { DrawTile(buffer, bitmaps.tile_a, tileX, tileY); }
-            else if (tileId == 0)
+            int tileX = x * tileSize;
+            int tileY = y * tileSize;
+            if (tileId == 0)
             {
-                DrawTile(buffer, bitmaps.tile_b, tileX, tileY);
+                DrawTile(buffer, bitmaps.sheet[8], tileX, tileY);
+            }
+            else if (tileId == 1)
+            {
+                DrawTile(buffer, bitmaps.sheet[9], tileX, tileY);
             }
         }
     }
-
-    // Update buffer info
-    // DrawTiles(screen, bitmaps.tile_b);
 }

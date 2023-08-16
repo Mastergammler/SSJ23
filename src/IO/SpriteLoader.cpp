@@ -2,12 +2,14 @@
 #include "../imports.h"
 #include "../types.h"
 #include "../utils.h"
-#include <cstring>
-#include <string.h>
 
 struct BitmapBuffer
 {
     BITMAP bitmap;
+
+    /**
+     * Buffer of u32 pixel values
+     */
     void* buffer;
     bool loaded;
 
@@ -25,6 +27,14 @@ struct BitmapBuffer
         this->height = bitmap.bmHeight;
     }
 
+    BitmapBuffer(int width, int height, void* pixels)
+    {
+        this->width = width;
+        this->height = height;
+        this->loaded = true;
+        this->buffer = pixels;
+    }
+
     /**
      * Because colors come in in the wrong order, we need to switch them
      * Expected order for rendering is ARGB, incoming is BGRA
@@ -39,7 +49,9 @@ struct BitmapBuffer
             u8 c0 = pixelBytes[0]; // blue
             u8 c1 = pixelBytes[1]; // green
             u8 c2 = pixelBytes[2]; // red
-            u8 c3 = pixelBytes[3]; // alpha
+
+            // u8 c3 = pixelBytes[3]; // alpha
+            u8 c3 = 50;
 
             *(u32*)pixelBytes = (c3 << 24) | (c2 << 16) | (c1 << 8) | (c0 << 0);
             pixelBytes += 4;
@@ -123,17 +135,55 @@ BitmapBuffer LoadSprite(string path, HINSTANCE hInstance, HDC hdc)
               &bmpInfo,
               DIB_RGB_COLORS);
 
-    cout << "Height " << bitmap.bmHeight << " Width: " << bitmap.bmWidth
+    cout << "Height " << dec << bitmap.bmHeight << " Width: " << bitmap.bmWidth
          << endl;
-
-    u32* uints = (u32*)pixels;
-    for (int i = 0; i < 10; i++)
-    {
-        cout << "Pixel value: " << hex << *uints++ << endl;
-    }
 
     BitmapBuffer buffer = {bitmap, pixels};
     buffer.FixChannelOrder();
 
     return buffer;
+}
+
+BitmapBuffer* ConvertFromSheet(BitmapBuffer sheet,
+                               int tileWidth,
+                               int tileHeight)
+{
+    u32* spriteSheet = (u32*)sheet.buffer;
+
+    // ignore clipping, uneven counts are ignored
+    int tilesPerRow = sheet.width / tileWidth;
+    int tilesPerColumn = sheet.height / tileHeight;
+    int tileCount = tilesPerRow * tilesPerColumn;
+    int pixelsPerTile = tileWidth * tileHeight;
+
+    BitmapBuffer* bitmaps = new BitmapBuffer[tileCount];
+
+    for (int tileIdx = 0; tileIdx < tileCount; tileIdx++)
+    {
+        int tileRow = tileIdx / tilesPerRow;
+        int tileCol = tileIdx % tilesPerRow;
+
+        int tilePixelIndex =
+            (sheet.width * tileHeight) * tileRow + tileCol * tileWidth;
+        u32* tileStartPixel = (u32*)sheet.buffer;
+        tileStartPixel += tilePixelIndex;
+
+        u32* tilePixels = new u32[pixelsPerTile];
+        u32* tilePointer = tilePixels;
+
+        // Inverse saving because i want to specify numbers from the UL
+        int mirrorIdx = MirrorIndex(tileIdx, tilesPerRow, tilesPerColumn);
+        bitmaps[mirrorIdx] = BitmapBuffer{tileWidth, tileHeight, tilePointer};
+
+        for (int y = 0; y < tileHeight; y++)
+        {
+            u32* pixelRow = tileStartPixel + (y * sheet.width);
+            for (int x = 0; x < tileWidth; x++)
+            {
+                *tilePixels++ = *pixelRow++;
+            }
+        }
+    }
+
+    return bitmaps;
 }
