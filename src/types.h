@@ -90,12 +90,28 @@ struct Rect
     }
 };
 
+struct ContextTile
+{
+    int tileId;
+
+    /**
+     * Bit-Order T L R B TL TR BL BR
+     */
+    BYTE adjacent;
+};
+
+/**
+ * If the boundary should count as another some tile there or not
+ */
+const bool BOUNDARY_DEFAULT = true;
+
 struct Tilemap
 {
     int rows;
     int columns;
     int* idMap;
     int tile_size;
+    ContextTile* context_tiles;
 
     Tilemap(const int rows, const int columns, int tile_size)
     {
@@ -103,6 +119,7 @@ struct Tilemap
         this->columns = columns;
         this->idMap = new int[rows * columns];
         this->tile_size = tile_size;
+        this->context_tiles = new ContextTile[rows * columns];
     }
 
     /**
@@ -123,6 +140,98 @@ struct Tilemap
                 *tile++ = *rowStart++;
             }
         }
+
+        for (int i = 0; i < rows * columns; i++)
+        {
+            CreateContextTile(i);
+        }
+    }
+
+    // TODO: not happy with this
+    // looks inefficient (but doesn't matter is load only)
+    void CreateContextTile(int idx)
+    {
+        int curTile = idx;
+        int tileRow = curTile % columns;
+
+        bool left = IsSameHor(curTile, curTile - 1);
+        bool right = IsSameHor(curTile, curTile + 1);
+        bool top = IsSameVert(curTile, curTile + columns);
+        bool bot = IsSameVert(curTile, curTile - columns);
+        bool tl = IsSameBoth(curTile, curTile + columns - 1);
+        bool tr = IsSameBoth(curTile, curTile + columns + 1);
+        bool bl = IsSameBoth(curTile, curTile - columns - 1);
+        bool br = IsSameBoth(curTile, curTile - columns + 1);
+
+        BYTE adjacents = (top << 7) | (left << 6) | (right << 5) | (bot << 4) |
+                         (tl << 3) | (tr << 2) | (bl << 1) | (br << 0);
+        int id = idMap[curTile];
+
+        if (id == 5)
+        {
+            cout << "Adjacents for tile: " << idx << "(" << id << ") is "
+                 << bitset<8>(adjacents) << endl;
+        }
+
+        ContextTile contextTile = {};
+        contextTile.tileId = idMap[curTile];
+        contextTile.adjacent = adjacents;
+        context_tiles[curTile] = contextTile;
+    }
+
+    bool IsSameHor(int tileIdx, int otherIdx)
+    {
+        // of not same row, means we're at either boundary
+        if (TileRowOf(tileIdx) == TileRowOf(otherIdx))
+        {
+            return SameTile(tileIdx, otherIdx);
+        }
+
+        // Boundry case
+        return BOUNDARY_DEFAULT;
+    }
+
+    bool IsSameVert(int tileIdx, int otherIdx)
+    {
+        int tileRow = TileRowOf(tileIdx);
+        int otherRow = TileRowOf(otherIdx);
+
+        if (tileRow == 0 && otherRow < tileRow) return BOUNDARY_DEFAULT;
+        if (tileRow == rows - 1 && otherRow > tileRow) return BOUNDARY_DEFAULT;
+
+        return SameTile(tileIdx, otherIdx);
+    }
+
+    // difference - row has to be different!
+    // but only difference of one
+    bool IsSameBoth(int tileIdx, int otherIdx)
+    {
+        int diff = TileRowOf(tileIdx) - TileRowOf(otherIdx);
+        int normalized = abs(diff);
+
+        // it has to be one row above or below the current row
+        if (normalized != 1) return BOUNDARY_DEFAULT;
+        return IsSameVert(tileIdx, otherIdx);
+    }
+
+    bool SameTile(int tileIdx, int otherIdx)
+    {
+        if (otherIdx < 0) return BOUNDARY_DEFAULT;
+        assert(tileIdx >= 0 && "Tile index must be grater than 0");
+
+        int* tileIds = idMap;
+
+        int thisTileId = tileIds[tileIdx];
+        int otherTileId = tileIds[otherIdx];
+
+        return thisTileId == otherTileId;
+    }
+
+    int TileRowOf(int idx)
+    {
+        if (idx < 0) return -1;
+
+        return idx / columns;
     }
 
     int GetTileId(int screenX, int screenY)

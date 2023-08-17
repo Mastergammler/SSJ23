@@ -4,6 +4,7 @@
 #include "../imports.h"
 #include "../types.h"
 #include "../utils.h"
+#include "Tiling.cpp"
 
 struct Bitmaps
 {
@@ -29,6 +30,9 @@ struct Bitmaps
     }
 };
 
+// have 2 maps, one per tileId
+// and this map has as key the adjacent thing
+
 // TODO: how to get the real execution path? and resource directories?
 // how to copy the stuff?
 global_var const string ABSOLUTE_RES_PATH = "I:/02 Areas/Dev/Cpp/SSJ23/res/";
@@ -36,7 +40,7 @@ global_var Bitmaps bitmaps = {};
 
 global_var const int TILE_ROWS = 12;
 global_var const int TILE_COLUMNS = 15;
-global_var Tilemap map = {0, 0, 0};
+global_var Tilemap tileMap = {0, 0, 0};
 
 /**
  * Loads all the games resources.
@@ -78,7 +82,7 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
 
     Log(logger, "Game Resources loaded");
 
-    map = LoadMap(ABSOLUTE_RES_PATH + "Test/Tilemap_15_20.map");
+    tileMap = LoadMap(ABSOLUTE_RES_PATH + "Test/Tilemap_15_20.map");
 
     // FIXME: this is independant from the map init ....
     // just make it load by file
@@ -119,22 +123,39 @@ void UpdateScreen(ScreenBuffer& buffer)
         return;
     }
 
-    int* tile = map.idMap;
-    for (int y = 0; y < map.rows; y++)
+    int* tile = tileMap.idMap;
+    for (int y = 0; y < tileMap.rows; y++)
     {
-        for (int x = 0; x < map.columns; x++)
+        for (int x = 0; x < tileMap.columns; x++)
         {
             int tileId = *tile++;
+            int tileIdx = y * tileMap.columns + x;
             // TODO: use tile size
             int tileX = x * tileSize;
             int tileY = y * tileSize;
             if (tileId == 0)
             {
-                DrawTile(buffer, bitmaps.sheet[8], tileX, tileY);
+                DrawTile(buffer, bitmaps.sheet[9], tileX, tileY);
             }
             else if (tileId == 1)
             {
-                DrawTile(buffer, bitmaps.sheet[12], tileX, tileY);
+                ContextTile tile = tileMap.context_tiles[tileIdx];
+
+                TileState ts;
+
+                // is special case - for inner corners
+                if (tile.adjacent > 0b11110000)
+                {
+                    ts = static_cast<TileState>(tile.adjacent);
+                }
+                else
+                {
+                    // only compare the first 4 bits
+                    ts = static_cast<TileState>(tile.adjacent & 0b11110000);
+                }
+
+                int sheetIdx = PATH_MAP[ts];
+                DrawTile(buffer, bitmaps.sheet[sheetIdx], tileX, tileY);
             }
         }
     }
@@ -148,7 +169,7 @@ void UpdateScreen(ScreenBuffer& buffer)
         int tileXStart = tileIdxX * tileSize;
         int tileYStart = tileIdxY * tileSize;
 
-        int tileId = map.GetTileId(mouse.x, mouse.y);
+        int tileId = tileMap.GetTileId(mouse.x, mouse.y);
 
         // mockup for blocking placements on the way
         if (tileId == 0)
