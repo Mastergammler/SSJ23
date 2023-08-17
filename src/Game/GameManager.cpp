@@ -7,7 +7,7 @@
 
 struct Bitmaps
 {
-    BitmapBuffer tile_a = {};
+    BitmapBuffer cursor_sprite = {};
     BitmapBuffer tile_b = {};
 
     int tile_count = 0;
@@ -38,9 +38,9 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
 {
     Log(logger, "Start loading resources ...");
 
-    BitmapBuffer bitmap =
-        LoadSprite(ABSOLUTE_RES_PATH + "Test/TileTest.bmp", hInstance, hdc);
-    if (bitmap.loaded) { bitmaps.tile_a = bitmap; }
+    BitmapBuffer bmp1 =
+        LoadSprite(ABSOLUTE_RES_PATH + "Test/CursorTest.bmp", hInstance, hdc);
+    if (bmp1.loaded) { bitmaps.cursor_sprite = bmp1; }
     BitmapBuffer bmp2 =
         LoadSprite(ABSOLUTE_RES_PATH + "Test/TileTest_2.bmp", hInstance, hdc);
     if (bmp2.loaded) { bitmaps.tile_b = bmp2; }
@@ -53,6 +53,10 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
         BitmapBuffer* tiles = ConvertFromSheet(tilesSheet, 16, 16);
         bitmaps.SetSheet(tiles);
     }
+
+    // Not working - maybe i just create the cursor icon myself -> then i have
+    // control over it! cursor = LoadCursorIcon(hInstance, ABSOLUTE_RES_PATH +
+    // "Test/CursorTest.bmp");
 
     Log(logger, "Game Resources loaded");
 
@@ -117,9 +121,11 @@ void UpdateScreen(ScreenBuffer& buffer)
         }
     }
 
-    // TODO: do i need to scale it? Because the window is bigger??
+    // draw mouse
+    DrawTile(buffer, bitmaps.cursor_sprite, mouse.x, mouse.y);
+
     if (mouse.buttons & MOUSE_LEFT)
     {
-        DrawRect(buffer, mouse.x, mouse.y, 8, true);
+        // DrawRect(buffer, mouse.x, mouse.y, 8, true);
     }
 }

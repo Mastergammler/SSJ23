@@ -3,6 +3,7 @@
 #include "../types.h"
 #include "FpsCounter.cpp"
 #include "InputHandler.cpp"
+#include <winuser.h>
 
 function LRESULT CALLBACK WindowCallback(HWND, UINT, WPARAM, LPARAM);
 
@@ -66,6 +67,23 @@ function HWND RegisterWindow(int width, int height, HINSTANCE hInstance)
     return window;
 }
 
+/**
+ * Adjusting the window scale to take the task bar height into account.
+ * If that is not done, the mouse coordinates will not be correct,
+ * and the rendered image will be squashed (a small amount)
+ */
+function Dimension AdjustWindowScale(HWND window)
+{
+    Dimension drawableDimension = GetWindowDimension(window);
+    scale.AdjustForTaskbarHeight(drawableDimension);
+    SendMessage(window,
+                WM_SIZE,
+                SIZE_RESTORED,
+                MAKELPARAM(scale.screen_width, scale.GetWindowHeight()));
+
+    return drawableDimension;
+}
+
 LRESULT CALLBACK WindowCallback(HWND hwnd,
                                 UINT uMsg,
                                 WPARAM wParam,
@@ -93,6 +111,12 @@ LRESULT CALLBACK WindowCallback(HWND hwnd,
             lpmmi->ptMaxTrackSize.y = scale.GetWindowHeight();
 
             cout << "Set height is: " << scale.screen_height << endl;
+        }
+        break;
+        case WM_SETFOCUS:
+        {
+            HCURSOR hCursor = LoadCursor(NULL, IDC_HAND);
+            SetCursor(hCursor);
         }
         break;
         case WM_SIZE:

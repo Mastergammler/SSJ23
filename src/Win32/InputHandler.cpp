@@ -19,6 +19,8 @@ enum MouseButtons
 
 void HandleMouseMove(LPARAM eventInfo)
 {
+    if (cursor) { SetCursor(cursor); }
+
     // update would happen via a poll update
     // because we're checking every frame
     // because it's not an event based architecture

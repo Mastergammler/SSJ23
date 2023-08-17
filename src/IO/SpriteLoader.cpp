@@ -2,6 +2,9 @@
 #include "../imports.h"
 #include "../types.h"
 #include "../utils.h"
+#include <windef.h>
+#include <wingdi.h>
+#include <winuser.h>
 
 struct BitmapBuffer
 {
@@ -51,7 +54,8 @@ struct BitmapBuffer
             u8 c2 = pixelBytes[2]; // red
 
             // u8 c3 = pixelBytes[3]; // alpha
-            u8 c3 = 50;
+            // Alpha can not be used currently
+            u8 c3 = 0;
 
             *(u32*)pixelBytes = (c3 << 24) | (c2 << 16) | (c1 << 8) | (c0 << 0);
             pixelBytes += 4;
@@ -59,39 +63,39 @@ struct BitmapBuffer
     }
 };
 
-function void PrintPixelValues(BitmapBuffer buffer)
+function HCURSOR LoadCursorIcon(HINSTANCE hInstance, string path)
 {
-    BITMAP bitmap = buffer.bitmap;
-    BYTE* pixels = (BYTE*)buffer.buffer;
+    HCURSOR defaultCursor = LoadCursor(NULL, IDC_ARROW);
 
-    for (int y = 0; y < bitmap.bmHeight; y++)
+    HBITMAP hBitmap;
+    hBitmap = (HBITMAP)
+        LoadImage(NULL, path.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+
+    if (!hBitmap)
     {
-        for (int x = 0; x < bitmap.bmWidth; x++)
-        {
-            // Get the pixel at (x, y)
-            int pixelIndex = y * bitmap.bmWidth + x;
-            BYTE* pixel = pixels + (pixelIndex * 4);
-
-            // Access the pixel components (RGBA)
-            BYTE red = pixel[2];
-            BYTE green = pixel[1];
-            BYTE blue = pixel[0];
-            BYTE alpha = pixel[3];
-
-            cout << "Pixel at " << x << "," << y << " R=" << red
-                 << " G=" << green << " B=" << blue << endl;
-
-            // Do something with the pixel values...
-            // For example, print the pixel values
-            printf("Pixel at (%d, %d): R=%d, G=%d, B=%d, A=%d\n",
-                   x,
-                   y,
-                   red,
-                   green,
-                   blue,
-                   alpha);
-        }
+        Log(logger, "Unable to load the file, using default cursor: " + path);
+        return defaultCursor;
     }
+
+    BITMAP bitmap;
+    GetObject(hBitmap, sizeof(BITMAP), &bitmap);
+
+    Debug("Trying to create cursor");
+    HCURSOR cursor = CreateCursor(hInstance,
+                                  0,
+                                  0,
+                                  bitmap.bmWidth,
+                                  bitmap.bmHeight,
+                                  bitmap.bmBits,
+                                  bitmap.bmBits);
+
+    if (!cursor)
+    {
+        Log(logger, "Failed to create cursor icon");
+        return defaultCursor;
+    }
+
+    return cursor;
 }
 
 /**

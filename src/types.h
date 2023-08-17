@@ -68,7 +68,7 @@ struct WindowScale
         return window_height;
     }
 
-    void InitWindowHeight(Dimension& drawableScreen)
+    void AdjustForTaskbarHeight(Dimension& drawableScreen)
     {
         int taskbarHeight = this->screen_height - drawableScreen.Height;
         cout << "Taskbarheight is " << taskbarHeight << endl;

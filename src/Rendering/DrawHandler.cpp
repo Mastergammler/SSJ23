@@ -3,6 +3,7 @@
 #include "../types.h"
 
 global_var u32 BG_COLOR = 0x365a91;
+global_var u32 TRANS_VALUE = 0x0;
 
 function void ClearScreen(ScreenBuffer& buffer);
 
@@ -117,7 +118,12 @@ function void DrawTile(ScreenBuffer& buffer,
         pixel = bufferStartPos + y * buffer.width;
         for (int x = 0; x < clipX; x++)
         {
-            *pixel++ = *tileValue++;
+            if (*tileValue != TRANS_VALUE) { *pixel++ = *tileValue++; }
+            else
+            {
+                pixel++;
+                tileValue++;
+            }
         }
     }
 }

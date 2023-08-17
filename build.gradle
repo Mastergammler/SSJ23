@@ -25,6 +25,7 @@ model {
             binaries.all {
                 cppCompiler.args '-std=c++20'
                 cppCompiler.args '-g'
+                cppCompiler.args '-Werror=return-type'
                 linker.args '-luser32'
                 linker.args '-lgdi32'
             }

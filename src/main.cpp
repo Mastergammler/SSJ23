@@ -3,6 +3,7 @@
 #include "modules.h"
 #include "types.h"
 #include "utils.h"
+#include <winuser.h>
 
 /**
  * Entry point for working with the window api
@@ -16,12 +17,8 @@ int WinMain(HINSTANCE hInstance,
     HWND window =
         RegisterWindow(scale.screen_width, scale.screen_height, hInstance);
     HDC hdc = GetDC(window);
-    Dimension windowDim = GetWindowDimension(window);
-    scale.InitWindowHeight(windowDim);
-    SendMessage(window,
-                WM_SIZE,
-                SIZE_RESTORED,
-                MAKELPARAM(scale.screen_width, scale.GetWindowHeight()));
+    Dimension drawableScreen = AdjustWindowScale(window);
+    ShowCursor(false);
 
     InitLogger(logger, "log.txt");
     Log(logger, "Application started");
@@ -37,7 +34,7 @@ int WinMain(HINSTANCE hInstance,
     {
         HandleMessages(window);
         UpdateScreen(buffer);
-        RenderNextFrame(hdc, buffer, windowDim);
+        RenderNextFrame(hdc, buffer, drawableScreen);
         UpdateTitleFps(window, &counter);
     }
 
