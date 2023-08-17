@@ -28,6 +28,7 @@ model {
                 cppCompiler.args '-Werror=return-type'
                 linker.args '-luser32'
                 linker.args '-lgdi32'
+                linker.args '-lwinmm'
             }
             sources {
                 cpp {

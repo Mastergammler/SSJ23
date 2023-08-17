@@ -55,7 +55,7 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     if (bmp2.loaded) { bitmaps.tile_highlight = bmp2; }
 
     BitmapBuffer tilesSheet =
-        LoadSprite(ABSOLUTE_RES_PATH + "Tiles.bmp", hInstance, hdc);
+        LoadSprite(ABSOLUTE_RES_PATH + "Tiles_8x8.bmp", hInstance, hdc);
     if (tilesSheet.loaded)
     {
         // TODO: tile size info
@@ -134,7 +134,7 @@ void UpdateScreen(ScreenBuffer& buffer)
             }
             else if (tileId == 1)
             {
-                DrawTile(buffer, bitmaps.sheet[9], tileX, tileY);
+                DrawTile(buffer, bitmaps.sheet[12], tileX, tileY);
             }
         }
     }

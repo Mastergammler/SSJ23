@@ -3,6 +3,7 @@
 #include "modules.h"
 #include "types.h"
 #include "utils.h"
+#include <timeapi.h>
 #include <winuser.h>
 
 /**
@@ -30,13 +31,17 @@ int WinMain(HINSTANCE hInstance,
 
     Log(logger, "Starting Main Loop");
 
+    timeBeginPeriod(1);
+
     while (running)
     {
         HandleMessages(window);
         UpdateScreen(buffer);
         RenderNextFrame(hdc, buffer, drawableScreen);
-        UpdateTitleFps(window, &counter);
+        RenewFrameTime(window, counter);
     }
+
+    timeEndPeriod(1);
 
     return 0;
 }

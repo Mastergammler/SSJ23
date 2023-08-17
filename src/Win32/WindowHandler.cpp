@@ -3,7 +3,6 @@
 #include "../types.h"
 #include "FpsCounter.cpp"
 #include "InputHandler.cpp"
-#include <winuser.h>
 
 function LRESULT CALLBACK WindowCallback(HWND, UINT, WPARAM, LPARAM);
 
@@ -21,14 +20,31 @@ function void HandleMessages(HWND window)
     }
 }
 
-function void UpdateTitleFps(HWND window, FpsCounter* timer)
+function void RenewFrameTime(HWND window, FpsCounter& timer)
 {
-    if (timer->Update())
+    timer.Update();
+
+    float frameTimeMs = timer.delta_time * 1000.;
+
+    if (timer.ShowValue())
     {
         std::stringstream ss;
-        ss << timer->fps << "FPS";
+        ss << timer.fps << " FPS | " << frameTimeMs << " ms/f";
         std::string title = ss.str();
         SetWindowText(window, title.c_str());
+    }
+
+    if (frameTimeMs < TARGET_FRAME_TIME)
+    {
+        DWORD timeToRest = (DWORD)(TARGET_FRAME_TIME - frameTimeMs);
+        if (timeToRest > 0) { Sleep(timeToRest); }
+    }
+
+    // further waiting if still not there
+    // this seems to lead to alot more consistent frame times
+    while (timer.CheckDeltaTimeMs() < TARGET_FRAME_TIME)
+    {
+        Sleep(0);
     }
 }
 
