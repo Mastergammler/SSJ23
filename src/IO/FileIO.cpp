@@ -41,7 +41,7 @@ Tilemap LoadMap(string filePath)
         Log(logger,
             "Invalid file format. Expecting row column definition at the "
             "beginning!");
-        return Tilemap{0, 0};
+        return Tilemap{0, 0, 0};
     }
 
     int* values = new int[rows * columns];
@@ -68,7 +68,8 @@ Tilemap LoadMap(string filePath)
         }
     }
 
-    Tilemap map = {rows, columns};
+    // FIXME: need to get tile size info from somewhere
+    Tilemap map = {rows, columns, 16};
     map.AssignMap(values);
     return map;
 }

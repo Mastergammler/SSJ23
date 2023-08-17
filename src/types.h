@@ -95,12 +95,14 @@ struct Tilemap
     int rows;
     int columns;
     int* idMap;
+    int tile_size;
 
-    Tilemap(const int rows, const int columns)
+    Tilemap(const int rows, const int columns, int tile_size)
     {
         this->rows = rows;
         this->columns = columns;
         this->idMap = new int[rows * columns];
+        this->tile_size = tile_size;
     }
 
     /**
@@ -121,5 +123,15 @@ struct Tilemap
                 *tile++ = *rowStart++;
             }
         }
+    }
+
+    int GetTileId(int screenX, int screenY)
+    {
+        int tileX = screenX / tile_size;
+        int tileY = screenY / tile_size;
+
+        int tileIdx = tileY * columns + tileX;
+
+        return idMap[tileIdx];
     }
 };

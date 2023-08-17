@@ -8,16 +8,24 @@
 struct Bitmaps
 {
     BitmapBuffer cursor_sprite = {};
-    BitmapBuffer tile_b = {};
+    BitmapBuffer tile_highlight = {};
 
     int tile_count = 0;
-    bool sheet_loaded = false;
+    bool tiles_loaded = false;
+    bool ui_loaded = false;
     BitmapBuffer* sheet = {};
+    BitmapBuffer* uiTiles = {};
 
     void SetSheet(BitmapBuffer* sheet)
     {
-        sheet_loaded = true;
+        tiles_loaded = true;
         this->sheet = sheet;
+    }
+
+    void SetUiSheet(BitmapBuffer* sheet)
+    {
+        ui_loaded = true;
+        uiTiles = sheet;
     }
 };
 
@@ -28,7 +36,7 @@ global_var Bitmaps bitmaps = {};
 
 global_var const int TILE_ROWS = 12;
 global_var const int TILE_COLUMNS = 15;
-global_var Tilemap map = {0, 0};
+global_var Tilemap map = {0, 0, 0};
 
 /**
  * Loads all the games resources.
@@ -41,17 +49,27 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     BitmapBuffer bmp1 =
         LoadSprite(ABSOLUTE_RES_PATH + "Test/CursorTest.bmp", hInstance, hdc);
     if (bmp1.loaded) { bitmaps.cursor_sprite = bmp1; }
-    BitmapBuffer bmp2 =
-        LoadSprite(ABSOLUTE_RES_PATH + "Test/TileTest_2.bmp", hInstance, hdc);
-    if (bmp2.loaded) { bitmaps.tile_b = bmp2; }
+    BitmapBuffer bmp2 = LoadSprite(ABSOLUTE_RES_PATH + "Test/TileHighlight.bmp",
+                                   hInstance,
+                                   hdc);
+    if (bmp2.loaded) { bitmaps.tile_highlight = bmp2; }
 
     BitmapBuffer tilesSheet =
         LoadSprite(ABSOLUTE_RES_PATH + "Tiles.bmp", hInstance, hdc);
     if (tilesSheet.loaded)
     {
-        Log(logger, "Start converting sprite sheet");
+        // TODO: tile size info
         BitmapBuffer* tiles = ConvertFromSheet(tilesSheet, 16, 16);
         bitmaps.SetSheet(tiles);
+    }
+
+    BitmapBuffer uiSheet =
+        LoadSprite(ABSOLUTE_RES_PATH + "UI_8x8.bmp", hInstance, hdc);
+    if (uiSheet.loaded)
+    {
+        // TODO: tile size!!!!
+        BitmapBuffer* uiTiles = ConvertFromSheet(uiSheet, 16, 16);
+        bitmaps.SetUiSheet(uiTiles);
     }
 
     // Not working - maybe i just create the cursor icon myself -> then i have
@@ -94,7 +112,7 @@ void UpdateScreen(ScreenBuffer& buffer)
 
     // FIXME: needs better solution
     // the data structure kind of falls apart here
-    if (!bitmaps.sheet_loaded)
+    if (!bitmaps.tiles_loaded || !bitmaps.ui_loaded)
     {
         this_thread::sleep_for(chrono::seconds(5));
         Debug("Unable to rendere because resources not loaded");
@@ -121,11 +139,28 @@ void UpdateScreen(ScreenBuffer& buffer)
         }
     }
 
-    // draw mouse
-    DrawTile(buffer, bitmaps.cursor_sprite, mouse.x, mouse.y);
-
     if (mouse.buttons & MOUSE_LEFT)
     {
-        // DrawRect(buffer, mouse.x, mouse.y, 8, true);
+        // TODO: tile size information system
+        int tileIdxX = mouse.x / tileSize;
+        int tileIdxY = mouse.y / tileSize;
+
+        int tileXStart = tileIdxX * tileSize;
+        int tileYStart = tileIdxY * tileSize;
+
+        int tileId = map.GetTileId(mouse.x, mouse.y);
+
+        // mockup for blocking placements on the way
+        if (tileId == 0)
+        {
+            DrawTile(buffer, bitmaps.uiTiles[0], tileXStart, tileYStart);
+        }
+        else if (tileId == 1)
+        {
+            DrawTile(buffer, bitmaps.uiTiles[2], tileXStart, tileYStart);
+        }
     }
+
+    // draw mouse
+    DrawTile(buffer, bitmaps.cursor_sprite, mouse.x, mouse.y);
 }

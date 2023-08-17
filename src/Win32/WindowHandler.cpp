@@ -109,8 +109,6 @@ LRESULT CALLBACK WindowCallback(HWND hwnd,
             lpmmi->ptMinTrackSize.y = scale.GetWindowHeight();
             lpmmi->ptMaxTrackSize.x = scale.screen_width;
             lpmmi->ptMaxTrackSize.y = scale.GetWindowHeight();
-
-            cout << "Set height is: " << scale.screen_height << endl;
         }
         break;
         case WM_SETFOCUS:

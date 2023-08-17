@@ -139,9 +139,6 @@ BitmapBuffer LoadSprite(string path, HINSTANCE hInstance, HDC hdc)
               &bmpInfo,
               DIB_RGB_COLORS);
 
-    cout << "Height " << dec << bitmap.bmHeight << " Width: " << bitmap.bmWidth
-         << endl;
-
     BitmapBuffer buffer = {bitmap, pixels};
     buffer.FixChannelOrder();
 
