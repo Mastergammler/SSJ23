@@ -1,3 +1,4 @@
+#include "Audio/module.h"
 #include "Game/module.h"
 #include "IO/module.h"
 #include "Rendering/module.h"

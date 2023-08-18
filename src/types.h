@@ -244,3 +244,18 @@ struct Tilemap
         return idMap[tileIdx];
     }
 };
+
+// TODO: not sure if thats the way to go, but lets see
+#pragma pack(push, 1)
+struct Sample24
+{
+    unsigned int value : 24;
+};
+#pragma pack(pop)
+
+struct WaveBuffer
+{
+    u32 sample_count;
+    u16* data;
+    bool loaded;
+};

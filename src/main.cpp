@@ -3,6 +3,7 @@
 #include "modules.h"
 #include "types.h"
 #include "utils.h"
+#include <processthreadsapi.h>
 
 /**
  * Entry point for working with the window api
@@ -20,6 +21,11 @@ int WinMain(HINSTANCE hInstance,
     InitLogger(logger, "log.txt");
     InitBuffer(buffer);
     InitGame(hInstance, hdc);
+
+    DWORD mainThreadId = GetCurrentThreadId();
+    cout << "MainThreadId: " << mainThreadId << endl;
+
+    InitPlaybackBuffer();
 
     FpsCounter counter = {};
     Log(logger, "Starting Main Loop");

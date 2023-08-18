@@ -1,5 +1,7 @@
 #pragma once
 
+#define _USE_MATH_DEFINES
+
 #include <bitset>
 #include <cassert>
 #include <chrono>
@@ -7,7 +9,11 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+// #include <mmsystem.h>
+#include <cmath>
+#include <math.h>
 #include <mutex>
+#include <numbers>
 #include <sstream>
 #include <stdint.h>
 #include <string>

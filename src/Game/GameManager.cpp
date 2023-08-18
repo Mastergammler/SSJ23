@@ -1,3 +1,4 @@
+#include "../Audio/module.h"
 #include "../IO/module.h"
 #include "../Rendering/module.h"
 #include "../Win32/module.h"
@@ -81,8 +82,18 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     // "Test/CursorTest.bmp");
 
     Log(logger, "Game Resources loaded");
+    Log(logger, "Loading audio");
+
+    WaveBuffer wave =
+        LoadWaveFile(ABSOLUTE_RES_PATH + "Music/TitleDraft_16.wav");
+    if (wave.loaded) { PlayAudioFile(wave); }
+
+    Log(logger, "Audio files Loaded");
+    Log(logger, "Loading Tilemap");
 
     tileMap = LoadMap(ABSOLUTE_RES_PATH + "Test/Tilemap_15_20.map");
+
+    Log(logger, "Tilemap loaded");
 
     // FIXME: this is independant from the map init ....
     // just make it load by file
