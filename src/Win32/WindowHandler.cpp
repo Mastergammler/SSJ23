@@ -20,7 +20,7 @@ function void HandleMessages(HWND window)
     }
 }
 
-function void RenewFrameTime(HWND window, FpsCounter& timer)
+function void WaitTillNextFrame(HWND window, FpsCounter& timer)
 {
     timer.Update();
 
@@ -61,7 +61,7 @@ function Dimension GetWindowDimension(HWND window)
     return result;
 }
 
-function HWND RegisterWindow(int width, int height, HINSTANCE hInstance)
+function HWND RegisterWindow(WindowScale scale, HINSTANCE hInstance)
 {
     WNDCLASS winClass = {};
     winClass.style = CS_HREDRAW | CS_VREDRAW;
@@ -74,12 +74,14 @@ function HWND RegisterWindow(int width, int height, HINSTANCE hInstance)
                                WS_OVERLAPPEDWINDOW | WS_VISIBLE,
                                CW_USEDEFAULT,
                                CW_USEDEFAULT,
-                               width,
-                               height,
+                               scale.screen_width,
+                               scale.GetWindowHeight(),
                                0,
                                0,
                                hInstance,
                                0);
+    ShowCursor(false);
+
     return window;
 }
 

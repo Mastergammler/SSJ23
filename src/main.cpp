@@ -3,8 +3,6 @@
 #include "modules.h"
 #include "types.h"
 #include "utils.h"
-#include <timeapi.h>
-#include <winuser.h>
 
 /**
  * Entry point for working with the window api
@@ -15,20 +13,15 @@ int WinMain(HINSTANCE hInstance,
             int nShowCmd)
 {
     ScreenBuffer buffer = {scale.draw_width, scale.draw_height};
-    HWND window =
-        RegisterWindow(scale.screen_width, scale.screen_height, hInstance);
+    HWND window = RegisterWindow(scale, hInstance);
     HDC hdc = GetDC(window);
     Dimension drawableScreen = AdjustWindowScale(window);
-    ShowCursor(false);
 
     InitLogger(logger, "log.txt");
-    Log(logger, "Application started");
-
-    InitGame(hInstance, hdc);
     InitBuffer(buffer);
+    InitGame(hInstance, hdc);
 
     FpsCounter counter = {};
-
     Log(logger, "Starting Main Loop");
 
     timeBeginPeriod(1);
@@ -38,7 +31,7 @@ int WinMain(HINSTANCE hInstance,
         HandleMessages(window);
         UpdateScreen(buffer);
         RenderNextFrame(hdc, buffer, drawableScreen);
-        RenewFrameTime(window, counter);
+        WaitTillNextFrame(window, counter);
     }
 
     timeEndPeriod(1);

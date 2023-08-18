@@ -51,7 +51,7 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     Log(logger, "Start loading resources ...");
 
     BitmapBuffer bmp1 =
-        LoadSprite(ABSOLUTE_RES_PATH + "Test/CursorTest.bmp", hInstance, hdc);
+        LoadSprite(ABSOLUTE_RES_PATH + "Cursor.bmp", hInstance, hdc);
     if (bmp1.loaded) { bitmaps.cursor_sprite = bmp1; }
     BitmapBuffer bmp2 = LoadSprite(ABSOLUTE_RES_PATH + "Test/TileHighlight.bmp",
                                    hInstance,
@@ -135,7 +135,7 @@ void UpdateScreen(ScreenBuffer& buffer)
             int tileY = y * tileSize;
             if (tileId == 0)
             {
-                DrawTile(buffer, bitmaps.sheet[9], tileX, tileY);
+                DrawBitmap(buffer, bitmaps.sheet[9], tileX, tileY);
             }
             else if (tileId == 1)
             {
@@ -155,7 +155,7 @@ void UpdateScreen(ScreenBuffer& buffer)
                 }
 
                 int sheetIdx = PATH_MAP[ts];
-                DrawTile(buffer, bitmaps.sheet[sheetIdx], tileX, tileY);
+                DrawBitmap(buffer, bitmaps.sheet[sheetIdx], tileX, tileY);
             }
         }
     }
@@ -174,14 +174,14 @@ void UpdateScreen(ScreenBuffer& buffer)
         // mockup for blocking placements on the way
         if (tileId == 0)
         {
-            DrawTile(buffer, bitmaps.uiTiles[0], tileXStart, tileYStart);
+            DrawBitmap(buffer, bitmaps.uiTiles[0], tileXStart, tileYStart);
         }
         else if (tileId == 1)
         {
-            DrawTile(buffer, bitmaps.uiTiles[2], tileXStart, tileYStart);
+            DrawBitmap(buffer, bitmaps.uiTiles[2], tileXStart, tileYStart);
         }
     }
 
     // draw mouse
-    DrawTile(buffer, bitmaps.cursor_sprite, mouse.x, mouse.y);
+    DrawBitmap(buffer, bitmaps.cursor_sprite, mouse.x, mouse.y, true);
 }

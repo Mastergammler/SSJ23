@@ -66,6 +66,7 @@ function void DrawRect(ScreenBuffer& buffer,
     }
 }
 
+// TODO: has no clipping and no transparency
 function void DrawTiles(ScreenBuffer& buffer, BitmapBuffer& bitmap)
 {
     u32* pixel = (u32*)buffer.memory;
@@ -90,40 +91,53 @@ function void DrawTiles(ScreenBuffer& buffer, BitmapBuffer& bitmap)
 /**
  * Draws the tile from the LL (left lower) corner to the RU (right upper) corner
  * X and Y specify the start position LL for the buffer
+ *
+ * Also has the option to draw the bitmap from top to bottom
+ * (means starting pos in UL instead of LL / does not flip the bitmap)
  */
-function void DrawTile(ScreenBuffer& buffer,
-                       BitmapBuffer& tile,
-                       int bufferX,
-                       int bufferY)
+function void DrawBitmap(ScreenBuffer& buffer,
+                         BitmapBuffer& bitmap,
+                         int bufferX,
+                         int bufferY,
+                         bool topDown = false)
 {
-    u32* bufferStartPos =
-        (u32*)buffer.memory + bufferX + bufferY * buffer.width;
-    u32* pixel = bufferStartPos;
-    u32* tileValue = (u32*)tile.buffer;
+    if (topDown)
+    {
+        // -1 because the original Y should be the first pixel
+        // else it would draw below it
+        bufferY -= (bitmap.height - 1);
+        if (bufferY < 0) bufferY = 0;
+    }
+
+    u32* bufferStart = (u32*)buffer.memory + bufferX + bufferY * buffer.width;
+    u32* bitmapStart = (u32*)bitmap.buffer;
+
+    u32* bufferPixel = bufferStart;
+    u32* bitmapPixel = bitmapStart;
 
     // calculate the clipping for tiles
     // else i run out of buffer memory
-    int tileBoundX = bufferX + tile.width;
-    int tileBoundY = bufferY + tile.height;
+    // not sure if the -1 is necessary
+    int tileBoundX = bufferX + bitmap.width - 1;
+    int tileBoundY = bufferY + bitmap.height - 1;
 
-    int clipX = tileBoundX > buffer.width
-                    ? tile.width - (tileBoundX - buffer.width)
-                    : tile.width;
-    int clipY = tileBoundY > buffer.height
-                    ? tile.height - (tileBoundY - buffer.height)
-                    : tile.height;
+    int clipXMax = tileBoundX > buffer.width
+                       ? bitmap.width - (tileBoundX - buffer.width)
+                       : bitmap.width;
 
-    for (int y = 0; y < clipY; y++)
+    int clipYMax = tileBoundY > buffer.height
+                       ? bitmap.height - (tileBoundY - buffer.height)
+                       : bitmap.height;
+
+    for (int y = 0; y < clipYMax; y++)
     {
-        pixel = bufferStartPos + y * buffer.width;
-        for (int x = 0; x < clipX; x++)
+        bufferPixel = bufferStart + y * buffer.width;
+        bitmapPixel = bitmapStart + y * bitmap.width;
+        for (int x = 0; x < clipXMax; x++)
         {
-            if (*tileValue != TRANS_VALUE) { *pixel++ = *tileValue++; }
-            else
-            {
-                pixel++;
-                tileValue++;
-            }
+            if (*bitmapPixel != TRANS_VALUE) *bufferPixel = *bitmapPixel;
+            bufferPixel++;
+            bitmapPixel++;
         }
     }
 }
