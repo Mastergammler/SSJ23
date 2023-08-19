@@ -1,4 +1,5 @@
 #include "../imports.h"
+#include "../utils.h"
 
 using namespace std;
 
@@ -36,11 +37,22 @@ void InitLogger(Logger& logger, const string& logFilePath)
             this_thread::sleep_for(chrono::milliseconds(100));
         }
     });
-
 }
 
-void Log(Logger& logger, const string& message)
+string format(const char* format, va_list args)
 {
+    char buffer[256];
+    vsprintf_s(buffer, format, args);
+
+    return string(buffer);
+}
+
+void Log(Logger& logger, const string& message, ...)
+{
+    // va_list args;
+    // va_start(args,message);
+    // string formattedMsg = format(message, args);
+    Debug(message);
     {
         unique_lock<mutex> lock(logger.logMutex);
         logger.logBuffer.push_back(message);

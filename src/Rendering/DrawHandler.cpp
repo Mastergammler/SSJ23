@@ -88,6 +88,9 @@ function void DrawTiles(ScreenBuffer& buffer, BitmapBuffer& bitmap)
     }
 }
 
+// TODO: FUNCTION: draw this and next tile or something
+//  - drawing multiple tiles, next to each other on some way
+
 /**
  * Draws the tile from the LL (left lower) corner to the RU (right upper) corner
  * X and Y specify the start position LL for the buffer

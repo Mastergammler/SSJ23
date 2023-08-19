@@ -20,25 +20,27 @@
 
 HWAVEOUT audioPlaybackDevice[MAX_SIM_DEVICES];
 int playbackDeviceIdx = 0;
-WAVEHDR header[2] = {0};
-bool buffer_flip = false;
-short flipBuffer[2][CHUNK_SIZE];
 
 // TODO: read bpm from file?
 int bpm = 128;
 
 struct AudioPlayback
 {
-    WaveBuffer wave;
+    // TODO: does this prevent delete? this could still be used somewhere
+    WAVEHDR header[2] = {0};
+    bool buffer_flip = false;
+    short flipBuffer[2][CHUNK_SIZE];
+    WaveBuffer* wave;
     bool looping;
     int bpm;
     int loop_point_beats;
     int loop_point_samples;
-    int runningSampleIndex;
+    int current_sample_position;
+    bool playback_finished;
 
     AudioPlayback() {}
 
-    AudioPlayback(WaveBuffer wave, bool looping, int bpm, int loop_point_bars)
+    AudioPlayback(WaveBuffer* wave, bool looping, int bpm, int loop_point_bars)
     {
         this->wave = wave;
         this->looping = looping;
@@ -47,36 +49,45 @@ struct AudioPlayback
         this->loop_point_beats = loop_point_bars * 4;
         this->loop_point_samples =
             2 * SAMPLING_RATE * 60 * loop_point_beats / bpm - 1;
-        this->runningSampleIndex = 0;
+        this->current_sample_position = 0;
+        this->playback_finished = false;
     }
 
     u16 GetNextSample()
     {
-        int lastSample = wave.sample_count;
-        if (runningSampleIndex >= lastSample)
-        {
-            if (!looping) return 0;
+        if (playback_finished) return 0;
 
-            runningSampleIndex = loop_point_samples;
+        int lastSample = wave->sample_count;
+        if (current_sample_position >= lastSample)
+        {
+            if (!looping)
+            {
+                playback_finished = true;
+                return 0;
+            }
+
+            current_sample_position = loop_point_samples;
         }
-        return wave.data[runningSampleIndex++];
+        return wave->data[current_sample_position++];
     }
 };
 
 void CALLBACK WaveOutProc(HWAVEOUT, UINT, DWORD_PTR, DWORD_PTR, DWORD_PTR);
 void FillNextBuffer(HWAVEOUT device, AudioPlayback& playback, bool writeWave);
 
-void PlayAudioFile(WaveBuffer& wave, bool loop, int volume)
+/**
+ *
+ * TODO: Maybe own thread for starting?
+ * - Maybe a cacheing strategy per sound? So it could lower latency
+ * -> Especially goood, because then i wouldn't need to create 1000 new device
+ * instances etc
+ * - Optimize cache sizes for sounds (how big do they need to be?)
+ * -> Maybe this would run much faster / lower latency a bit
+ */
+void PlayAudioFile(WaveBuffer* wave, bool loop, int volume)
 {
-    if (playbackDeviceIdx > MAX_SIM_DEVICES)
-    {
-        // TODO: improve logging - what sound is requested!
-        Log(logger, "Too many open devices, sound will ont be played");
-        return;
-    }
     AudioPlayback* playback = new AudioPlayback(wave, loop, 128, 8);
-    HWAVEOUT playbackDevice = audioPlaybackDevice[playbackDeviceIdx++];
-
+    HWAVEOUT playbackDevice;
     {
         WAVEFORMATEX format = {.wFormatTag = WAVE_FORMAT_PCM,
                                .nChannels = CHANNELS,
@@ -102,6 +113,8 @@ void PlayAudioFile(WaveBuffer& wave, bool loop, int volume)
         }
     }
 
+    // cout << "Started playback on device: " << playbackDevice << endl;
+
     int percentage = volume * VOLUME_MAX / 100;
     long twoChannelVolume = (percentage << 16) | (percentage << 0);
 
@@ -116,20 +129,22 @@ void PlayAudioFile(WaveBuffer& wave, bool loop, int volume)
     {
         FillNextBuffer(playbackDevice, *playback, false);
 
-        header[i].lpData = (CHAR*)flipBuffer[i];
-        header[i].dwBufferLength = CHUNK_SIZE * 2;
+        playback->header[i].lpData = (CHAR*)playback->flipBuffer[i];
+        playback->header[i].dwBufferLength = CHUNK_SIZE * 2;
 
         if (waveOutPrepareHeader(playbackDevice,
-                                 &header[i],
-                                 sizeof(header[i])) != MMSYSERR_NOERROR)
+                                 &playback->header[i],
+                                 sizeof(playback->header[i])) !=
+            MMSYSERR_NOERROR)
         {
             Debug("waveOutPrepareHeader[%d] failed");
             Log(logger, "Preparing the header failed");
             return;
         }
 
-        if (waveOutWrite(playbackDevice, &header[i], sizeof(header[i])) !=
-            MMSYSERR_NOERROR)
+        if (waveOutWrite(playbackDevice,
+                         &playback->header[i],
+                         sizeof(playback->header[i])) != MMSYSERR_NOERROR)
         {
             Debug("waveOutWrite[%d] failed");
             Log(logger, "Unable to write to the audio device");
@@ -142,19 +157,20 @@ void FillNextBuffer(HWAVEOUT device, AudioPlayback& playback, bool writeWave)
 {
     for (int i = 0; i < CHUNK_SIZE; i++)
     {
-        flipBuffer[buffer_flip][i] = playback.GetNextSample();
+        playback.flipBuffer[playback.buffer_flip][i] = playback.GetNextSample();
     }
 
     if (writeWave &&
         waveOutWrite(device,
-                     &header[buffer_flip],
-                     sizeof(header[buffer_flip])) != MMSYSERR_NOERROR)
+                     &playback.header[playback.buffer_flip],
+                     sizeof(playback.header[playback.buffer_flip])) !=
+            MMSYSERR_NOERROR)
     {
         Debug("waveOutWrite failed");
         Log(logger, "Unable to write buffer to device");
     }
 
-    buffer_flip = !buffer_flip;
+    playback.buffer_flip = !playback.buffer_flip;
 }
 
 void CALLBACK WaveOutProc(HWAVEOUT playbackDevice,
@@ -170,17 +186,41 @@ void CALLBACK WaveOutProc(HWAVEOUT playbackDevice,
     {
         case WOM_CLOSE:
             Debug("WOM_CLOSE");
-            // TODO: is this slow for sound effects?
-            delete (playback);
             break;
         case WOM_OPEN:
         {
-            Debug("WOM_OPEN");
+            // Debug("WOM_OPEN");
         }
         break;
         case WOM_DONE:
         {
-            FillNextBuffer(playbackDevice, *playback, true);
+            // Log(logger, "WOM is done");
+            if (playback->playback_finished)
+            {
+                // FIXME: memory leak
+                // this is a memory leak, becaues i never clean up my old
+                // buffers. but when i try to do it, it crashes the app for some
+                // reason, not sure whats going on there
+                // delete playback;
+
+                // short* first = playback->flipBuffer[0];
+                //  delete[] first;
+
+                // reseting is really device based
+                // -> i guess the api is just wired
+                // you have to start a new device, but when you stop it, the
+                // same is used
+                //
+                // if (waveOutReset(playbackDevice) != MMSYSERR_NOERROR)
+                //{
+                //     Log(logger, "Could not reset playback device");
+                // }
+                //  if (waveOutClose(playbackDevice) != MMSYSERR_NOERROR)
+                //{
+                //      Log(logger, "Error during closing device");
+                //  }
+            }
+            else { FillNextBuffer(playbackDevice, *playback, true); }
         }
         break;
     }
@@ -203,15 +243,15 @@ void generateNextSineChunk(HWAVEOUT device)
         sineValue = sin(t);
         short sampleValue = (short)(sineValue * 10000);
 
-        flipBuffer[buffer_flip][i] = sampleValue;
+        // flipBuffer[buffer_flip][i] = sampleValue;
         if (i % CHANNELS == 0) { runningSampleIndex++; }
     }
 
-    if (waveOutWrite(device,
-                     &header[buffer_flip],
-                     sizeof(header[buffer_flip])) != MMSYSERR_NOERROR)
-    {
-        Debug("waveOutWrite failed");
-    }
-    buffer_flip = !buffer_flip;
+    // if (waveOutWrite(device,
+    //                  &header[buffer_flip],
+    //                  sizeof(header[buffer_flip])) != MMSYSERR_NOERROR)
+    //{
+    //     Debug("waveOutWrite failed");
+    // }
+    // buffer_flip = !buffer_flip;
 }

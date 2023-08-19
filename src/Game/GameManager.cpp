@@ -7,7 +7,7 @@
 #include "../utils.h"
 #include "Tiling.cpp"
 
-struct Bitmaps
+struct BitmapCache
 {
     BitmapBuffer cursor_sprite = {};
     BitmapBuffer tile_highlight = {};
@@ -31,13 +31,24 @@ struct Bitmaps
     }
 };
 
+struct SoundCache
+{
+    WaveBuffer click_hi;
+    WaveBuffer click_lo;
+    WaveBuffer pop_lo;
+    WaveBuffer pop_hi;
+
+    WaveBuffer music;
+};
+
 // have 2 maps, one per tileId
 // and this map has as key the adjacent thing
 
 // TODO: how to get the real execution path? and resource directories?
 // how to copy the stuff?
 global_var const string ABSOLUTE_RES_PATH = "I:/02 Areas/Dev/Cpp/SSJ23/res/";
-global_var Bitmaps bitmaps = {};
+global_var BitmapCache bitmaps = {};
+global_var SoundCache audio = {};
 
 global_var const int TILE_ROWS = 12;
 global_var const int TILE_COLUMNS = 15;
@@ -53,7 +64,7 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     Log(logger, "Start loading resources ...");
 
     BitmapBuffer bmp1 =
-        LoadSprite(ABSOLUTE_RES_PATH + "Cursor.bmp", hInstance, hdc);
+        LoadSprite(ABSOLUTE_RES_PATH + "Sprites/Cursor.bmp", hInstance, hdc);
     if (bmp1.loaded) { bitmaps.cursor_sprite = bmp1; }
     BitmapBuffer bmp2 = LoadSprite(ABSOLUTE_RES_PATH + "Test/TileHighlight.bmp",
                                    hInstance,
@@ -61,7 +72,7 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     if (bmp2.loaded) { bitmaps.tile_highlight = bmp2; }
 
     BitmapBuffer tilesSheet =
-        LoadSprite(ABSOLUTE_RES_PATH + "Tiles_8x8.bmp", hInstance, hdc);
+        LoadSprite(ABSOLUTE_RES_PATH + "Sprites/Tiles_8x8.bmp", hInstance, hdc);
     if (tilesSheet.loaded)
     {
         // TODO: tile size info
@@ -70,7 +81,7 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     }
 
     BitmapBuffer uiSheet =
-        LoadSprite(ABSOLUTE_RES_PATH + "UI_8x8.bmp", hInstance, hdc);
+        LoadSprite(ABSOLUTE_RES_PATH + "Sprites/UI_8x8.bmp", hInstance, hdc);
     if (uiSheet.loaded)
     {
         // TODO: tile size!!!!
@@ -85,10 +96,20 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     Log(logger, "Game Resources loaded");
     Log(logger, "Loading audio");
 
-    WaveBuffer wave =
-        // LoadWaveFile(ABSOLUTE_RES_PATH + "Music/TitleDraft_16.wav");
-        LoadWaveFile(ABSOLUTE_RES_PATH + "Music/TitleDraft_16.wav");
-    if (wave.loaded) { PlayAudioFile(wave, true, 80); }
+    WaveBuffer wave = LoadWaveFile(ABSOLUTE_RES_PATH + "Music/TitleTheme.wav");
+    if (wave.loaded) { audio.music = wave; }
+
+    // Sounds
+    WaveBuffer clickLo =
+        LoadWaveFile(ABSOLUTE_RES_PATH + "Sounds/Click-Lo.wav");
+    if (clickLo.loaded) { audio.click_lo = clickLo; }
+    WaveBuffer clickHi =
+        LoadWaveFile(ABSOLUTE_RES_PATH + "Sounds/Click-Hi.wav");
+    if (clickHi.loaded) { audio.click_hi = clickHi; }
+    WaveBuffer popLo = LoadWaveFile(ABSOLUTE_RES_PATH + "Sounds/Pop-Lo.wav");
+    if (popLo.loaded) { audio.pop_lo = popLo; }
+    WaveBuffer popHi = LoadWaveFile(ABSOLUTE_RES_PATH + "Sounds/Pop-Hi.wav");
+    if (popHi.loaded) { audio.pop_hi = popHi; }
 
     Log(logger, "Audio files Loaded");
     Log(logger, "Loading Tilemap");
@@ -117,13 +138,35 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
 
     // memcpy(map.idMap, tilemapInit, sizeof(tilemapInit));
     // tilemapInit[y][x];
+
+    // Start up all the things
+    if (wave.loaded) { PlayAudioFile(&audio.music, true, 80); }
 }
+
+// FIXME: this should not be here
+bool mouseRightLastState = false;
+bool mouseLeftLastState = false;
+
+// NOTE: idea for fade animations
+//  i could also just use the different colors
+//  - from white to gray, to dark gray to dark brown to black screen
+//  -> Could work similarly well
+//  => I need a animation component!!!!
 
 /**
  * Called to update the information and buffer for the next frame
  */
 void UpdateScreen(ScreenBuffer& buffer)
 {
+    // TODO: refactor this
+    //  1.
+    //   - mouse state etc
+    //   - what is the context im in (menu / game)
+    //   - mouse collisions in order
+    //  2. Then draw accordingly
+    //   - layer by layer etc
+    //   - according to states
+
     // TODO: save tile sive somewhere else
     int tileSize = 16;
 
@@ -173,7 +216,52 @@ void UpdateScreen(ScreenBuffer& buffer)
         }
     }
 
-    if (mouse.buttons & MOUSE_LEFT)
+    // TODO: UI layer
+    //  - block mouse over below it?
+    //  -
+
+    // draw button
+    // TODO: state management for mouse and objects before the draws
+
+    int offset = tileSize / 2;
+    int buttonStartX = tileSize * (tileMap.columns - 3) + offset;
+    int buttonStartY = tileSize * (tileMap.rows - 2) + offset;
+    int buttonEndX = buttonStartX + 2 * tileSize;
+    int buttonEndY = buttonStartY + tileSize;
+
+    // Do i want to have a button struct that holds the position info?
+    // Probably right? And also how to draw it?
+    // Because else it's going to be hard to check against it's position
+
+    BitmapBuffer buttonLeft;
+    BitmapBuffer buttonRight;
+
+    // NOTE: with this i can see i'm now getting into the real entity design
+    // because now i need a system to check, what is below me
+    // and i need to check this for all my Entities
+    // - for tiles
+    // - for enemies
+    // - for ui
+    // => And all in the right order
+    // >>>> This will be the design challenge for next week!!! <<<<<<<
+    bool mouseOverButton;
+    if (mouse.x > buttonStartX && mouse.x < buttonEndX &&
+        mouse.y > buttonStartY && mouse.y < buttonEndY)
+    {
+        buttonLeft = bitmaps.uiTiles[10];
+        buttonRight = bitmaps.uiTiles[11];
+        mouseOverButton = true;
+    }
+    else
+    {
+
+        buttonLeft = bitmaps.uiTiles[8];
+        buttonRight = bitmaps.uiTiles[9];
+        mouseOverButton = false;
+    }
+
+    // draw overlay section stuff
+    if (mouse.buttons & MOUSE_LEFT && !mouseOverButton)
     {
         // TODO: tile size information system
         int tileIdxX = mouse.x / tileSize;
@@ -193,6 +281,41 @@ void UpdateScreen(ScreenBuffer& buffer)
         {
             DrawBitmap(buffer, bitmaps.uiTiles[2], tileXStart, tileYStart);
         }
+    }
+
+    // draw button stuff
+    DrawBitmap(buffer, buttonLeft, buttonStartX, buttonStartY);
+    DrawBitmap(buffer, buttonRight, buttonStartX + tileSize, buttonStartY);
+
+    // TODO: save the last state frame based???
+    //  else it might skip it no?
+    //  - where should the click handling live?
+    if (mouse.buttons & MOUSE_RIGHT && !mouseRightLastState)
+    {
+        mouseRightLastState = !mouseRightLastState;
+
+        if (mouseOverButton)
+            PlayAudioFile(&audio.click_hi, false, 90);
+        else
+            PlayAudioFile(&audio.pop_hi, false, 90);
+    }
+    else if (~mouse.buttons & MOUSE_RIGHT && mouseRightLastState)
+    {
+        mouseRightLastState = !mouseRightLastState;
+    }
+
+    if (mouse.buttons & MOUSE_LEFT && !mouseLeftLastState)
+    {
+        mouseLeftLastState = !mouseLeftLastState;
+
+        if (mouseOverButton)
+            PlayAudioFile(&audio.click_lo, false, 90);
+        else
+            PlayAudioFile(&audio.pop_lo, false, 90);
+    }
+    else if (~mouse.buttons & MOUSE_LEFT && mouseLeftLastState)
+    {
+        mouseLeftLastState = !mouseLeftLastState;
     }
 
     // draw mouse

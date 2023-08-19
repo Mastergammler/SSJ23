@@ -1,3 +1,4 @@
+#include "../globals.h"
 #include "../imports.h"
 #include "../types.h"
 #include "../utils.h"
@@ -23,7 +24,12 @@ WaveBuffer LoadWaveFile(string path)
     int dataSize;
 
     errno_t error = fopen_s(&file, path.c_str(), "rb");
-    if (error != 0) { Debug("Unable to open file"); }
+    if (error != 0)
+    {
+        Debug("Unable to open file");
+        Log(logger, "FileNotFound");
+        return WaveBuffer{};
+    }
 
     fread_s(&magic, sizeof(magic), sizeof(char), 4, file);
     if (!EqualMagicBytes(magic, "RIFF")) { Debug("Magic should equal riff"); }
