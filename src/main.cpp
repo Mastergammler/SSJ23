@@ -22,11 +22,6 @@ int WinMain(HINSTANCE hInstance,
     InitBuffer(buffer);
     InitGame(hInstance, hdc);
 
-    DWORD mainThreadId = GetCurrentThreadId();
-    cout << "MainThreadId: " << mainThreadId << endl;
-
-    InitPlaybackBuffer();
-
     FpsCounter counter = {};
     Log(logger, "Starting Main Loop");
 

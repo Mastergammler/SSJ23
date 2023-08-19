@@ -26,43 +26,32 @@ WaveBuffer LoadWaveFile(string path)
     if (error != 0) { Debug("Unable to open file"); }
 
     fread_s(&magic, sizeof(magic), sizeof(char), 4, file);
-    cout << "Magic1 " << magic[0] << magic[1] << magic[2] << magic[3] << endl;
     if (!EqualMagicBytes(magic, "RIFF")) { Debug("Magic should equal riff"); }
 
     fread_s(&fileSize, sizeof(fileSize), sizeof(int), 1, file);
-    cout << "FileSize: " << fileSize << endl;
 
     fread_s(&magic, sizeof(magic), sizeof(char), 4, file);
-    cout << "Magic1 " << magic[0] << magic[1] << magic[2] << magic[3] << endl;
     if (!EqualMagicBytes(magic, "WAVE")) { Debug("Magic should equal wave"); }
 
     fread_s(&magic, sizeof(magic), sizeof(char), 4, file);
-    cout << "Magic1 " << magic[0] << magic[1] << magic[2] << magic[3] << endl;
     if (!EqualMagicBytes(magic, "fmt ")) { Debug("Magic should equal 'fmt '"); }
 
     fread_s(&formatLength, sizeof(formatLength), sizeof(int), 1, file);
-    cout << "formatLength: " << formatLength << endl;
 
     fread_s(&formatType, sizeof(formatType), sizeof(short), 1, file);
-    cout << "formattype: " << formatType << endl;
     if (formatType != 1) { Debug("Format type must be 1"); }
 
     fread_s(&numChannels, sizeof(numChannels), sizeof(short), 1, file);
-    cout << "channels: " << numChannels << endl;
     if (numChannels != 2) { Debug("Expecting 2 channel audio"); }
 
     fread_s(&sampleRate, sizeof(sampleRate), sizeof(int), 1, file);
-    cout << "samplerate: " << sampleRate << endl;
     if (sampleRate != 44100) { Debug("Expecting 44.1 khz audio"); }
 
     fread_s(&bytesPerSecond, sizeof(bytesPerSecond), sizeof(int), 1, file);
-    cout << "bytesPerSecond: " << bytesPerSecond << endl;
 
     fread_s(&blockAlign, sizeof(blockAlign), sizeof(short), 1, file);
-    cout << "blockAlign " << blockAlign << endl;
 
     fread_s(&bitsPerSample, sizeof(bitsPerSample), sizeof(short), 1, file);
-    cout << "bitsPerSample: " << bitsPerSample << endl;
     if (bitsPerSample != 16) { Debug("Expecting 16bit audio"); }
 
     fread_s(&magic, sizeof(magic), sizeof(char), 4, file);
@@ -75,7 +64,6 @@ WaveBuffer LoadWaveFile(string path)
         int size;
 
         // TODO: learn how to road out or skip the bext format
-
         fread_s(&id, sizeof(id), sizeof(DWORD), 1, file);
         cout << "bextid " << id << endl;
 
@@ -116,7 +104,6 @@ WaveBuffer LoadWaveFile(string path)
     }
 
     fread_s(&dataSize, sizeof(dataSize), sizeof(int), 1, file);
-    cout << "dataSize " << dataSize << endl;
 
     WaveBuffer buffer = {};
     void* data = malloc(dataSize);

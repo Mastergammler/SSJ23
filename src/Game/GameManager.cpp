@@ -49,6 +49,7 @@ global_var Tilemap tileMap = {0, 0, 0};
  */
 void InitGame(HINSTANCE hInstance, HDC hdc)
 {
+    // TODO: log loading performance
     Log(logger, "Start loading resources ...");
 
     BitmapBuffer bmp1 =
@@ -85,8 +86,9 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     Log(logger, "Loading audio");
 
     WaveBuffer wave =
+        // LoadWaveFile(ABSOLUTE_RES_PATH + "Music/TitleDraft_16.wav");
         LoadWaveFile(ABSOLUTE_RES_PATH + "Music/TitleDraft_16.wav");
-    if (wave.loaded) { PlayAudioFile(wave); }
+    if (wave.loaded) { PlayAudioFile(wave, true, 80); }
 
     Log(logger, "Audio files Loaded");
     Log(logger, "Loading Tilemap");
