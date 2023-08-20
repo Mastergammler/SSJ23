@@ -1,18 +1,14 @@
 #include "../Audio/module.h"
 #include "../IO/module.h"
 #include "../Rendering/module.h"
-#include "../Win32/module.h"
-#include "../imports.h"
-#include "../types.h"
-#include "../utils.h"
-#include "Tiling.cpp"
+#include "internal.h"
+#include "module.h"
 
 struct BitmapCache
 {
     BitmapBuffer cursor_sprite = {};
     BitmapBuffer tile_highlight = {};
 
-    int tile_count = 0;
     bool tiles_loaded = false;
     bool ui_loaded = false;
     BitmapBuffer* sheet = {};
@@ -41,18 +37,28 @@ struct SoundCache
     WaveBuffer music;
 };
 
-// have 2 maps, one per tileId
-// and this map has as key the adjacent thing
-
 // TODO: how to get the real execution path? and resource directories?
 // how to copy the stuff?
 global_var const string ABSOLUTE_RES_PATH = "I:/02 Areas/Dev/Cpp/SSJ23/res/";
 global_var BitmapCache bitmaps = {};
 global_var SoundCache audio = {};
-
-global_var const int TILE_ROWS = 12;
-global_var const int TILE_COLUMNS = 15;
 global_var Tilemap tileMap = {0, 0, 0};
+global_var TileSize TILE_SIZE = TileSize{.width = 16, .height = 16};
+
+void StartGame()
+{
+    // TODO: better data structure solution for loading failed!
+    if (!bitmaps.tiles_loaded || !bitmaps.ui_loaded)
+    {
+        Log("Unable to rendere because resources not loaded");
+        //  TODO: Play elevator music / show error screen
+        this_thread::sleep_for(chrono::seconds(10));
+
+        PostQuitMessage(0);
+    }
+
+    if (audio.music.loaded) { PlayAudioFile(&audio.music, true, 80); }
+}
 
 /**
  * Loads all the games resources.
@@ -60,8 +66,10 @@ global_var Tilemap tileMap = {0, 0, 0};
  */
 void InitGame(HINSTANCE hInstance, HDC hdc)
 {
-    // TODO: log loading performance
-    Log(logger, "Start loading resources ...");
+    FpsCounter individualCounter = {};
+    Log("Start Loading Resources");
+    counter.Update();
+    individualCounter.Update();
 
     BitmapBuffer bmp1 =
         LoadSprite(ABSOLUTE_RES_PATH + "Sprites/Cursor.bmp", hInstance, hdc);
@@ -89,12 +97,8 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
         bitmaps.SetUiSheet(uiTiles);
     }
 
-    // Not working - maybe i just create the cursor icon myself -> then i have
-    // control over it! cursor = LoadCursorIcon(hInstance, ABSOLUTE_RES_PATH +
-    // "Test/CursorTest.bmp");
-
-    Log(logger, "Game Resources loaded");
-    Log(logger, "Loading audio");
+    Logf("  Sprites loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
+    individualCounter.Update();
 
     WaveBuffer wave = LoadWaveFile(ABSOLUTE_RES_PATH + "Music/TitleTheme.wav");
     if (wave.loaded) { audio.music = wave; }
@@ -111,41 +115,16 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     WaveBuffer popHi = LoadWaveFile(ABSOLUTE_RES_PATH + "Sounds/Pop-Hi.wav");
     if (popHi.loaded) { audio.pop_hi = popHi; }
 
-    Log(logger, "Audio files Loaded");
-    Log(logger, "Loading Tilemap");
+    Logf("  Audio loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
+    individualCounter.Update();
 
     tileMap = LoadMap(ABSOLUTE_RES_PATH + "Test/Tilemap_15_20.map");
 
-    Log(logger, "Tilemap loaded");
+    Logf("  Tilemap loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
+    Logf("Resources loaded in %.2f ms", counter.CheckDeltaTimeMs());
 
-    // FIXME: this is independant from the map init ....
-    // just make it load by file
-    int tilemapInit[TILE_ROWS][TILE_COLUMNS] = {
-        {0, 1, 0, 0, 0, 1, 1, 1, 1, 1},
-        {0, 1, 0, 0, 0, 1, 1, 1, 1, 1},
-        {0, 1, 1, 1, 0, 1, 1, 1, 1, 1},
-        {0, 0, 0, 1, 0, 1, 1, 1, 1, 1},
-        {0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
-        {0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-        {1, 1, 1, 1, 1, 0, 0, 0, 0, 0},
-        {1, 0, 0, 0, 0, 0, 0, 1, 1, 1},
-        {1, 0, 0, 0, 0, 0, 0, 1, 0, 0},
-        {1, 1, 1, 1, 0, 0, 1, 1, 0, 0},
-        {0, 0, 0, 1, 0, 0, 1, 0, 0, 0},
-        {0, 0, 0, 1, 1, 1, 1, 0, 0, 0},
-    };
-    // map.AssignMap(&tilemapInit[0][0]);
-
-    // memcpy(map.idMap, tilemapInit, sizeof(tilemapInit));
-    // tilemapInit[y][x];
-
-    // Start up all the things
-    if (wave.loaded) { PlayAudioFile(&audio.music, true, 80); }
+    StartGame();
 }
-
-// FIXME: this should not be here
-bool mouseRightLastState = false;
-bool mouseLeftLastState = false;
 
 // NOTE: idea for fade animations
 //  i could also just use the different colors
@@ -158,6 +137,8 @@ bool mouseLeftLastState = false;
  */
 void UpdateScreen(ScreenBuffer& buffer)
 {
+    UpdateMouseState();
+
     // TODO: refactor this
     //  1.
     //   - mouse state etc
@@ -169,15 +150,6 @@ void UpdateScreen(ScreenBuffer& buffer)
 
     // TODO: save tile sive somewhere else
     int tileSize = 16;
-
-    // FIXME: needs better solution
-    // the data structure kind of falls apart here
-    if (!bitmaps.tiles_loaded || !bitmaps.ui_loaded)
-    {
-        this_thread::sleep_for(chrono::seconds(5));
-        Debug("Unable to rendere because resources not loaded");
-        return;
-    }
 
     int* tile = tileMap.idMap;
     for (int y = 0; y < tileMap.rows; y++)
@@ -245,8 +217,8 @@ void UpdateScreen(ScreenBuffer& buffer)
     // => And all in the right order
     // >>>> This will be the design challenge for next week!!! <<<<<<<
     bool mouseOverButton;
-    if (mouse.x > buttonStartX && mouse.x < buttonEndX &&
-        mouse.y > buttonStartY && mouse.y < buttonEndY)
+    if (mouseState.x > buttonStartX && mouseState.x < buttonEndX &&
+        mouseState.y > buttonStartY && mouseState.y < buttonEndY)
     {
         buttonLeft = bitmaps.uiTiles[10];
         buttonRight = bitmaps.uiTiles[11];
@@ -261,16 +233,16 @@ void UpdateScreen(ScreenBuffer& buffer)
     }
 
     // draw overlay section stuff
-    if (mouse.buttons & MOUSE_LEFT && !mouseOverButton)
+    if (mouseState.left_down && !mouseOverButton)
     {
         // TODO: tile size information system
-        int tileIdxX = mouse.x / tileSize;
-        int tileIdxY = mouse.y / tileSize;
+        int tileIdxX = mouseState.x / tileSize;
+        int tileIdxY = mouseState.y / tileSize;
 
         int tileXStart = tileIdxX * tileSize;
         int tileYStart = tileIdxY * tileSize;
 
-        int tileId = tileMap.GetTileId(mouse.x, mouse.y);
+        int tileId = tileMap.GetTileId(mouseState.x, mouseState.y);
 
         // mockup for blocking placements on the way
         if (tileId == 0)
@@ -287,37 +259,22 @@ void UpdateScreen(ScreenBuffer& buffer)
     DrawBitmap(buffer, buttonLeft, buttonStartX, buttonStartY);
     DrawBitmap(buffer, buttonRight, buttonStartX + tileSize, buttonStartY);
 
-    // TODO: save the last state frame based???
-    //  else it might skip it no?
-    //  - where should the click handling live?
-    if (mouse.buttons & MOUSE_RIGHT && !mouseRightLastState)
+    if (mouseState.right_clicked)
     {
-        mouseRightLastState = !mouseRightLastState;
-
         if (mouseOverButton)
             PlayAudioFile(&audio.click_hi, false, 90);
         else
             PlayAudioFile(&audio.pop_hi, false, 90);
     }
-    else if (~mouse.buttons & MOUSE_RIGHT && mouseRightLastState)
-    {
-        mouseRightLastState = !mouseRightLastState;
-    }
 
-    if (mouse.buttons & MOUSE_LEFT && !mouseLeftLastState)
+    if (mouseState.left_clicked)
     {
-        mouseLeftLastState = !mouseLeftLastState;
-
         if (mouseOverButton)
             PlayAudioFile(&audio.click_lo, false, 90);
         else
             PlayAudioFile(&audio.pop_lo, false, 90);
     }
-    else if (~mouse.buttons & MOUSE_LEFT && mouseLeftLastState)
-    {
-        mouseLeftLastState = !mouseLeftLastState;
-    }
 
     // draw mouse
-    DrawBitmap(buffer, bitmaps.cursor_sprite, mouse.x, mouse.y, true);
+    DrawBitmap(buffer, bitmaps.cursor_sprite, mouseState.x, mouseState.y, true);
 }

@@ -1,69 +1,70 @@
-#include "../imports.h"
-#include "../utils.h"
+#include "module.h"
 
-using namespace std;
-
-struct Logger
+void InitLogger(Logger& logger, const string& log_filePath)
 {
-    ofstream logFile;
-    vector<string> logBuffer;
-    mutex logMutex;
-    condition_variable logCondition;
-    thread logThread;
-
-    bool running;
-};
-
-void InitLogger(Logger& logger, const string& logFilePath)
-{
-    logger.logFile.open(logFilePath, ios::out | ios::app);
+    logger.log_file.open(log_filePath, ios::out | ios::app);
     logger.running = true;
-    logger.logThread = thread([&logger]() {
+    logger.log_thread = thread([&logger]() {
         while (logger.running)
         {
             vector<string> logsToWrite;
             {
-                unique_lock<mutex> lock(logger.logMutex);
-                logger.logCondition.wait(lock, [&logger]() {
-                    return !logger.logBuffer.empty() || !logger.running;
+                unique_lock<mutex> lock(logger.log_mutex);
+                logger.log_condition.wait(lock, [&logger]() {
+                    return !logger.log_buffer.empty() || !logger.running;
                 });
-                logsToWrite = std::move(logger.logBuffer);
-                logger.logBuffer.clear();
+                logsToWrite = std::move(logger.log_buffer);
+                logger.log_buffer.clear();
             }
             for (const string& log : logsToWrite)
             {
-                logger.logFile << log << endl;
+                logger.log_file << log << endl;
             }
             this_thread::sleep_for(chrono::milliseconds(100));
         }
     });
 }
 
-string format(const char* format, va_list args)
+template <typename... Args> string format(const char* format, Args... args)
 {
     char buffer[256];
-    vsprintf_s(buffer, format, args);
+    // vsprintf_s(buffer, format, args);
 
     return string(buffer);
 }
 
-void Log(Logger& logger, const string& message, ...)
+void Logf(const string message, ...)
 {
-    // va_list args;
-    // va_start(args,message);
-    // string formattedMsg = format(message, args);
-    Debug(message);
+    char buffer[256];
+    va_list args;
+    va_start(args, message);
+    vsprintf_s(buffer, message.c_str(), args);
+    va_end(args);
+
+    string formatted(buffer);
+
+    Debug(formatted);
     {
-        unique_lock<mutex> lock(logger.logMutex);
-        logger.logBuffer.push_back(message);
+        unique_lock<mutex> lock(logger.log_mutex);
+        logger.log_buffer.push_back(formatted);
     }
-    logger.logCondition.notify_one();
+    logger.log_condition.notify_one();
 }
+
+void Log(const string message) { Logf(message, ""); }
+
+// template <typename... Args> void Log(const string message, Args... args)
+//{
+//     // va_list args;
+//     // va_start(args, message);
+//     Log(logger, message, args...);
+//     // va_end(args);
+// }
 
 void stopLogger(Logger& logger)
 {
     logger.running = false;
-    logger.logCondition.notify_one();
-    logger.logThread.join();
-    logger.logFile.close();
+    logger.log_condition.notify_one();
+    logger.log_thread.join();
+    logger.log_file.close();
 }

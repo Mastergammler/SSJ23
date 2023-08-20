@@ -3,7 +3,6 @@
 #include "modules.h"
 #include "types.h"
 #include "utils.h"
-#include <processthreadsapi.h>
 
 /**
  * Entry point for working with the window api
@@ -22,8 +21,7 @@ int WinMain(HINSTANCE hInstance,
     InitBuffer(buffer);
     InitGame(hInstance, hdc);
 
-    FpsCounter counter = {};
-    Log(logger, "Starting Main Loop");
+    Log("Starting Game Loop ...");
 
     timeBeginPeriod(1);
 

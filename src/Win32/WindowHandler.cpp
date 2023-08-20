@@ -1,8 +1,5 @@
-#include "../globals.h"
-#include "../imports.h"
-#include "../types.h"
-#include "FpsCounter.cpp"
-#include "InputHandler.cpp"
+#include "internal.h"
+#include "module.h"
 
 function LRESULT CALLBACK WindowCallback(HWND, UINT, WPARAM, LPARAM);
 
@@ -10,7 +7,7 @@ function LRESULT CALLBACK WindowCallback(HWND, UINT, WPARAM, LPARAM);
  * Without the default message handling the window will not respond
  * And you will not be able to close it
  */
-function void HandleMessages(HWND window)
+void HandleMessages(HWND window)
 {
     MSG message;
     while (PeekMessage(&message, window, 0, 0, PM_REMOVE))
@@ -20,7 +17,7 @@ function void HandleMessages(HWND window)
     }
 }
 
-function void WaitTillNextFrame(HWND window, FpsCounter& timer)
+void WaitTillNextFrame(HWND window, FpsCounter& timer)
 {
     timer.Update();
 
@@ -48,7 +45,7 @@ function void WaitTillNextFrame(HWND window, FpsCounter& timer)
     }
 }
 
-function Dimension GetWindowDimension(HWND window)
+Dimension GetWindowDimension(HWND window)
 {
     Dimension result;
 
@@ -61,7 +58,7 @@ function Dimension GetWindowDimension(HWND window)
     return result;
 }
 
-function HWND RegisterWindow(WindowScale scale, HINSTANCE hInstance)
+HWND RegisterWindow(WindowScale scale, HINSTANCE hInstance)
 {
     WNDCLASS winClass = {};
     winClass.style = CS_HREDRAW | CS_VREDRAW;
@@ -90,7 +87,7 @@ function HWND RegisterWindow(WindowScale scale, HINSTANCE hInstance)
  * If that is not done, the mouse coordinates will not be correct,
  * and the rendered image will be squashed (a small amount)
  */
-function Dimension AdjustWindowScale(HWND window)
+Dimension AdjustWindowScale(HWND window)
 {
     Dimension drawableDimension = GetWindowDimension(window);
     scale.AdjustForTaskbarHeight(drawableDimension);

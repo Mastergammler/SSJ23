@@ -5,12 +5,12 @@
 #include <bitset>
 #include <cassert>
 #include <chrono>
+#include <cmath>
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
-// #include <mmsystem.h>
-#include <cmath>
 #include <math.h>
 #include <mutex>
 #include <numbers>

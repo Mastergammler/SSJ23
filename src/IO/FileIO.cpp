@@ -1,6 +1,4 @@
-#include "../globals.h"
-#include "../imports.h"
-#include "../utils.h"
+#include "module.h"
 
 struct PlayerData
 {
@@ -22,9 +20,8 @@ void CheckFile(ifstream& file, string path)
     {
         char buffer[MAX_PATH];
         GetCurrentDirectoryA(MAX_PATH, buffer);
-        Log(logger,
-            "Did not find file: " + path +
-                "\n  Search root: " + string(buffer));
+        Log("Did not find file: " + path +
+            "\n  Search root: " + string(buffer));
     }
 }
 
@@ -38,8 +35,7 @@ Tilemap LoadMap(string filePath)
 
     if (!(mapFile >> rows >> columns))
     {
-        Log(logger,
-            "Invalid file format. Expecting row column definition at the "
+        Log("Invalid file format. Expecting row column definition at the "
             "beginning!");
         return Tilemap{0, 0, 0};
     }
@@ -61,7 +57,7 @@ Tilemap LoadMap(string filePath)
                         y,
                         rows,
                         columns);
-                Log(logger, text);
+                Log(text);
             }
 
             *currentValue++ = mapValue;

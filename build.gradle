@@ -34,13 +34,13 @@ model {
                 cpp {
                     source {
                         srcDir "src"
-                            include "main.cpp"
+                            include "**/*cpp"
                     }
                 }
             }
         }
     }
-}
+ }
 
 task run(type: Exec) {
     dependsOn 'build'

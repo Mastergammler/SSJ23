@@ -9,6 +9,17 @@ typedef unsigned int u32;
 typedef uint8_t u8;
 typedef uint16_t u16;
 
+struct Logger
+{
+    ofstream log_file;
+    vector<string> log_buffer;
+    mutex log_mutex;
+    condition_variable log_condition;
+    thread log_thread;
+
+    bool running;
+};
+
 struct Dimension
 {
     int Width;

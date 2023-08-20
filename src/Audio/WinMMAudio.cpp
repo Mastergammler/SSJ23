@@ -1,7 +1,4 @@
-#include "../globals.h"
-#include "../imports.h"
-#include "../utils.h"
-#include <mmeapi.h>
+#include "module.h"
 
 #define SAMPLING_RATE 44100
 #define CHUNK_SIZE 1024 * 8
@@ -108,7 +105,7 @@ void PlayAudioFile(WaveBuffer* wave, bool loop, int volume)
                         CALLBACK_FUNCTION) != MMSYSERR_NOERROR)
         {
             Debug("Unable to open audio device");
-            Log(logger, "Unable to open audio device");
+            Log("Unable to open audio device");
             return;
         }
     }
@@ -121,7 +118,7 @@ void PlayAudioFile(WaveBuffer* wave, bool loop, int volume)
     if (waveOutSetVolume(playbackDevice, twoChannelVolume) != MMSYSERR_NOERROR)
     {
         Debug("waveOUtGetVolume failed");
-        Log(logger, "Unable to set the volume on the audio device");
+        Log("Unable to set the volume on the audio device");
         return;
     }
 
@@ -138,7 +135,7 @@ void PlayAudioFile(WaveBuffer* wave, bool loop, int volume)
             MMSYSERR_NOERROR)
         {
             Debug("waveOutPrepareHeader[%d] failed");
-            Log(logger, "Preparing the header failed");
+            Log("Preparing the header failed");
             return;
         }
 
@@ -147,7 +144,7 @@ void PlayAudioFile(WaveBuffer* wave, bool loop, int volume)
                          sizeof(playback->header[i])) != MMSYSERR_NOERROR)
         {
             Debug("waveOutWrite[%d] failed");
-            Log(logger, "Unable to write to the audio device");
+            Log("Unable to write to the audio device");
             return;
         }
     }
@@ -167,7 +164,7 @@ void FillNextBuffer(HWAVEOUT device, AudioPlayback& playback, bool writeWave)
             MMSYSERR_NOERROR)
     {
         Debug("waveOutWrite failed");
-        Log(logger, "Unable to write buffer to device");
+        Log("Unable to write buffer to device");
     }
 
     playback.buffer_flip = !playback.buffer_flip;
@@ -194,7 +191,7 @@ void CALLBACK WaveOutProc(HWAVEOUT playbackDevice,
         break;
         case WOM_DONE:
         {
-            // Log(logger, "WOM is done");
+            // Log( "WOM is done");
             if (playback->playback_finished)
             {
                 // FIXME: memory leak
@@ -213,11 +210,11 @@ void CALLBACK WaveOutProc(HWAVEOUT playbackDevice,
                 //
                 // if (waveOutReset(playbackDevice) != MMSYSERR_NOERROR)
                 //{
-                //     Log(logger, "Could not reset playback device");
+                //     Log( "Could not reset playback device");
                 // }
                 //  if (waveOutClose(playbackDevice) != MMSYSERR_NOERROR)
                 //{
-                //      Log(logger, "Error during closing device");
+                //      Log( "Error during closing device");
                 //  }
             }
             else { FillNextBuffer(playbackDevice, *playback, true); }

@@ -1,5 +1,6 @@
 #include "Audio/module.h"
 #include "Game/module.h"
 #include "IO/module.h"
+#include "Logging/module.h"
 #include "Rendering/module.h"
 #include "Win32/module.h"
