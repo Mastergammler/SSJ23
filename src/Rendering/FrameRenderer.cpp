@@ -1,5 +1,4 @@
-#include "../imports.h"
-#include "../types.h"
+#include "module.h"
 
 function void RenderBuffer(HDC hdc, ScreenBuffer buffer, Dimension& windowDim)
 {
@@ -22,7 +21,7 @@ function void RenderBuffer(HDC hdc, ScreenBuffer buffer, Dimension& windowDim)
                   SRCCOPY);
 }
 
-function void RenderNextFrame(HDC hdc, ScreenBuffer buffer, Dimension dim)
+void RenderNextFrame(HDC hdc, ScreenBuffer buffer, Dimension dim)
 {
 
     // TODO: how to do the actual drawing?

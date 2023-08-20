@@ -63,8 +63,19 @@ struct BitmapBuffer
     }
 };
 
+struct SpriteSheet
+{
+    BitmapBuffer* tiles;
+    int tile_width;
+    int tile_height;
+    int image_width;
+    int image_height;
+    int rows;
+    int columns;
+    int tile_count;
+    bool loaded;
+};
+
 Tilemap LoadMap(string filePath);
 BitmapBuffer LoadSprite(string path, HINSTANCE hInstance, HDC hdc);
-BitmapBuffer* ConvertFromSheet(BitmapBuffer sheet,
-                               int tileWidth,
-                               int tileHeight);
+SpriteSheet ConvertFromSheet(BitmapBuffer sheet, int tileWidth, int tileHeight);

@@ -1,16 +1,11 @@
-#include "../IO/module.h"
-#include "../imports.h"
-#include "../types.h"
-
-global_var u32 BG_COLOR = 0x365a91;
-global_var u32 TRANS_VALUE = 0x0;
+#include "module.h"
 
 function void ClearScreen(ScreenBuffer& buffer);
 
 /**
  * Allocates the memory for the buffer and fills it with the default color
  */
-function void InitBuffer(ScreenBuffer& buffer)
+void InitBuffer(ScreenBuffer& buffer)
 {
     buffer.memory =
         VirtualAlloc(0, buffer.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
@@ -88,8 +83,64 @@ function void DrawTiles(ScreenBuffer& buffer, BitmapBuffer& bitmap)
     }
 }
 
-// TODO: FUNCTION: draw this and next tile or something
-//  - drawing multiple tiles, next to each other on some way
+void DrawTiles(ScreenBuffer& buffer,
+               int bufferStartX,
+               int bufferStartY,
+               SpriteSheet sheet,
+               int startTileIdx,
+               int xTiles,
+               int yTiles)
+{
+    int startY = bufferStartY + sheet.tile_height * (yTiles - 1);
+    for (int y = 0; y < yTiles; y++)
+    {
+        int yPos = startY - (y * sheet.tile_height);
+        for (int x = 0; x < xTiles; x++)
+        {
+            int bitmapIdx = startTileIdx + y * sheet.columns + x;
+            int xPos = x * sheet.tile_width + bufferStartX;
+            DrawBitmap(buffer, sheet.tiles[bitmapIdx], xPos, yPos);
+        }
+    }
+}
+
+void DrawPanel(ScreenBuffer& buffer,
+               int bufferStartX,
+               int bufferStartY,
+               SpriteSheet sheet,
+               int startTileIdx,
+               int xTiles,
+               int yTiles)
+{
+    auto getIndexMod = [](int pos, int posMax, int mod) {
+        int factor;
+        if (pos == 0)
+            factor = 0;
+        else if (pos < posMax)
+            factor = 1;
+        else
+            factor = 2;
+
+        return factor * mod;
+    };
+
+    // -1 because lower border is counting
+    int startY = bufferStartY + sheet.tile_height * (yTiles - 1);
+
+    for (int y = 0; y < yTiles; y++)
+    {
+        int yIndex = startTileIdx + getIndexMod(y, yTiles - 1, sheet.columns);
+
+        int yPos = startY - (y * sheet.tile_height);
+        for (int x = 0; x < xTiles; x++)
+        {
+            int bitmapIdx = yIndex + getIndexMod(x, xTiles - 1, 1);
+
+            int xPos = x * sheet.tile_width + bufferStartX;
+            DrawBitmap(buffer, sheet.tiles[bitmapIdx], xPos, yPos);
+        }
+    }
+}
 
 /**
  * Draws the tile from the LL (left lower) corner to the RU (right upper) corner
@@ -98,11 +149,11 @@ function void DrawTiles(ScreenBuffer& buffer, BitmapBuffer& bitmap)
  * Also has the option to draw the bitmap from top to bottom
  * (means starting pos in UL instead of LL / does not flip the bitmap)
  */
-function void DrawBitmap(ScreenBuffer& buffer,
-                         BitmapBuffer& bitmap,
-                         int bufferX,
-                         int bufferY,
-                         bool topDown = false)
+void DrawBitmap(ScreenBuffer& buffer,
+                BitmapBuffer& bitmap,
+                int bufferX,
+                int bufferY,
+                bool topDown)
 {
     if (topDown)
     {

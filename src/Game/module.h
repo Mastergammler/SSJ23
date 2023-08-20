@@ -5,7 +5,7 @@
 #include "../types.h"
 #include "../utils.h"
 
-struct TileSize
+struct Tile
 {
     int width;
     int height;

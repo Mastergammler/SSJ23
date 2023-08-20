@@ -82,15 +82,15 @@ BitmapBuffer LoadSprite(string path, HINSTANCE hInstance, HDC hdc)
     return buffer;
 }
 
-BitmapBuffer* ConvertFromSheet(BitmapBuffer sheet,
-                               int tileWidth,
-                               int tileHeight)
+SpriteSheet ConvertFromSheet(BitmapBuffer sheetBitmap,
+                             int tileWidth,
+                             int tileHeight)
 {
-    u32* spriteSheet = (u32*)sheet.buffer;
+    u32* bitmapPixels = (u32*)sheetBitmap.buffer;
 
     // ignore clipping, uneven counts are ignored
-    int tilesPerRow = sheet.width / tileWidth;
-    int tilesPerColumn = sheet.height / tileHeight;
+    int tilesPerRow = sheetBitmap.width / tileWidth;
+    int tilesPerColumn = sheetBitmap.height / tileHeight;
     int tileCount = tilesPerRow * tilesPerColumn;
     int pixelsPerTile = tileWidth * tileHeight;
 
@@ -102,8 +102,8 @@ BitmapBuffer* ConvertFromSheet(BitmapBuffer sheet,
         int tileCol = tileIdx % tilesPerRow;
 
         int tilePixelIndex =
-            (sheet.width * tileHeight) * tileRow + tileCol * tileWidth;
-        u32* tileStartPixel = (u32*)sheet.buffer;
+            (sheetBitmap.width * tileHeight) * tileRow + tileCol * tileWidth;
+        u32* tileStartPixel = (u32*)sheetBitmap.buffer;
         tileStartPixel += tilePixelIndex;
 
         u32* tilePixels = new u32[pixelsPerTile];
@@ -115,7 +115,7 @@ BitmapBuffer* ConvertFromSheet(BitmapBuffer sheet,
 
         for (int y = 0; y < tileHeight; y++)
         {
-            u32* pixelRow = tileStartPixel + (y * sheet.width);
+            u32* pixelRow = tileStartPixel + (y * sheetBitmap.width);
             for (int x = 0; x < tileWidth; x++)
             {
                 *tilePixels++ = *pixelRow++;
@@ -123,5 +123,16 @@ BitmapBuffer* ConvertFromSheet(BitmapBuffer sheet,
         }
     }
 
-    return bitmaps;
+    SpriteSheet sheet = {};
+    sheet.tiles = bitmaps;
+    sheet.loaded = true;
+    sheet.rows = tilesPerColumn;
+    sheet.columns = tilesPerRow;
+    sheet.image_width = sheetBitmap.width;
+    sheet.image_height = sheetBitmap.height;
+    sheet.tile_count = tileCount;
+    sheet.tile_width = tileWidth;
+    sheet.tile_height = tileHeight;
+
+    return sheet;
 }

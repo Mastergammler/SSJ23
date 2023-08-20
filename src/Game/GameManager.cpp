@@ -9,22 +9,8 @@ struct BitmapCache
     BitmapBuffer cursor_sprite = {};
     BitmapBuffer tile_highlight = {};
 
-    bool tiles_loaded = false;
-    bool ui_loaded = false;
-    BitmapBuffer* sheet = {};
-    BitmapBuffer* uiTiles = {};
-
-    void SetSheet(BitmapBuffer* sheet)
-    {
-        tiles_loaded = true;
-        this->sheet = sheet;
-    }
-
-    void SetUiSheet(BitmapBuffer* sheet)
-    {
-        ui_loaded = true;
-        uiTiles = sheet;
-    }
+    SpriteSheet ground = {};
+    SpriteSheet ui = {};
 };
 
 struct SoundCache
@@ -40,15 +26,15 @@ struct SoundCache
 // TODO: how to get the real execution path? and resource directories?
 // how to copy the stuff?
 global_var const string ABSOLUTE_RES_PATH = "I:/02 Areas/Dev/Cpp/SSJ23/res/";
-global_var BitmapCache bitmaps = {};
-global_var SoundCache audio = {};
-global_var Tilemap tileMap = {0, 0, 0};
-global_var TileSize TILE_SIZE = TileSize{.width = 16, .height = 16};
+global_var BitmapCache Bitmaps = {};
+global_var SoundCache Audio = {};
+global_var Tilemap TitleMap = {0, 0, 0};
+global_var Tile TileSize = Tile{.width = 16, .height = 16};
 
 void StartGame()
 {
     // TODO: better data structure solution for loading failed!
-    if (!bitmaps.tiles_loaded || !bitmaps.ui_loaded)
+    if (!Bitmaps.ground.loaded || !Bitmaps.ui.loaded)
     {
         Log("Unable to rendere because resources not loaded");
         //  TODO: Play elevator music / show error screen
@@ -57,7 +43,7 @@ void StartGame()
         PostQuitMessage(0);
     }
 
-    if (audio.music.loaded) { PlayAudioFile(&audio.music, true, 80); }
+    if (Audio.music.loaded) { PlayAudioFile(&Audio.music, true, 80); }
 }
 
 /**
@@ -73,52 +59,49 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
 
     BitmapBuffer bmp1 =
         LoadSprite(ABSOLUTE_RES_PATH + "Sprites/Cursor.bmp", hInstance, hdc);
-    if (bmp1.loaded) { bitmaps.cursor_sprite = bmp1; }
+    if (bmp1.loaded) { Bitmaps.cursor_sprite = bmp1; }
     BitmapBuffer bmp2 = LoadSprite(ABSOLUTE_RES_PATH + "Test/TileHighlight.bmp",
                                    hInstance,
                                    hdc);
-    if (bmp2.loaded) { bitmaps.tile_highlight = bmp2; }
+    if (bmp2.loaded) { Bitmaps.tile_highlight = bmp2; }
 
     BitmapBuffer tilesSheet =
         LoadSprite(ABSOLUTE_RES_PATH + "Sprites/Tiles_8x8.bmp", hInstance, hdc);
     if (tilesSheet.loaded)
     {
-        // TODO: tile size info
-        BitmapBuffer* tiles = ConvertFromSheet(tilesSheet, 16, 16);
-        bitmaps.SetSheet(tiles);
+        Bitmaps.ground =
+            ConvertFromSheet(tilesSheet, TileSize.width, TileSize.height);
     }
 
     BitmapBuffer uiSheet =
         LoadSprite(ABSOLUTE_RES_PATH + "Sprites/UI_8x8.bmp", hInstance, hdc);
     if (uiSheet.loaded)
     {
-        // TODO: tile size!!!!
-        BitmapBuffer* uiTiles = ConvertFromSheet(uiSheet, 16, 16);
-        bitmaps.SetUiSheet(uiTiles);
+        Bitmaps.ui = ConvertFromSheet(uiSheet, TileSize.width, TileSize.height);
     }
 
     Logf("  Sprites loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
     individualCounter.Update();
 
     WaveBuffer wave = LoadWaveFile(ABSOLUTE_RES_PATH + "Music/TitleTheme.wav");
-    if (wave.loaded) { audio.music = wave; }
+    if (wave.loaded) { Audio.music = wave; }
 
     // Sounds
     WaveBuffer clickLo =
         LoadWaveFile(ABSOLUTE_RES_PATH + "Sounds/Click-Lo.wav");
-    if (clickLo.loaded) { audio.click_lo = clickLo; }
+    if (clickLo.loaded) { Audio.click_lo = clickLo; }
     WaveBuffer clickHi =
         LoadWaveFile(ABSOLUTE_RES_PATH + "Sounds/Click-Hi.wav");
-    if (clickHi.loaded) { audio.click_hi = clickHi; }
+    if (clickHi.loaded) { Audio.click_hi = clickHi; }
     WaveBuffer popLo = LoadWaveFile(ABSOLUTE_RES_PATH + "Sounds/Pop-Lo.wav");
-    if (popLo.loaded) { audio.pop_lo = popLo; }
+    if (popLo.loaded) { Audio.pop_lo = popLo; }
     WaveBuffer popHi = LoadWaveFile(ABSOLUTE_RES_PATH + "Sounds/Pop-Hi.wav");
-    if (popHi.loaded) { audio.pop_hi = popHi; }
+    if (popHi.loaded) { Audio.pop_hi = popHi; }
 
     Logf("  Audio loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
     individualCounter.Update();
 
-    tileMap = LoadMap(ABSOLUTE_RES_PATH + "Test/Tilemap_15_20.map");
+    TitleMap = LoadMap(ABSOLUTE_RES_PATH + "Test/Tilemap_15_20.map");
 
     Logf("  Tilemap loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
     Logf("Resources loaded in %.2f ms", counter.CheckDeltaTimeMs());
@@ -132,6 +115,9 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
 //  -> Could work similarly well
 //  => I need a animation component!!!!
 
+// FIXME: this needs to be save somewhere
+bool drawPanel = false;
+
 /**
  * Called to update the information and buffer for the next frame
  */
@@ -141,33 +127,29 @@ void UpdateScreen(ScreenBuffer& buffer)
 
     // TODO: refactor this
     //  1.
-    //   - mouse state etc
     //   - what is the context im in (menu / game)
     //   - mouse collisions in order
     //  2. Then draw accordingly
     //   - layer by layer etc
     //   - according to states
 
-    // TODO: save tile sive somewhere else
-    int tileSize = 16;
-
-    int* tile = tileMap.idMap;
-    for (int y = 0; y < tileMap.rows; y++)
+    int* tile = TitleMap.idMap;
+    for (int y = 0; y < TitleMap.rows; y++)
     {
-        for (int x = 0; x < tileMap.columns; x++)
+        for (int x = 0; x < TitleMap.columns; x++)
         {
             int tileId = *tile++;
-            int tileIdx = y * tileMap.columns + x;
+            int tileIdx = y * TitleMap.columns + x;
             // TODO: use tile size
-            int tileX = x * tileSize;
-            int tileY = y * tileSize;
+            int tileX = x * TileSize.width;
+            int tileY = y * TileSize.height;
             if (tileId == 0)
             {
-                DrawBitmap(buffer, bitmaps.sheet[9], tileX, tileY);
+                DrawBitmap(buffer, Bitmaps.ground.tiles[9], tileX, tileY);
             }
             else if (tileId == 1)
             {
-                ContextTile tile = tileMap.context_tiles[tileIdx];
+                ContextTile tile = TitleMap.context_tiles[tileIdx];
 
                 TileState ts;
 
@@ -183,7 +165,10 @@ void UpdateScreen(ScreenBuffer& buffer)
                 }
 
                 int sheetIdx = PATH_MAP[ts];
-                DrawBitmap(buffer, bitmaps.sheet[sheetIdx], tileX, tileY);
+                DrawBitmap(buffer,
+                           Bitmaps.ground.tiles[sheetIdx],
+                           tileX,
+                           tileY);
             }
         }
     }
@@ -195,18 +180,15 @@ void UpdateScreen(ScreenBuffer& buffer)
     // draw button
     // TODO: state management for mouse and objects before the draws
 
-    int offset = tileSize / 2;
-    int buttonStartX = tileSize * (tileMap.columns - 3) + offset;
-    int buttonStartY = tileSize * (tileMap.rows - 2) + offset;
-    int buttonEndX = buttonStartX + 2 * tileSize;
-    int buttonEndY = buttonStartY + tileSize;
+    int offset = TileSize.width / 2;
+    int buttonStartX = TileSize.width * (TitleMap.columns - 3) + offset;
+    int buttonStartY = TileSize.height * (TitleMap.rows - 2) + offset;
+    int buttonEndX = buttonStartX + 2 * TileSize.width;
+    int buttonEndY = buttonStartY + TileSize.height;
 
     // Do i want to have a button struct that holds the position info?
     // Probably right? And also how to draw it?
     // Because else it's going to be hard to check against it's position
-
-    BitmapBuffer buttonLeft;
-    BitmapBuffer buttonRight;
 
     // NOTE: with this i can see i'm now getting into the real entity design
     // because now i need a system to check, what is below me
@@ -216,19 +198,18 @@ void UpdateScreen(ScreenBuffer& buffer)
     // - for ui
     // => And all in the right order
     // >>>> This will be the design challenge for next week!!! <<<<<<<
+
     bool mouseOverButton;
+    int sheetStartIdx;
     if (mouseState.x > buttonStartX && mouseState.x < buttonEndX &&
         mouseState.y > buttonStartY && mouseState.y < buttonEndY)
     {
-        buttonLeft = bitmaps.uiTiles[10];
-        buttonRight = bitmaps.uiTiles[11];
+        sheetStartIdx = 10;
         mouseOverButton = true;
     }
     else
     {
-
-        buttonLeft = bitmaps.uiTiles[8];
-        buttonRight = bitmaps.uiTiles[9];
+        sheetStartIdx = 8;
         mouseOverButton = false;
     }
 
@@ -236,45 +217,58 @@ void UpdateScreen(ScreenBuffer& buffer)
     if (mouseState.left_down && !mouseOverButton)
     {
         // TODO: tile size information system
-        int tileIdxX = mouseState.x / tileSize;
-        int tileIdxY = mouseState.y / tileSize;
+        int tileIdxX = mouseState.x / TileSize.width;
+        int tileIdxY = mouseState.y / TileSize.height;
 
-        int tileXStart = tileIdxX * tileSize;
-        int tileYStart = tileIdxY * tileSize;
+        int tileXStart = tileIdxX * TileSize.width;
+        int tileYStart = tileIdxY * TileSize.height;
 
-        int tileId = tileMap.GetTileId(mouseState.x, mouseState.y);
+        int tileId = TitleMap.GetTileId(mouseState.x, mouseState.y);
 
         // mockup for blocking placements on the way
         if (tileId == 0)
         {
-            DrawBitmap(buffer, bitmaps.uiTiles[0], tileXStart, tileYStart);
+            DrawBitmap(buffer, Bitmaps.ui.tiles[0], tileXStart, tileYStart);
         }
         else if (tileId == 1)
         {
-            DrawBitmap(buffer, bitmaps.uiTiles[2], tileXStart, tileYStart);
+            DrawBitmap(buffer, Bitmaps.ui.tiles[2], tileXStart, tileYStart);
         }
     }
 
-    // draw button stuff
-    DrawBitmap(buffer, buttonLeft, buttonStartX, buttonStartY);
-    DrawBitmap(buffer, buttonRight, buttonStartX + tileSize, buttonStartY);
+    DrawTiles(buffer,
+              buttonStartX,
+              buttonStartY,
+              Bitmaps.ui,
+              sheetStartIdx,
+              2,
+              1);
+
+    if (mouseState.left_clicked)
+    {
+        if (mouseOverButton) { drawPanel = !drawPanel; }
+
+        if (drawPanel)
+            PlayAudioFile(&Audio.click_hi, false, 90);
+        else
+            PlayAudioFile(&Audio.pop_lo, false, 90);
+    }
 
     if (mouseState.right_clicked)
     {
         if (mouseOverButton)
-            PlayAudioFile(&audio.click_hi, false, 90);
+            PlayAudioFile(&Audio.click_lo, false, 90);
         else
-            PlayAudioFile(&audio.pop_hi, false, 90);
+            PlayAudioFile(&Audio.pop_hi, false, 90);
     }
 
-    if (mouseState.left_clicked)
+    // this shows again, that the button state must be disconnected from the
+    // drawings
+    if (drawPanel)
     {
-        if (mouseOverButton)
-            PlayAudioFile(&audio.click_lo, false, 90);
-        else
-            PlayAudioFile(&audio.pop_lo, false, 90);
+        DrawPanel(buffer, (8 + 2 * 16), (8 + 4 * 16), Bitmaps.ui, 16, 8, 4);
     }
 
     // draw mouse
-    DrawBitmap(buffer, bitmaps.cursor_sprite, mouseState.x, mouseState.y, true);
+    DrawBitmap(buffer, Bitmaps.cursor_sprite, mouseState.x, mouseState.y, true);
 }
