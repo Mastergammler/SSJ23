@@ -28,8 +28,8 @@ int WinMain(HINSTANCE hInstance,
     while (running)
     {
         HandleMessages(window);
-        UpdateScreen(buffer);
-        RenderNextFrame(hdc, buffer, drawableScreen);
+        UpdateFrame(buffer);
+        RenderFrame(hdc, buffer, drawableScreen);
         WaitTillNextFrame(window, counter);
     }
 

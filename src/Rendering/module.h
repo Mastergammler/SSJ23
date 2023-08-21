@@ -30,4 +30,4 @@ void DrawPanel(ScreenBuffer& buffer,
                int startTilePos,
                int xTiles,
                int yTiles);
-void RenderNextFrame(HDC hdc, ScreenBuffer buffer, Dimension dim);
+void RenderFrame(HDC hdc, ScreenBuffer buffer, Dimension dim);

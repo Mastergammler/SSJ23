@@ -8,4 +8,4 @@
 #include "../utils.h"
 
 void InitGame(HINSTANCE hInstance, HDC hdc);
-void UpdateScreen(ScreenBuffer& buffer);
+void UpdateFrame(ScreenBuffer& buffer);

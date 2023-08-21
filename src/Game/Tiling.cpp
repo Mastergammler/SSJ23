@@ -3,7 +3,7 @@
 /**
  * Maps the tiles to the index of the tile sheet
  */
-map<TileState, int> PathMap = {
+map<TileEnv, int> pathMap = {
     // TODO: adjust single
     {SINGLE, 12},
     {MIDDLE, 6},

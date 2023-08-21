@@ -23,7 +23,7 @@ struct MouseState
  * Maps the adjacency state bit orders to a enum
  * Bit order: T L R B TL TR BL BR
  */
-enum TileState
+enum TileEnv
 {
     SINGLE = 0b00000000,
     MIDDLE = 0b11111111,
@@ -88,6 +88,7 @@ struct UiElement
 {
     bool visible;
     bool initialized;
+    bool hovered;
 
     int id;
 
@@ -100,9 +101,12 @@ struct UiElement
     int y_tiles;
 
     int layer;
+    // FIXME: this is not pretty how to do this better?
     int sprite_index;
+    int hover_sprite_index;
 
     UiType type;
+    Action on_click;
 };
 
 struct UiElementStorage
@@ -111,4 +115,11 @@ struct UiElementStorage
 
     int count;
     int size;
+};
+
+struct InteractionState
+{
+    bool show_crafting_panel;
+    bool show_tower_placement;
+    bool ui_focus;
 };

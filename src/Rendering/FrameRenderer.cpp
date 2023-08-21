@@ -1,6 +1,6 @@
 #include "module.h"
 
-function void RenderBuffer(HDC hdc, ScreenBuffer buffer, Dimension& windowDim)
+void RenderFrame(HDC hdc, ScreenBuffer buffer, Dimension dim)
 {
     // destination is where on the window im painting
     // source is where from the buffer im taking the stuff to paint
@@ -9,8 +9,8 @@ function void RenderBuffer(HDC hdc, ScreenBuffer buffer, Dimension& windowDim)
     StretchDIBits(hdc,
                   0,
                   0,
-                  windowDim.Width,
-                  windowDim.Height,
+                  dim.Width,
+                  dim.Height,
                   0,
                   0,
                   buffer.width,
@@ -19,13 +19,4 @@ function void RenderBuffer(HDC hdc, ScreenBuffer buffer, Dimension& windowDim)
                   &buffer.bitmap_info,
                   DIB_RGB_COLORS,
                   SRCCOPY);
-}
-
-void RenderNextFrame(HDC hdc, ScreenBuffer buffer, Dimension dim)
-{
-
-    // TODO: how to do the actual drawing?
-    // this has to be happening in the game stuff itself?
-    // DrawTiles(buffer, );
-    RenderBuffer(hdc, buffer, dim);
 }

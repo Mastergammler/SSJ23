@@ -20,14 +20,14 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
     if (tilesSheet.loaded)
     {
         cache.ground =
-            ConvertFromSheet(tilesSheet, TileSize.width, TileSize.height);
+            ConvertFromSheet(tilesSheet, tileSize.width, tileSize.height);
     }
 
     BitmapBuffer uiSheet =
         LoadSprite(ABSOLUTE_RES_PATH + "Sprites/UI_8x8.bmp", hInstance, hdc);
     if (uiSheet.loaded)
     {
-        cache.ui = ConvertFromSheet(uiSheet, TileSize.width, TileSize.height);
+        cache.ui = ConvertFromSheet(uiSheet, tileSize.width, tileSize.height);
     }
 
     BitmapBuffer charactersSheet =
@@ -37,7 +37,7 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
     if (charactersSheet.loaded)
     {
         cache.characters =
-            ConvertFromSheet(charactersSheet, TileSize.height, TileSize.width);
+            ConvertFromSheet(charactersSheet, tileSize.height, tileSize.width);
     }
 
     return cache;
