@@ -1,10 +1,9 @@
-#include "../types.h"
 #include "internal.h"
 
 /**
  * Maps the tiles to the index of the tile sheet
  */
-map<TileState, int> PATH_MAP = {
+map<TileState, int> PathMap = {
     // TODO: adjust single
     {SINGLE, 12},
     {MIDDLE, 6},

@@ -86,7 +86,7 @@ function void DrawTiles(ScreenBuffer& buffer, BitmapBuffer& bitmap)
 void DrawTiles(ScreenBuffer& buffer,
                int bufferStartX,
                int bufferStartY,
-               SpriteSheet sheet,
+               SpriteSheet& sheet,
                int startTileIdx,
                int xTiles,
                int yTiles)
@@ -160,8 +160,13 @@ void DrawBitmap(ScreenBuffer& buffer,
         // -1 because the original Y should be the first pixel
         // else it would draw below it
         bufferY -= (bitmap.height - 1);
-        if (bufferY < 0) bufferY = 0;
     }
+
+    if (bufferY >= buffer.height) return;
+    if (bufferX >= buffer.width) return;
+
+    if (bufferY < 0) bufferY = 0;
+    if (bufferX < 0) bufferX = 0;
 
     u32* bufferStart = (u32*)buffer.memory + bufferX + bufferY * buffer.width;
     u32* bitmapStart = (u32*)bitmap.buffer;
@@ -171,23 +176,22 @@ void DrawBitmap(ScreenBuffer& buffer,
 
     // calculate the clipping for tiles
     // else i run out of buffer memory
-    // not sure if the -1 is necessary
-    int tileBoundX = bufferX + bitmap.width - 1;
-    int tileBoundY = bufferY + bitmap.height - 1;
+    int tileXExc = bufferX + bitmap.width;
+    int tileYExc = bufferY + bitmap.height;
 
-    int clipXMax = tileBoundX > buffer.width
-                       ? bitmap.width - (tileBoundX - buffer.width)
+    int clipXExc = tileXExc > buffer.width
+                       ? bitmap.width - (tileXExc - buffer.width)
                        : bitmap.width;
 
-    int clipYMax = tileBoundY > buffer.height
-                       ? bitmap.height - (tileBoundY - buffer.height)
+    int clipYExc = tileYExc > buffer.height
+                       ? bitmap.height - (tileYExc - buffer.height)
                        : bitmap.height;
 
-    for (int y = 0; y < clipYMax; y++)
+    for (int y = 0; y < clipYExc; y++)
     {
         bufferPixel = bufferStart + y * buffer.width;
         bitmapPixel = bitmapStart + y * bitmap.width;
-        for (int x = 0; x < clipXMax; x++)
+        for (int x = 0; x < clipXExc; x++)
         {
             if (*bitmapPixel != TRANS_VALUE) *bufferPixel = *bitmapPixel;
             bufferPixel++;

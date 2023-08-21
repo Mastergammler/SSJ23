@@ -16,7 +16,7 @@ void DrawBitmap(ScreenBuffer& buffer,
 void DrawTiles(ScreenBuffer& buffer,
                int bufferStartX,
                int bufferStartY,
-               SpriteSheet sheet,
+               SpriteSheet& sheet,
                int startTileIdx,
                int xTiles,
                int yTiles);
