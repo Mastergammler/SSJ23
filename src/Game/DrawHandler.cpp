@@ -96,12 +96,7 @@ void DrawEntityLayer(ScreenBuffer buffer)
 
 void DrawUiLayer(ScreenBuffer buffer)
 {
-    RenderButtons(buffer, sprites.ui);
-
-    if (actionState.show_crafting_panel)
-    {
-        DrawPanel(buffer, (8 + 2 * 16), (8 + 4 * 16), sprites.ui, 16, 8, 4);
-    }
+    RenderUiElements(buffer, sprites.ui);
 
     // draw mouse
     DrawBitmap(buffer, sprites.cursor_sprite, mouseState.x, mouseState.y, true);

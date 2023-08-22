@@ -19,13 +19,15 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc);
 SoundCache LoadAudioFiles();
 Tilemap LoadMaps();
 
-void InitializeUi(int elementCount);
-int CreateButton(Tilemap& map,
-                 int mapX,
-                 int mapY,
-                 float offset,
-                 Action onClick);
-void RenderButtons(ScreenBuffer& buffer, SpriteSheet& sheet);
+void InitializeUi(int elementCount, int layers);
+int CreateButton(int mapX, int mapY, float offset, Action onClick);
+int CreatePanel(int tileX,
+                int tileY,
+                int xSize,
+                int ySize,
+                float offset,
+                bool visible);
+void RenderUiElements(ScreenBuffer& buffer, SpriteSheet& sheet);
 UiElement* FindHighestLayerCollision(int x, int y);
 
 void ProcessMouseActions();

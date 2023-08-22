@@ -18,22 +18,26 @@ void StartGame()
         PostQuitMessage(0);
     }
 
-    InitializeUi(8);
-    int btn1 = CreateButton(tileMap, 3, 2, 0.5, [] {
+    InitializeUi(8, 3);
+
+    actionState.crafting_panel_id = CreatePanel(2, 10, 8, 4, 0.5, false);
+
+    int btn1 = CreateButton(3, 2, 0.5, [] {
         PlayAudioFile(&audio.click_hi, false, 90);
         Action_ToggleCraftingPanel();
     });
 
-    int btn2 = CreateButton(tileMap, 5, 4, 0.5, [] {
+    int btn2 = CreateButton(5, 4, 0.5, [] {
         PlayAudioFile(&audio.click_lo, false, 90);
         Action_ToggleTowerPreview();
     });
-    int btn3 = CreateButton(tileMap, 8, 4, 0.5, [] {
+    int btn3 = CreateButton(8, 4, 0.5, [] {
         PlayAudioFile(&audio.pop_hi, false, 90);
     });
-    int btn4 = CreateButton(tileMap, 12, 2, 0.5, [] {
+    int btn4 = CreateButton(12, 2, 0.5, [] {
         PlayAudioFile(&audio.pop_lo, false, 90);
     });
+
     // if (Audio.music.loaded) { PlayAudioFile(&Audio.music, true, 80); }
 }
 

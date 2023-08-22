@@ -10,4 +10,6 @@ void Action_ToggleTowerPreview()
 void Action_ToggleCraftingPanel()
 {
     actionState.show_crafting_panel = !actionState.show_crafting_panel;
+    UiElement* panel = &storage.elements[actionState.crafting_panel_id];
+    panel->visible = actionState.show_crafting_panel;
 }

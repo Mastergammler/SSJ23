@@ -67,17 +67,6 @@ struct Tile
     int height;
 };
 
-struct Button
-{
-    int x_start;
-    int y_start;
-    int x_end;
-    int y_end;
-
-    int default_sheet_start_idx;
-    int hover_sheet_start_idx;
-};
-
 enum UiType
 {
     UI_SINGLE = 0x0,
@@ -115,6 +104,7 @@ struct UiElementStorage
 
     int count;
     int size;
+    int layer_count;
 };
 
 struct InteractionState
@@ -122,4 +112,6 @@ struct InteractionState
     bool show_crafting_panel;
     bool show_tower_placement;
     bool ui_focus;
+
+    int crafting_panel_id;
 };

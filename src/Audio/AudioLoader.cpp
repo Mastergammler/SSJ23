@@ -27,7 +27,7 @@ WaveBuffer LoadWaveFile(string path)
         return WaveBuffer{};
     }
 
-    Logf("Processing Audio File: %s", path.c_str());
+    // Logf("Processing Audio File: %s", path.c_str());
 
     fread_s(&magic, sizeof(magic), sizeof(char), 4, file);
     if (!EqualMagicBytes(magic, "RIFF")) { Log("Magic should equal riff"); }
@@ -61,7 +61,7 @@ WaveBuffer LoadWaveFile(string path)
     fread_s(&magic, sizeof(magic), sizeof(char), 4, file);
     if (EqualMagicBytes(magic, "bext"))
     {
-        Log("Wave includes BWF headers. Headers skipped");
+        // Log("Wave includes BWF headers. Headers skipped");
         DWORD id;
         int size;
 
@@ -78,6 +78,7 @@ WaveBuffer LoadWaveFile(string path)
     // find data tag
     int bextByteCount = 0;
     char nextByte = ' ';
+    // FIXME: load error, when there is a d in the bext section
     while (nextByte != 'd')
     {
         bextByteCount++;
