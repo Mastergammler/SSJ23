@@ -30,7 +30,7 @@ int WinMain(HINSTANCE hInstance,
         HandleMessages(window);
         UpdateFrame(buffer);
         RenderFrame(hdc, buffer, drawableScreen);
-        WaitTillNextFrame(window, counter);
+        WaitTillNextFrame(window, measure);
     }
 
     timeEndPeriod(1);

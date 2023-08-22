@@ -130,6 +130,7 @@ struct SpriteCache
 {
     Sprite tower_a;
     Sprite tower_b;
+    Sprite enemy_a;
 };
 
 /**

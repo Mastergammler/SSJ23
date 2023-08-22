@@ -72,21 +72,29 @@ void DrawTilemap(ScreenBuffer& buffer, SpriteSheet& sheet)
         if (tileId == 0) { sheetIdx = 9; }
         else if (tileId == 1)
         {
-            Tile tile = tileMap.tiles[tileIdx];
             TileEnv ts;
 
             // is special case - for inner corners
-            if (tile.adjacent > 0b11110000) { ts = (TileEnv)tile.adjacent; }
+            if (cur.adjacent > 0b11110000) { ts = (TileEnv)cur.adjacent; }
             else
             {
                 // only compare the first 4 bits
-                ts = (TileEnv)(tile.adjacent & 0b11110000);
+                ts = (TileEnv)(cur.adjacent & 0b11110000);
             }
 
             sheetIdx = pathMap[ts];
         }
 
         DrawBitmap(buffer, sheet.tiles[sheetIdx], drawX, drawY);
+
+        if (cur.is_start)
+        {
+            DrawBitmap(buffer, bitmaps.ui.tiles[3], drawX, drawY);
+        }
+        else if (cur.is_end)
+        {
+            DrawBitmap(buffer, bitmaps.ui.tiles[4], drawX, drawY);
+        }
     }
 }
 

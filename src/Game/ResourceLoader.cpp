@@ -93,6 +93,7 @@ void DetermineAdjacents(TileMap map, int tileIndex)
 const char SPAWN_VALUE = 's';
 const char TARGET_VALUE = 't';
 const int PATH_TILE_ID = 1;
+const int ASCII_LETTER_OFFSET = 32;
 
 TileMap LoadMaps()
 {
@@ -113,12 +114,14 @@ TileMap LoadMaps()
             tile.y = row;
 
             // start and end are on the path as well
-            if (val == SPAWN_VALUE)
+            if (val == SPAWN_VALUE ||
+                val == (SPAWN_VALUE - ASCII_LETTER_OFFSET))
             {
                 tile.is_start = true;
                 tile.tile_id = PATH_TILE_ID;
             }
-            else if (val == TARGET_VALUE)
+            else if (val == TARGET_VALUE ||
+                     val == (TARGET_VALUE - ASCII_LETTER_OFFSET))
             {
                 tile.is_end = true;
                 tile.tile_id = PATH_TILE_ID;

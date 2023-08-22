@@ -21,6 +21,7 @@ extern MouseState mouseState;
 extern UiElementStorage uiElements;
 extern EntityStore entities;
 extern TowerStore towers;
+extern EnemyStore enemies;
 
 void UpdateMouseState();
 
@@ -42,5 +43,8 @@ void DrawEntityLayer(ScreenBuffer buffer);
 void DrawUiLayer(ScreenBuffer buffer);
 
 int CreateTowerEntity(int x, int y, Sprite sprite);
+int CreateEnemyEntity(int x, int y, Sprite sprite, Direction direction);
+void MoveEnemies();
+
 void InitializeEntities(int storeCount);
 void RenderEntities(ScreenBuffer buffer);

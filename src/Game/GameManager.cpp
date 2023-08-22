@@ -25,6 +25,11 @@ void StartGame()
     // TODO: TMP
     sprites.tower_a = Sprite{1, 2, 0, &bitmaps.characters};
     sprites.tower_b = Sprite{1, 2, 1, &bitmaps.characters};
+    sprites.enemy_a = Sprite{1, 1, 24, &bitmaps.characters};
+
+    CreateEnemyEntity(100, 200, sprites.enemy_a, WEST);
+    CreateEnemyEntity(132, 200, sprites.enemy_a, SOUTH);
+    CreateEnemyEntity(100, 150, sprites.enemy_a, WEST);
 
     // if (Audio.music.loaded) { PlayAudioFile(&Audio.music, true, 80); }
 }
@@ -38,7 +43,7 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     FpsCounter individualCounter = {};
     Log("Start Loading Resources");
 
-    counter.Update();
+    measure.Update();
     individualCounter.Update();
     bitmaps = LoadSprites(hInstance, hdc);
     Logf("  Sprites loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
@@ -51,7 +56,7 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     tileMap = LoadMaps();
     Logf("  Tilemap loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
 
-    Logf("Resources loaded in %.2f ms", counter.CheckDeltaTimeMs());
+    Logf("Resources loaded in %.2f ms", measure.CheckDeltaTimeMs());
 
     StartGame();
 }
@@ -69,6 +74,8 @@ void UpdateFrame(ScreenBuffer& buffer)
 {
     UpdateMouseState();
     ProcessMouseActions();
+
+    MoveEnemies();
 
     DrawGroundLayer(buffer);
     DrawEntityLayer(buffer);

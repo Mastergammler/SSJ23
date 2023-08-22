@@ -39,6 +39,13 @@ struct Entity
      */
     int y;
 
+    /**
+     * Coordinates for movement calculation
+     * Because they are to tiny for pixel movements
+     */
+    float move_x;
+    float move_y;
+
     int component_mask;
 
     Sprite sprite;
@@ -74,6 +81,23 @@ struct Tower
 struct TowerStore
 {
     Tower* units;
+    int unit_count;
+    int size;
+};
+
+struct Enemy
+{
+    bool initialized;
+
+    int entity_id;
+    int storage_id;
+
+    int speed;
+};
+
+struct EnemyStore
+{
+    Enemy* units;
     int unit_count;
     int size;
 };
