@@ -21,12 +21,20 @@ void WaitTillNextFrame(HWND window, FpsCounter& timer)
 {
     timer.Update();
 
-    float frameTimeMs = timer.delta_time * 1000.;
+    float frameTimeMs = timer.delta_time * 1000;
+    float maxTimeMs = timer.delta_max * 1000;
+    float minTimeMs = timer.delta_min * 1000;
 
     if (timer.ShowValue())
     {
         std::stringstream ss;
-        ss << timer.fps << " FPS | " << frameTimeMs << " ms/f";
+        ss << setprecision(3) << timer.fps << " FPS - " << frameTimeMs
+           << " ms/f";
+
+        // NOTE: this dosn't work correctly, because if you touch the window
+        //  then the min gets to 0 so it is not repsective of the actual value
+        //<< " | (" << timer.fps_min << " | " << timer.fps_max << " ) Fps - ("
+        //<< minTimeMs << " | " << maxTimeMs << ") ms/f";
         std::string title = ss.str();
         SetWindowText(window, title.c_str());
     }

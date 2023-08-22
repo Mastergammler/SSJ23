@@ -1,39 +1,46 @@
 #pragma once
 
+#include "entity.h"
 #include "module.h"
-#include "types.h"
 
-extern map<TileEnv, int> pathMap;
-extern MouseState mouseState;
-extern Tile tileSize;
-extern UiElementStorage storage;
-extern InteractionState actionState;
-extern BitmapCache sprites;
+// Resource cache
+extern BitmapCache bitmaps;
 extern SoundCache audio;
-extern Tilemap tileMap;
-extern Tile tileSize;
+extern SpriteCache sprites;
+
+// Definitions
+extern map<TileEnv, int> pathMap;
+extern TileSize tileSize;
+extern TileMap tileMap;
+
+// State tracking
+extern UiState ui;
+extern MouseState mouseState;
+
+// Stores
+extern UiElementStorage uiElements;
+extern EntityStore entities;
+extern TowerStore towers;
 
 void UpdateMouseState();
 
 BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc);
 SoundCache LoadAudioFiles();
-Tilemap LoadMaps();
+TileMap LoadMaps();
 
 void InitializeUi(int elementCount, int layers);
-int CreateButton(int mapX, int mapY, float offset, Action onClick);
-int CreatePanel(int tileX,
-                int tileY,
-                int xSize,
-                int ySize,
-                float offset,
-                bool visible);
 void RenderUiElements(ScreenBuffer& buffer, SpriteSheet& sheet);
 UiElement* FindHighestLayerCollision(int x, int y);
 
 void ProcessMouseActions();
 void Action_ToggleTowerPreview();
 void Action_ToggleCraftingPanel();
+void Action_PlaceTower();
 
 void DrawGroundLayer(ScreenBuffer buffer);
 void DrawEntityLayer(ScreenBuffer buffer);
 void DrawUiLayer(ScreenBuffer buffer);
+
+int CreateTowerEntity(int x, int y, Sprite sprite);
+void InitializeEntities(int storeCount);
+void RenderEntities(ScreenBuffer buffer);

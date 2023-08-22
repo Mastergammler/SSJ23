@@ -1,15 +1,16 @@
 #include "internal.h"
 #include "module.h"
 
-BitmapCache sprites = {};
-SoundCache audio = {};
-Tilemap tileMap = {0, 0, 0};
-Tile tileSize = Tile{.width = 16, .height = 16};
+BitmapCache bitmaps;
+SoundCache audio;
+SpriteCache sprites;
+TileMap tileMap;
+TileSize tileSize = TileSize{.width = 16, .height = 16};
 
 void StartGame()
 {
     // TODO: better data structure solution for loading failed!
-    if (!sprites.ground.loaded || !sprites.ui.loaded)
+    if (!bitmaps.ground.loaded || !bitmaps.ui.loaded)
     {
         Log("Unable to rendere because resources not loaded");
         //  TODO: Play elevator music / show error screen
@@ -19,24 +20,10 @@ void StartGame()
     }
 
     InitializeUi(8, 3);
+    InitializeEntities(tileMap.rows * tileMap.columns);
 
-    actionState.crafting_panel_id = CreatePanel(2, 10, 8, 4, 0.5, false);
-
-    int btn1 = CreateButton(3, 2, 0.5, [] {
-        PlayAudioFile(&audio.click_hi, false, 90);
-        Action_ToggleCraftingPanel();
-    });
-
-    int btn2 = CreateButton(5, 4, 0.5, [] {
-        PlayAudioFile(&audio.click_lo, false, 90);
-        Action_ToggleTowerPreview();
-    });
-    int btn3 = CreateButton(8, 4, 0.5, [] {
-        PlayAudioFile(&audio.pop_hi, false, 90);
-    });
-    int btn4 = CreateButton(12, 2, 0.5, [] {
-        PlayAudioFile(&audio.pop_lo, false, 90);
-    });
+    sprites.tower_a = Sprite{1, 2, 0, &bitmaps.characters};
+    sprites.tower_b = Sprite{1, 2, 1, &bitmaps.characters};
 
     // if (Audio.music.loaded) { PlayAudioFile(&Audio.music, true, 80); }
 }
@@ -49,22 +36,20 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
 {
     FpsCounter individualCounter = {};
     Log("Start Loading Resources");
+
     counter.Update();
     individualCounter.Update();
-
-    sprites = LoadSprites(hInstance, hdc);
-
+    bitmaps = LoadSprites(hInstance, hdc);
     Logf("  Sprites loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
-    individualCounter.Update();
 
+    individualCounter.Update();
     audio = LoadAudioFiles();
-
     Logf("  Audio loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
+
     individualCounter.Update();
-
     tileMap = LoadMaps();
-
     Logf("  Tilemap loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
+
     Logf("Resources loaded in %.2f ms", counter.CheckDeltaTimeMs());
 
     StartGame();

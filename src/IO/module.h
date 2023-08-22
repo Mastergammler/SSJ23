@@ -8,18 +8,18 @@
 
 struct BitmapBuffer
 {
-    BITMAP bitmap;
-
-    /**
-     * Buffer of u32 pixel values
-     */
-    void* buffer;
     bool loaded;
 
     int width;
     int height;
 
-    BitmapBuffer() { this->loaded = false; }
+    /**
+     * Buffer of u32 pixel values
+     */
+    void* buffer;
+    BITMAP bitmap;
+
+    BitmapBuffer() { loaded = false; }
 
     BitmapBuffer(BITMAP bitmap, void* pixels)
     {
@@ -44,10 +44,10 @@ struct BitmapBuffer
      */
     void FixChannelOrder()
     {
-        if (!this->loaded) return;
+        if (!loaded) return;
 
-        u8* pixelBytes = (u8*)this->buffer;
-        for (int i = 0; i < this->width * this->height; i++)
+        u8* pixelBytes = (u8*)buffer;
+        for (int i = 0; i < width * height; i++)
         {
             u8 c0 = pixelBytes[0]; // blue
             u8 c1 = pixelBytes[1]; // green
@@ -63,9 +63,20 @@ struct BitmapBuffer
     }
 };
 
+struct TileMapRaw
+{
+    bool loaded;
+
+    int rows;
+    int columns;
+
+    char* data;
+};
+
 struct SpriteSheet
 {
-    BitmapBuffer* tiles;
+    bool loaded;
+
     int tile_width;
     int tile_height;
     int image_width;
@@ -73,9 +84,10 @@ struct SpriteSheet
     int rows;
     int columns;
     int tile_count;
-    bool loaded;
+
+    BitmapBuffer* tiles;
 };
 
-Tilemap LoadMap(string filePath);
+TileMapRaw LoadMap(string filePath);
 BitmapBuffer LoadSprite(string path, HINSTANCE hInstance, HDC hdc);
 SpriteSheet ConvertFromSheet(BitmapBuffer sheet, int tileWidth, int tileHeight);

@@ -25,23 +25,24 @@ void CheckFile(ifstream& file, string path)
     }
 }
 
-Tilemap LoadMap(string filePath)
+TileMapRaw LoadMap(string filePath)
 {
     ifstream mapFile(filePath);
     CheckFile(mapFile, filePath);
 
     int rows, columns;
-    int mapValue;
+    char mapValue;
 
     if (!(mapFile >> rows >> columns))
     {
         Log("Invalid file format. Expecting row column definition at the "
             "beginning!");
-        return Tilemap{0, 0, 0};
+
+        return TileMapRaw{};
     }
 
-    int* values = new int[rows * columns];
-    int* currentValue = values;
+    char* values = new char[rows * columns];
+    char* currentValue = values;
 
     for (int y = 0; y < rows; y++)
     {
@@ -49,25 +50,19 @@ Tilemap LoadMap(string filePath)
         {
             if (!(mapFile >> mapValue))
             {
-                char text[256];
-                sprintf(text,
-                        "Expected to find value for (%d,%d), but was "
-                        "missing in the map! Expecting %d rows and %d columns",
-                        x,
-                        y,
-                        rows,
-                        columns);
-                Log(text);
+                Logf("Expected to find value for (%d,%d), but was missing in "
+                     "the map! Expecting %d rows and %d columns",
+                     x,
+                     y,
+                     rows,
+                     columns);
             }
 
             *currentValue++ = mapValue;
         }
     }
 
-    // FIXME: need to get tile size info from somewhere
-    Tilemap map = {rows, columns, 16};
-    map.AssignMap(values);
-    return map;
+    return TileMapRaw{true, rows, columns, values};
 }
 
 vector<PlayerData> LoadFile(string filePath)

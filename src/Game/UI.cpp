@@ -1,34 +1,83 @@
 #include "internal.h"
 
-UiElementStorage storage;
+UiElementStorage uiElements;
 UiElement NullElement = {.visible = false,
                          .initialized = false,
                          .id = -1,
                          .layer = -1,
                          .on_click = [] {}};
 
+int CreateButton(int mapX,
+                 int mapY,
+                 float offset,
+                 Action onClick,
+                 bool visible);
+int CreatePanel(int tileX,
+                int tileY,
+                int xSize,
+                int ySize,
+                float offset,
+                bool visible);
+
 /**
  * Initializes the storage, allocates the memory and initializes it to 0
+ *
+ * Creates the UI elements that are currently used
  */
 void InitializeUi(int uiElementCount, int layers)
 {
-    storage.size = uiElementCount;
-    storage.layer_count = layers;
-    storage.elements = new UiElement[uiElementCount];
-    memset(storage.elements, 0, sizeof(UiElement) * storage.size);
+    uiElements.size = uiElementCount;
+    uiElements.layer_count = layers;
+    uiElements.elements = new UiElement[uiElementCount];
+    memset(uiElements.elements, 0, sizeof(UiElement) * uiElements.size);
+
+    ui.crafting_panel_id = CreatePanel(2, 10, 8, 4, 0.5, false);
+
+    int btn1 = CreateButton(
+        3,
+        2,
+        0.5,
+        [] {
+            PlayAudioFile(&audio.click_hi, false, 90);
+            Action_ToggleCraftingPanel();
+        },
+        true);
+
+    int btn2 = CreateButton(
+        5,
+        4,
+        0.5,
+        [] {
+            PlayAudioFile(&audio.click_lo, false, 90);
+            Action_ToggleTowerPreview();
+        },
+        false);
+    int btn3 = CreateButton(
+        8,
+        4,
+        0.5,
+        [] { PlayAudioFile(&audio.pop_hi, false, 90); },
+        false);
+    int btn4 = CreateButton(
+        12,
+        2,
+        0.5,
+        [] { PlayAudioFile(&audio.pop_lo, false, 90); },
+        false);
 }
 
 // TODO: these are hardcoded initializers now
 //  dunno what would be a better way, apart from just recreating the whole
 //  struct or putting hundreds of thing in there maybe some layout default? ->
 //  but i think this is good enough for now
+//  - Working with relative positions (also not to mess it up on map change)
 
-int CreateButton(int mapX, int mapY, float offset, Action onClick)
+int CreateButton(int mapX, int mapY, float offset, Action onClick, bool visible)
 {
-    assert(storage.count < storage.size);
+    assert(uiElements.count < uiElements.size);
 
-    int id = storage.count++;
-    UiElement* button = &storage.elements[id];
+    int id = uiElements.count++;
+    UiElement* button = &uiElements.elements[id];
     int offsetPixel = tileSize.width * offset;
 
     button->id = id;
@@ -40,7 +89,7 @@ int CreateButton(int mapX, int mapY, float offset, Action onClick)
     button->y_start = tileSize.height * (tileMap.rows - mapY) + offsetPixel;
     button->x_end = button->x_start + button->x_tiles * tileSize.width;
     button->y_end = button->y_start + button->y_tiles * tileSize.height;
-    button->visible = true;
+    button->visible = visible;
 
     button->type = UI_SINGLE;
     button->sprite_index = 8;
@@ -59,10 +108,10 @@ int CreatePanel(int tileX,
                 float offset,
                 bool visible)
 {
-    assert(storage.count < storage.size);
+    assert(uiElements.count < uiElements.size);
 
-    int id = storage.count++;
-    UiElement* button = &storage.elements[id];
+    int id = uiElements.count++;
+    UiElement* button = &uiElements.elements[id];
     int offsetPixel = tileSize.width * offset;
 
     button->id = id;
@@ -91,9 +140,13 @@ void ProcessMouseActions()
     UiElement* hovered = FindHighestLayerCollision(mouseState.x, mouseState.y);
     // TODO: kinda ugly, not a good solution
     hovered->hovered = true;
-    actionState.ui_focus = hovered->id != -1;
+    ui.ui_focus = hovered->id != -1;
 
-    if (mouseState.left_clicked) { hovered->on_click(); }
+    if (mouseState.left_clicked)
+    {
+        hovered->on_click();
+        Action_PlaceTower();
+    }
     if (mouseState.right_clicked) { Action_ToggleTowerPreview(); }
 }
 
@@ -103,11 +156,11 @@ void ProcessMouseActions()
 
 void RenderUiElements(ScreenBuffer& buffer, SpriteSheet& sheet)
 {
-    for (int l = 0; l < storage.layer_count; ++l)
+    for (int l = 0; l < uiElements.layer_count; ++l)
     {
-        for (int i = 0; i < storage.count; ++i)
+        for (int i = 0; i < uiElements.count; ++i)
         {
-            UiElement* cur = &storage.elements[i];
+            UiElement* cur = &uiElements.elements[i];
             if (!cur->visible || cur->layer != l) continue;
 
             if (cur->type == UI_PANEL)
@@ -141,9 +194,9 @@ void RenderUiElements(ScreenBuffer& buffer, SpriteSheet& sheet)
 UiElement* FindHighestLayerCollision(int x, int y)
 {
     UiElement* foundElement = &NullElement;
-    for (int i = 0; i < storage.count; ++i)
+    for (int i = 0; i < uiElements.count; ++i)
     {
-        UiElement* cur = &storage.elements[i];
+        UiElement* cur = &uiElements.elements[i];
         if (cur->visible)
         {
             if (cur->x_start <= x && cur->x_end >= x && cur->y_start <= y &&

@@ -26,6 +26,8 @@ model {
                 cppCompiler.args '-std=c++20'
                 cppCompiler.args '-g'
                 cppCompiler.args '-Werror=return-type'
+                cppCompiler.args '-Wall'
+                cppCompiler.args '-Wpedantic'
                 linker.args '-luser32'
                 linker.args '-lgdi32'
                 linker.args '-lwinmm'

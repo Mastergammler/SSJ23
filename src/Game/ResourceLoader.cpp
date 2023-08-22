@@ -65,7 +65,84 @@ SoundCache LoadAudioFiles()
     return cache;
 }
 
-Tilemap LoadMaps()
+void DetermineAdjacents(TileMap map, int tileIndex)
 {
-    return LoadMap(ABSOLUTE_RES_PATH + "Test/Tilemap_15_20.map");
+    bool left = map.IsSameHor(tileIndex, tileIndex - 1);
+    bool right = map.IsSameHor(tileIndex, tileIndex + 1);
+    bool top = map.IsSameVert(tileIndex, tileIndex + map.columns);
+    bool bot = map.IsSameVert(tileIndex, tileIndex - map.columns);
+    bool tl = map.IsSameBoth(tileIndex, tileIndex + map.columns - 1);
+    bool tr = map.IsSameBoth(tileIndex, tileIndex + map.columns + 1);
+    bool bl = map.IsSameBoth(tileIndex, tileIndex - map.columns - 1);
+    bool br = map.IsSameBoth(tileIndex, tileIndex - map.columns + 1);
+
+    BYTE adjacents = (top << 7) | (left << 6) | (right << 5) | (bot << 4) |
+                     (tl << 3) | (tr << 2) | (bl << 1) | (br << 0);
+
+    int id = map.tiles[tileIndex].tile_id;
+
+    if (id == 5)
+    {
+        // cout << "Adjacents for tile: " << idx << "(" << id << ") is "
+        //     << bitset<8>(adjacents) << endl;
+    }
+
+    // TODO: is this correct or do i need to dereference?
+    // -> should be
+    map.tiles[tileIndex].adjacent = adjacents;
+}
+
+const char SPAWN_VALUE = 's';
+const char TARGET_VALUE = 't';
+const int PATH_TILE_ID = 1;
+
+TileMap LoadMaps()
+{
+    TileMapRaw rawMap = LoadMap(ABSOLUTE_RES_PATH + "Test/Tilemap_15_20.map");
+
+    Tile* tiles = new Tile[rawMap.rows * rawMap.columns];
+    Tile* tmp = tiles;
+
+    char* values = rawMap.data;
+    for (int row = 0; row < rawMap.rows; row++)
+    {
+        for (int col = 0; col < rawMap.columns; col++)
+        {
+            Tile tile = Tile{};
+            char val = *values++;
+
+            // start and end are on the path as well
+            if (val == SPAWN_VALUE)
+            {
+                tile.is_start = true;
+                tile.tile_id = PATH_TILE_ID;
+            }
+            else if (val == TARGET_VALUE)
+            {
+                tile.is_end = true;
+                tile.tile_id = PATH_TILE_ID;
+            }
+            else
+            {
+                // calculating ascii offset
+                tile.tile_id = val - '0';
+            }
+
+            *tmp++ = tile;
+        }
+    }
+
+    TileMap map = {};
+    map.columns = rawMap.columns;
+    map.rows = rawMap.rows;
+    map.tile_size = tileSize;
+    map.tile_count = map.columns * map.rows;
+    map.tiles = tiles;
+
+    for (int i = 0; i < map.rows * map.columns; i++)
+    {
+        DetermineAdjacents(map, i);
+    }
+
+    return map;
 }

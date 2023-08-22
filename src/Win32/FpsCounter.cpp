@@ -2,7 +2,12 @@
 
 struct FpsCounter
 {
+    int warmup_iterations = 60;
+    int current_iteration;
+
     int fps;
+    int fps_min = 10000;
+    int fps_max = 0;
 
     /**
      * Time since the last update call
@@ -10,6 +15,9 @@ struct FpsCounter
      * Delta time is in seconds?
      */
     float delta_time;
+
+    float delta_min = 10000;
+    float delta_max = 0;
 
     // TODO:  i would think this should be in microseconds as well
     //  but maybe i'm mistaken, because this seems to work correctly
@@ -40,6 +48,15 @@ struct FpsCounter
         last_time = current_time;
         fps = 1 / delta_time;
         time_counter += delta_time;
+
+        if (current_iteration > warmup_iterations)
+        {
+            fps_max = fps > fps_max ? fps : fps_max;
+            fps_min = fps < fps_min ? fps : fps_min;
+            delta_max = delta_time > delta_max ? delta_time : delta_max;
+            delta_min = delta_time < delta_min ? delta_time : delta_min;
+        }
+        else { current_iteration++; }
     }
 
     float CheckDeltaTimeMs()

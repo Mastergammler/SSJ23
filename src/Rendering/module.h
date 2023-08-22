@@ -13,6 +13,7 @@ void DrawBitmap(ScreenBuffer& buffer,
                 int bufferX,
                 int bufferY,
                 bool topDown = false);
+// TODO: refactor to use sprite type
 void DrawTiles(ScreenBuffer& buffer,
                int bufferStartX,
                int bufferStartY,
@@ -23,6 +24,7 @@ void DrawTiles(ScreenBuffer& buffer,
 // difference is it assumes a 3x3 Tile template
 // and is able to fill the screen if it is wider
 // by reusing tiles from the 3x3 tile template
+// TODO: refactor to use sprite type
 void DrawPanel(ScreenBuffer& buffer,
                int bufferStartX,
                int bufferStartY,
