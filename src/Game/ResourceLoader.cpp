@@ -67,14 +67,14 @@ SoundCache LoadAudioFiles()
 
 void DetermineAdjacents(TileMap map, int tileIndex)
 {
-    bool left = map.IsSameHor(tileIndex, tileIndex - 1);
-    bool right = map.IsSameHor(tileIndex, tileIndex + 1);
-    bool top = map.IsSameVert(tileIndex, tileIndex + map.columns);
-    bool bot = map.IsSameVert(tileIndex, tileIndex - map.columns);
-    bool tl = map.IsSameBoth(tileIndex, tileIndex + map.columns - 1);
-    bool tr = map.IsSameBoth(tileIndex, tileIndex + map.columns + 1);
-    bool bl = map.IsSameBoth(tileIndex, tileIndex - map.columns - 1);
-    bool br = map.IsSameBoth(tileIndex, tileIndex - map.columns + 1);
+    bool left = map.sameHorizontally(tileIndex, tileIndex - 1);
+    bool right = map.sameHorizontally(tileIndex, tileIndex + 1);
+    bool top = map.sameVertically(tileIndex, tileIndex - map.columns);
+    bool bot = map.sameVertically(tileIndex, tileIndex + map.columns);
+    bool tl = map.areSameAllDir(tileIndex, tileIndex - map.columns - 1);
+    bool tr = map.areSameAllDir(tileIndex, tileIndex - map.columns + 1);
+    bool bl = map.areSameAllDir(tileIndex, tileIndex + map.columns - 1);
+    bool br = map.areSameAllDir(tileIndex, tileIndex + map.columns + 1);
 
     BYTE adjacents = (top << 7) | (left << 6) | (right << 5) | (bot << 4) |
                      (tl << 3) | (tr << 2) | (bl << 1) | (br << 0);
@@ -83,12 +83,10 @@ void DetermineAdjacents(TileMap map, int tileIndex)
 
     if (id == 5)
     {
-        // cout << "Adjacents for tile: " << idx << "(" << id << ") is "
-        //     << bitset<8>(adjacents) << endl;
+        cout << "Adjacents for tile: " << tileIndex << "(" << id << ") is "
+             << bitset<8>(adjacents) << endl;
     }
 
-    // TODO: is this correct or do i need to dereference?
-    // -> should be
     map.tiles[tileIndex].adjacent = adjacents;
 }
 
@@ -110,6 +108,9 @@ TileMap LoadMaps()
         {
             Tile tile = Tile{};
             char val = *values++;
+
+            tile.x = col;
+            tile.y = row;
 
             // start and end are on the path as well
             if (val == SPAWN_VALUE)

@@ -141,6 +141,18 @@ struct Tile
 {
     bool is_occupied;
 
+    /**
+     * Tilemap x pos
+     * NOT a pixel position
+     */
+    int x;
+
+    /**
+     * TileMap y pos - anchor TOP
+     * NOT a pixel position
+     */
+    int y;
+
     int tile_id;
     int is_start;
     int is_end;
@@ -165,42 +177,42 @@ struct TileMap
      */
     Tile* tiles;
 
-    bool IsSameHor(int tileIdx, int otherIdx)
+    bool sameHorizontally(int tileIdx, int otherIdx)
     {
         // of not same row, means we're at either boundary
-        if (TileRowOf(tileIdx) == TileRowOf(otherIdx))
+        if (tileRowOf(tileIdx) == tileRowOf(otherIdx))
         {
-            return SameTile(tileIdx, otherIdx);
+            return areSame(tileIdx, otherIdx);
         }
 
         // Boundry case
         return BOUNDARY_DEFAULT;
     }
 
-    bool IsSameVert(int tileIdx, int otherIdx)
+    bool sameVertically(int tileIdx, int otherIdx)
     {
-        int tileRow = TileRowOf(tileIdx);
-        int otherRow = TileRowOf(otherIdx);
+        int tileRow = tileRowOf(tileIdx);
+        int otherRow = tileRowOf(otherIdx);
 
         if (tileRow == 0 && otherRow < tileRow) return BOUNDARY_DEFAULT;
         if (tileRow == rows - 1 && otherRow > tileRow) return BOUNDARY_DEFAULT;
 
-        return SameTile(tileIdx, otherIdx);
+        return areSame(tileIdx, otherIdx);
     }
 
     // difference - row has to be different!
     // but only difference of one
-    bool IsSameBoth(int tileIdx, int otherIdx)
+    bool areSameAllDir(int tileIdx, int otherIdx)
     {
-        int diff = TileRowOf(tileIdx) - TileRowOf(otherIdx);
+        int diff = tileRowOf(tileIdx) - tileRowOf(otherIdx);
         int normalized = abs(diff);
 
         // it has to be one row above or below the current row
         if (normalized != 1) return BOUNDARY_DEFAULT;
-        return IsSameVert(tileIdx, otherIdx);
+        return sameVertically(tileIdx, otherIdx);
     }
 
-    bool SameTile(int tileIdx, int otherIdx)
+    bool areSame(int tileIdx, int otherIdx)
     {
         if (otherIdx < 0) return BOUNDARY_DEFAULT;
         assert(tileIdx >= 0 && "Tile index must be grater than 0");
@@ -211,20 +223,36 @@ struct TileMap
         return thisTileId == otherTileId;
     }
 
-    int TileRowOf(int idx)
+    int tileRowOf(int idx)
     {
         if (idx < 0) return -1;
 
         return idx / columns;
     }
 
-    int GetTileId(int screenX, int screenY)
+    int tileIdOf(int x, int y, bool yBottomUp = true)
     {
-        int tileX = screenX / tile_size.width;
-        int tileY = screenY / tile_size.height;
+        int tileX = x / tile_size.width;
+        int tileY = y / tile_size.height;
 
         int tileIdx = tileY * columns + tileX;
 
+        if (yBottomUp) { tileIdx = MirrorIndex(tileIdx, columns, rows); }
+
         return tiles[tileIdx].tile_id;
+    }
+
+    Tile* tileAt(int x, int y, bool yBottomUp = true)
+    {
+        int tileX = x / tile_size.width;
+        int tileY = y / tile_size.height;
+
+        int tileIdx = tileY * columns + tileX;
+        if (yBottomUp) { tileIdx = MirrorIndex(tileIdx, columns, rows); }
+
+        // Tile* tile = &tiles[tileIdx];
+        // Tile* copy = tile;
+
+        return tiles + tileIdx;
     }
 };

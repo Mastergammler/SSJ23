@@ -8,23 +8,20 @@ void Action_PlaceTower()
 
     if (ui.tower_placement_mode)
     {
-        int xTile = mouseState.x / tileSize.width;
-        int yTile = mouseState.y / tileSize.height;
+        Tile* tile = tileMap.tileAt(mouseState.x, mouseState.y);
 
-        // TODO: -1 here? -> yes, because the pixel is the correct index
-        // but the width is not
-        int centerX = xTile * tileSize.width + (tileSize.width / 2 - 1);
-        int centerY = yTile * tileSize.height + (tileSize.height / 2 - 1);
+        int centerX = tile->x * tileSize.width + (tileSize.width / 2 - 1);
+        int centerY = MirrorY(tile->y, tileMap.rows) * tileSize.height +
+                      (tileSize.height / 2 - 1);
 
-        // TODO: is placable functionality correctly
-        int tileId = tileMap.GetTileId(mouseState.x, mouseState.y);
-
-        if (tileId == 0)
+        if (tile->tile_id == 0 && !tile->is_occupied)
         {
             Sprite towerSprite =
                 ui.tower_a_selected ? sprites.tower_a : sprites.tower_b;
             CreateTowerEntity(centerX, centerY, towerSprite);
             PlayAudioFile(&audio.pop_lo, false, 90);
+
+            tile->is_occupied = true;
         }
     }
 }

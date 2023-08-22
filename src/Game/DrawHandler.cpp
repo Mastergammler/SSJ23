@@ -1,5 +1,9 @@
 #include "internal.h"
 
+// TODO: Refactor, this into a proper form
+//  - layer drawing
+//  - ui hint selection
+//  - sprite input
 void DrawTowerPreview(ScreenBuffer buffer,
                       SpriteSheet characterSheet,
                       SpriteSheet uiSheet,
@@ -11,28 +15,26 @@ void DrawTowerPreview(ScreenBuffer buffer,
     int tileXStart = tileIdxX * tileSize.width;
     int tileYStart = tileIdxY * tileSize.height;
 
-    int tileId = tileMap.GetTileId(mouseState.x, mouseState.y);
+    Tile* tile = tileMap.tileAt(mouseState.x, mouseState.y);
 
     int uiIdx;
     int shadowIdx;
 
     // tile based impact
-    if (tileId == 0)
+    if (tile->tile_id == 0)
     {
         uiIdx = 0;
         shadowIdx = 17;
     }
-    else if (tileId == 1)
+    else if (tile->tile_id == 1)
     {
         uiIdx = 2;
         shadowIdx = 16;
     }
 
-    // TODO: Layering setup etc
-    // Entity layer has to be drawn, top to bottem (from tile view)
-    if (tileId == 1)
+    if (tile->tile_id == 1 || tile->is_occupied)
     {
-        DrawBitmap(buffer, uiSheet.tiles[uiIdx], tileXStart, tileYStart);
+        DrawBitmap(buffer, uiSheet.tiles[2], tileXStart, tileYStart);
     }
     else
     {
@@ -51,42 +53,40 @@ void DrawTowerPreview(ScreenBuffer buffer,
     }
 }
 
-// TODO: the index is kind of hardcoded and not flexible
-//  Change this for some kind of sheet/index mapping
+// TODO: Change pathMap to return appropriate sprite instead
+// - 2nd map for id 0 or id 1 stuff
 void DrawTilemap(ScreenBuffer& buffer, SpriteSheet& sheet)
 {
     Tile* tile = tileMap.tiles;
-    for (int y = 0; y < tileMap.rows; y++)
+    for (int i = 0; i < tileMap.tile_count; i++)
     {
-        for (int x = 0; x < tileMap.columns; x++)
+        Tile cur = *tile++;
+        int tileId = cur.tile_id;
+        int tileIdx = cur.y * tileMap.columns + cur.x;
+
+        int drawX = cur.x * tileSize.width;
+        int drawY = (tileMap.rows - 1 - cur.y) * tileSize.height;
+
+        int sheetIdx;
+
+        if (tileId == 0) { sheetIdx = 9; }
+        else if (tileId == 1)
         {
+            Tile tile = tileMap.tiles[tileIdx];
+            TileEnv ts;
 
-            int tileId = tile++->tile_id;
-            int tileIdx = y * tileMap.columns + x;
-            int tileX = x * tileSize.width;
-            int tileY = y * tileSize.height;
-
-            int sheetIdx;
-
-            if (tileId == 0) { sheetIdx = 9; }
-            else if (tileId == 1)
+            // is special case - for inner corners
+            if (tile.adjacent > 0b11110000) { ts = (TileEnv)tile.adjacent; }
+            else
             {
-                Tile tile = tileMap.tiles[tileIdx];
-                TileEnv ts;
-
-                // is special case - for inner corners
-                if (tile.adjacent > 0b11110000) { ts = (TileEnv)tile.adjacent; }
-                else
-                {
-                    // only compare the first 4 bits
-                    ts = (TileEnv)(tile.adjacent & 0b11110000);
-                }
-
-                sheetIdx = pathMap[ts];
+                // only compare the first 4 bits
+                ts = (TileEnv)(tile.adjacent & 0b11110000);
             }
 
-            DrawBitmap(buffer, sheet.tiles[sheetIdx], tileX, tileY);
+            sheetIdx = pathMap[ts];
         }
+
+        DrawBitmap(buffer, sheet.tiles[sheetIdx], drawX, drawY);
     }
 }
 

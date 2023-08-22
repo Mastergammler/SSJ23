@@ -31,3 +31,5 @@ function int MirrorIndex(int index, int totalColumns, int totalRows)
 
     return mirroredIndex;
 }
+
+function int MirrorY(int y, int height) { return height - 1 - y; }

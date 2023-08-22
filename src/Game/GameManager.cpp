@@ -22,6 +22,7 @@ void StartGame()
     InitializeUi(8, 3);
     InitializeEntities(tileMap.rows * tileMap.columns);
 
+    // TODO: TMP
     sprites.tower_a = Sprite{1, 2, 0, &bitmaps.characters};
     sprites.tower_b = Sprite{1, 2, 1, &bitmaps.characters};
 
@@ -63,7 +64,6 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
 
 /**
  * Called to update the information and buffer for the next frame
- * TODO: is there any value in passing the buffer every time?
  */
 void UpdateFrame(ScreenBuffer& buffer)
 {
