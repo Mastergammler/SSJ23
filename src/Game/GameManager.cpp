@@ -1,16 +1,16 @@
 #include "internal.h"
 #include "module.h"
 
-BitmapCache bitmaps;
-SoundCache audio;
-SpriteCache sprites;
-TileMap tileMap;
-TileSize tileSize = TileSize{.width = 16, .height = 16};
+BitmapCache _bitmaps;
+SoundCache _audio;
+SpriteCache _sprites;
+TileMap _tileMap;
+TileSize _tileSize = TileSize{.width = 16, .height = 16};
 
 void StartGame()
 {
     // TODO: better data structure solution for loading failed!
-    if (!bitmaps.ground.loaded || !bitmaps.ui.loaded)
+    if (!_bitmaps.ground.loaded || !_bitmaps.ui.loaded)
     {
         Log("Unable to rendere because resources not loaded");
         //  TODO: Play elevator music / show error screen
@@ -20,16 +20,21 @@ void StartGame()
     }
 
     InitializeUi(8, 3);
-    InitializeEntities(tileMap.rows * tileMap.columns);
+    InitializeEntities(_tileMap.rows * _tileMap.columns);
 
     // TODO: TMP
-    sprites.tower_a = Sprite{1, 2, 0, &bitmaps.characters};
-    sprites.tower_b = Sprite{1, 2, 1, &bitmaps.characters};
-    sprites.enemy_a = Sprite{1, 1, 24, &bitmaps.characters};
+    _sprites.tower_a = Sprite{1, 2, 0, &_bitmaps.characters};
+    _sprites.tower_b = Sprite{1, 2, 2, &_bitmaps.characters};
+    _sprites.enemy_a = Sprite{1, 1, 24, &_bitmaps.characters};
 
-    CreateEnemyEntity(100, 200, sprites.enemy_a, WEST);
-    CreateEnemyEntity(132, 200, sprites.enemy_a, SOUTH);
-    CreateEnemyEntity(100, 150, sprites.enemy_a, WEST);
+    int speed = 450;
+
+    CreateEnemyEntity(24, 232, _sprites.enemy_a, SOUTH, speed);
+    CreateEnemyEntity(40, 200, _sprites.enemy_a, SOUTH, speed);
+    // CreateEnemyEntity(32, 150, _sprites.enemy_a, WEST, speed);
+    // CreateEnemyEntity(32, 100, _sprites.enemy_a, WEST, speed);
+    // CreateEnemyEntity(32, 50, _sprites.enemy_a, NORTH, speed);
+    // CreateEnemyEntity(32, 80, _sprites.enemy_a, EAST, speed);
 
     // if (Audio.music.loaded) { PlayAudioFile(&Audio.music, true, 80); }
 }
@@ -45,15 +50,28 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
 
     measure.Update();
     individualCounter.Update();
-    bitmaps = LoadSprites(hInstance, hdc);
+    _bitmaps = LoadSprites(hInstance, hdc);
     Logf("  Sprites loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
 
     individualCounter.Update();
-    audio = LoadAudioFiles();
+    _audio = LoadAudioFiles();
     Logf("  Audio loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
 
     individualCounter.Update();
-    tileMap = LoadMaps();
+    _tileMap = LoadMaps();
+
+    for (int i = 0; i < _tileMap.spawn_count; i++)
+    {
+        Tile tar = *_tileMap.spawns[i];
+        Logf("Spawn %d: %d,%d", i, tar.x, tar.y);
+    }
+
+    for (int i = 0; i < _tileMap.target_count; i++)
+    {
+        Tile tar = *_tileMap.targets[i];
+        Logf("Target %d: %d,%d", i, tar.x, tar.y);
+    }
+
     Logf("  Tilemap loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
 
     Logf("Resources loaded in %.2f ms", measure.CheckDeltaTimeMs());
@@ -79,5 +97,6 @@ void UpdateFrame(ScreenBuffer& buffer)
 
     DrawGroundLayer(buffer);
     DrawEntityLayer(buffer);
+    Debug_DrawEntityMovementPossibilities(buffer);
     DrawUiLayer(buffer);
 }

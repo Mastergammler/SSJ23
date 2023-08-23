@@ -11,9 +11,11 @@ PointerAlignment: Left
 ColumnLimit: 80
 AlignAfterOpenBracket: Align
 AllowAllArgumentsOnNextLine: false
+AllowShortCaseLabelsOnASingleLine: true
 AllowAllParametersOfDeclarationOnNextLine: false
 BinPackArguments: false
 BinPackParameters: false
+BreakBeforeBraces: Custom
 BraceWrapping:
   AfterCaseLabel: true
   AfterClass:      true
@@ -37,8 +39,8 @@ IndentCaseBlocks: false
 BreakBeforeBinaryOperators: None
 AlignOperands: Align
 
-AllowShortBlocksOnASingleLine: true
-AllowShortFunctionsOnASingleLine: true
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: true
 MaxEmptyLinesToKeep: 1
 BreakBeforeTernaryOperators: true 

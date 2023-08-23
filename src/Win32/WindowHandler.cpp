@@ -21,7 +21,7 @@ void WaitTillNextFrame(HWND window, FpsCounter& timer)
 {
     timer.Update();
 
-    float frameTimeMs = timer.delta_time * 1000;
+    float frameTimeMs = timer.frame_delta_time * 1000;
     float maxTimeMs = timer.delta_max * 1000;
     float minTimeMs = timer.delta_min * 1000;
 
@@ -42,7 +42,10 @@ void WaitTillNextFrame(HWND window, FpsCounter& timer)
     if (frameTimeMs < TARGET_FRAME_TIME)
     {
         DWORD timeToRest = (DWORD)(TARGET_FRAME_TIME - frameTimeMs);
-        if (timeToRest > 0) { Sleep(timeToRest); }
+        if (timeToRest > 0)
+        {
+            Sleep(timeToRest);
+        }
     }
 
     // further waiting if still not there
@@ -140,26 +143,13 @@ LRESULT CALLBACK WindowCallback(HWND hwnd,
             SetCursor(hCursor);
         }
         break;
-        case WM_SIZE:
-            break;
-        case WM_MOUSEMOVE:
-            HandleMouseMove(lParam);
-            break;
-        case WM_LBUTTONDOWN:
-            HandleMouseButton(MOUSE_LEFT, true);
-            break;
-        case WM_LBUTTONUP:
-            HandleMouseButton(MOUSE_LEFT, false);
-            break;
-        case WM_RBUTTONDOWN:
-            HandleMouseButton(MOUSE_RIGHT, true);
-            break;
-        case WM_RBUTTONUP:
-            HandleMouseButton(MOUSE_RIGHT, false);
-            break;
-        case WM_MBUTTONDOWN:
-            HandleMouseButton(MOUSE_MIDDLE, true);
-            break;
+        case WM_SIZE: break;
+        case WM_MOUSEMOVE: HandleMouseMove(lParam); break;
+        case WM_LBUTTONDOWN: HandleMouseButton(MOUSE_LEFT, true); break;
+        case WM_LBUTTONUP: HandleMouseButton(MOUSE_LEFT, false); break;
+        case WM_RBUTTONDOWN: HandleMouseButton(MOUSE_RIGHT, true); break;
+        case WM_RBUTTONUP: HandleMouseButton(MOUSE_RIGHT, false); break;
+        case WM_MBUTTONDOWN: HandleMouseButton(MOUSE_MIDDLE, true); break;
         case WM_MBUTTONUP:
             HandleMouseButton(MOUSE_MIDDLE, false);
             break;

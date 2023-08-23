@@ -33,3 +33,13 @@ void DrawPanel(ScreenBuffer& buffer,
                int xTiles,
                int yTiles);
 void RenderFrame(HDC hdc, ScreenBuffer buffer, Dimension dim);
+
+/**
+ * Draws only a jagged line for now
+ */
+void DrawLine(ScreenBuffer& buffer,
+              int startX,
+              int startY,
+              int targetX,
+              int targetY,
+              u32 color);

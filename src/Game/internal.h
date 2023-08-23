@@ -4,14 +4,15 @@
 #include "module.h"
 
 // Resource cache
-extern BitmapCache bitmaps;
-extern SoundCache audio;
-extern SpriteCache sprites;
+extern BitmapCache _bitmaps;
+extern SoundCache _audio;
+extern SpriteCache _sprites;
 
 // Definitions
 extern map<TileEnv, int> pathMap;
-extern TileSize tileSize;
-extern TileMap tileMap;
+extern map<TileEnv, int> grassMap;
+extern TileSize _tileSize;
+extern TileMap _tileMap;
 
 // State tracking
 extern UiState ui;
@@ -43,8 +44,13 @@ void DrawEntityLayer(ScreenBuffer buffer);
 void DrawUiLayer(ScreenBuffer buffer);
 
 int CreateTowerEntity(int x, int y, Sprite sprite);
-int CreateEnemyEntity(int x, int y, Sprite sprite, Direction direction);
+int CreateEnemyEntity(int x,
+                      int y,
+                      Sprite sprite,
+                      Direction direction,
+                      int speed);
 void MoveEnemies();
 
 void InitializeEntities(int storeCount);
 void RenderEntities(ScreenBuffer buffer);
+void Debug_DrawEntityMovementPossibilities(ScreenBuffer buffer);

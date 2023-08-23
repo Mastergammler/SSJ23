@@ -11,12 +11,16 @@ enum EntityType
     PROJECTILE = 0x10
 };
 
+/**
+ * Direction / Orientation of the player
+ * Anchored at Top
+ */
 enum Direction
 {
-    NORTH = 0,
-    EAST = 90,
-    SOUTH = 180,
-    WEST = 270
+    NORTH = 0b1000 << 4,
+    EAST = 0b0010 << 4,
+    SOUTH = 0b0001 << 4,
+    WEST = 0b0100 << 4
 };
 
 /**
@@ -36,6 +40,7 @@ struct Entity
     int x;
     /**
      * Center based y coordinate
+     * Anchored Bottom
      */
     int y;
 

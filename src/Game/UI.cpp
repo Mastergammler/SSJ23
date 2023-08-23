@@ -38,7 +38,7 @@ void InitializeUi(int uiElementCount, int layers)
         2,
         0.5,
         [] {
-            PlayAudioFile(&audio.click_hi, false, 90);
+            PlayAudioFile(&_audio.click_hi, false, 90);
             Action_ToggleCraftingPanel();
         },
         true);
@@ -48,7 +48,7 @@ void InitializeUi(int uiElementCount, int layers)
         4,
         0.5,
         [] {
-            PlayAudioFile(&audio.click_lo, false, 90);
+            PlayAudioFile(&_audio.click_lo, false, 90);
             Action_ToggleTowerPreview();
         },
         false);
@@ -56,13 +56,13 @@ void InitializeUi(int uiElementCount, int layers)
         8,
         4,
         0.5,
-        [] { PlayAudioFile(&audio.pop_hi, false, 90); },
+        [] { PlayAudioFile(&_audio.pop_hi, false, 90); },
         false);
     int btn4 = CreateButton(
         12,
         2,
         0.5,
-        [] { PlayAudioFile(&audio.pop_lo, false, 90); },
+        [] { PlayAudioFile(&_audio.pop_lo, false, 90); },
         false);
 }
 
@@ -78,17 +78,17 @@ int CreateButton(int mapX, int mapY, float offset, Action onClick, bool visible)
 
     int id = uiElements.count++;
     UiElement* button = &uiElements.elements[id];
-    int offsetPixel = tileSize.width * offset;
+    int offsetPixel = _tileSize.width * offset;
 
     button->id = id;
     button->initialized = true;
 
     button->x_tiles = 2;
     button->y_tiles = 1;
-    button->x_start = tileSize.width * (tileMap.columns - mapX) + offsetPixel;
-    button->y_start = tileSize.height * (tileMap.rows - mapY) + offsetPixel;
-    button->x_end = button->x_start + button->x_tiles * tileSize.width;
-    button->y_end = button->y_start + button->y_tiles * tileSize.height;
+    button->x_start = _tileSize.width * (_tileMap.columns - mapX) + offsetPixel;
+    button->y_start = _tileSize.height * (_tileMap.rows - mapY) + offsetPixel;
+    button->x_end = button->x_start + button->x_tiles * _tileSize.width;
+    button->y_end = button->y_start + button->y_tiles * _tileSize.height;
     button->visible = visible;
 
     button->type = UI_SINGLE;
@@ -112,17 +112,17 @@ int CreatePanel(int tileX,
 
     int id = uiElements.count++;
     UiElement* button = &uiElements.elements[id];
-    int offsetPixel = tileSize.width * offset;
+    int offsetPixel = _tileSize.width * offset;
 
     button->id = id;
     button->initialized = true;
 
     button->x_tiles = xSize;
     button->y_tiles = ySize;
-    button->x_start = tileSize.width * tileX + offsetPixel;
-    button->y_start = tileSize.height * tileY + offsetPixel;
-    button->x_end = button->x_start + button->x_tiles * tileSize.width;
-    button->y_end = button->y_start + button->y_tiles * tileSize.height;
+    button->x_start = _tileSize.width * tileX + offsetPixel;
+    button->y_start = _tileSize.height * tileY + offsetPixel;
+    button->x_end = button->x_start + button->x_tiles * _tileSize.width;
+    button->y_end = button->y_start + button->y_tiles * _tileSize.height;
     button->visible = visible;
 
     button->type = UI_PANEL;
@@ -147,7 +147,10 @@ void ProcessMouseActions()
         hovered->on_click();
         Action_PlaceTower();
     }
-    if (mouseState.right_clicked) { Action_ToggleTowerPreview(); }
+    if (mouseState.right_clicked)
+    {
+        Action_ToggleTowerPreview();
+    }
 }
 
 //-------------
@@ -202,7 +205,10 @@ UiElement* FindHighestLayerCollision(int x, int y)
             if (cur->x_start <= x && cur->x_end >= x && cur->y_start <= y &&
                 cur->y_end >= y)
             {
-                if (cur->layer > foundElement->layer) { foundElement = cur; }
+                if (cur->layer > foundElement->layer)
+                {
+                    foundElement = cur;
+                }
             }
         }
     }

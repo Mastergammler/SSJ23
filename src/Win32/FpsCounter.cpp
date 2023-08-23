@@ -14,7 +14,7 @@ struct FpsCounter
      * When update is called every frame = frame time
      * Delta time is in seconds?
      */
-    float delta_time;
+    float frame_delta_time;
 
     float delta_min = 10000;
     float delta_max = 0;
@@ -35,26 +35,26 @@ struct FpsCounter
         QueryPerformanceCounter(&last_time);
 
         // initial value / can't be 0
-        delta_time = 0.0166666666f;
-        time_counter = delta_time;
+        frame_delta_time = 0.0166666666f;
+        time_counter = frame_delta_time;
     }
 
     void Update()
     {
         LARGE_INTEGER current_time;
         QueryPerformanceCounter(&current_time);
-        delta_time = (float)(current_time.QuadPart - last_time.QuadPart) /
+        frame_delta_time = (float)(current_time.QuadPart - last_time.QuadPart) /
                      frequency.QuadPart;
         last_time = current_time;
-        fps = 1 / delta_time;
-        time_counter += delta_time;
+        fps = 1 / frame_delta_time;
+        time_counter += frame_delta_time;
 
         if (current_iteration > warmup_iterations)
         {
             fps_max = fps > fps_max ? fps : fps_max;
             fps_min = fps < fps_min ? fps : fps_min;
-            delta_max = delta_time > delta_max ? delta_time : delta_max;
-            delta_min = delta_time < delta_min ? delta_time : delta_min;
+            delta_max = frame_delta_time > delta_max ? frame_delta_time : delta_max;
+            delta_min = frame_delta_time < delta_min ? frame_delta_time : delta_min;
         }
         else { current_iteration++; }
     }

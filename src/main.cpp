@@ -4,6 +4,9 @@
 #include "types.h"
 #include "utils.h"
 
+bool running = true;
+FpsCounter measure = {};
+
 /**
  * Entry point for working with the window api
  */

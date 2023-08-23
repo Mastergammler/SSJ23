@@ -83,6 +83,86 @@ function void DrawTiles(ScreenBuffer& buffer, BitmapBuffer& bitmap)
     }
 }
 
+void DrawLine(ScreenBuffer& buffer,
+              int startX,
+              int startY,
+              int targetX,
+              int targetY,
+              u32 color)
+{
+    assert(targetX >= startX && targetY >= startY);
+
+    // TODO: proper bounds that don't skew the image
+    if (startX < 0) startX = 0;
+    if (startY < 0) startY = 0;
+    if (targetX >= buffer.width) targetX = buffer.width - 1;
+    if (targetY >= buffer.height) targetY = buffer.height - 1;
+
+    // TODO: bounds
+    int deltaX = targetX - startX;
+    int deltaY = targetY - startY;
+
+    u32* pixel_ll = (u32*)buffer.memory;
+    u32* pixel_start = pixel_ll + startY * buffer.width + startX;
+
+    // this is how much to draw
+    if (deltaX == deltaY)
+    {
+        for (int y = 0; y < deltaY; y++)
+        {
+            for (int x = 0; x < deltaX; x++)
+            {
+                if (x == y)
+                {
+                    u32* toDraw = pixel_start + y * buffer.width + x;
+                    *toDraw = color;
+                }
+            }
+        }
+    }
+    else if (deltaX > deltaY)
+    {
+
+        int intervallTillSwitch = deltaY > 0 ? deltaX / deltaY : deltaX;
+        // for (int y = 1; y < deltaY + 1; y++)
+        //{
+        for (int x = 0; x < deltaX; x++)
+        {
+            // TODO: distribute evenly
+
+            // skip first iteration
+            if (x > 0 && x % intervallTillSwitch == 0)
+            {
+                // y++;
+                pixel_start += buffer.width;
+            }
+            *pixel_start++ = color;
+        }
+        //}
+    }
+    else // deltaX < deltaY = just the inverse
+    {
+
+        int intervallTillSwitch = deltaX > 0 ? deltaY / deltaX : deltaY;
+        // for (int y = 1; y < deltaY + 1; y++)
+        //{
+        for (int y = 0; y < deltaY; y++)
+        {
+            // TODO: distribute evenly
+
+            // skip first iteration
+            if (y > 0 && y % intervallTillSwitch == 0)
+            {
+                // x++;
+                pixel_start++;
+            }
+            pixel_start += buffer.width;
+            *pixel_start = color;
+        }
+        //}
+    }
+}
+
 void DrawTiles(ScreenBuffer& buffer,
                int bufferStartX,
                int bufferStartY,

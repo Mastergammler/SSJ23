@@ -33,10 +33,16 @@ enum TileEnv
 {
     SINGLE = 0b00000000,
     MIDDLE = 0b11111111,
+    HORIZONTAL = 0b0110 << 4,
+    VERTICAL = 0b1001 << 4,
     TOP = 0b01110000,
+    TOP_END = 0b0001 << 4,
     BOTTOM = 0b11100000,
+    BOTTOM_END = 0b1000 << 4,
     LEFT = 0b10110000,
+    LEFT_END = 0b0010 << 4,
     RIGHT = 0b11010000,
+    RIGHT_END = 0b0100 << 4,
     TL = 0b00110000,
     TR = 0b01010000,
     BL = 0b10100000,
@@ -136,7 +142,13 @@ struct SpriteCache
 /**
  * If the boundary should count as another some tile there or not
  */
-const bool BOUNDARY_DEFAULT = true;
+const bool BOUNDARY_DEFAULT = false;
+
+enum TileType
+{
+    GRASS_TILE = 0,
+    PATH_TILE = 1
+};
 
 struct Tile
 {
@@ -154,14 +166,14 @@ struct Tile
      */
     int y;
 
-    int tile_id;
+    TileType tile_id;
     int is_start;
     int is_end;
 
     /**
      * Bit-Order T L R B TL TR BL BR
      */
-    BYTE adjacent;
+    u8 adjacent;
 };
 
 struct TileMap
@@ -170,6 +182,9 @@ struct TileMap
     int columns;
     int tile_count;
 
+    int spawn_count;
+    int target_count;
+
     TileSize tile_size;
 
     /**
@@ -177,6 +192,17 @@ struct TileMap
      * The renderer has to take this into consideration
      */
     Tile* tiles;
+    Tile** targets;
+    Tile** spawns;
+
+    bool boundaryDefault(int tileIndex)
+    {
+        if (tiles[tileIndex].tile_id == GRASS_TILE)
+        {
+            return true;
+        }
+        return BOUNDARY_DEFAULT;
+    }
 
     bool sameHorizontally(int tileIdx, int otherIdx)
     {
@@ -187,7 +213,7 @@ struct TileMap
         }
 
         // Boundry case
-        return BOUNDARY_DEFAULT;
+        return boundaryDefault(tileIdx);
     }
 
     bool sameVertically(int tileIdx, int otherIdx)
@@ -195,8 +221,9 @@ struct TileMap
         int tileRow = tileRowOf(tileIdx);
         int otherRow = tileRowOf(otherIdx);
 
-        if (tileRow == 0 && otherRow < tileRow) return BOUNDARY_DEFAULT;
-        if (tileRow == rows - 1 && otherRow > tileRow) return BOUNDARY_DEFAULT;
+        if (tileRow == 0 && otherRow < tileRow) return boundaryDefault(tileIdx);
+        if (tileRow == rows - 1 && otherRow > tileRow)
+            return boundaryDefault(tileIdx);
 
         return areSame(tileIdx, otherIdx);
     }
@@ -209,13 +236,13 @@ struct TileMap
         int normalized = abs(diff);
 
         // it has to be one row above or below the current row
-        if (normalized != 1) return BOUNDARY_DEFAULT;
+        if (normalized != 1) return boundaryDefault(tileIdx);
         return sameVertically(tileIdx, otherIdx);
     }
 
     bool areSame(int tileIdx, int otherIdx)
     {
-        if (otherIdx < 0) return BOUNDARY_DEFAULT;
+        if (otherIdx < 0) return boundaryDefault(tileIdx);
         assert(tileIdx >= 0 && "Tile index must be grater than 0");
 
         int thisTileId = tiles[tileIdx].tile_id;
@@ -238,7 +265,10 @@ struct TileMap
 
         int tileIdx = tileY * columns + tileX;
 
-        if (yBottomUp) { tileIdx = MirrorIndex(tileIdx, columns, rows); }
+        if (yBottomUp)
+        {
+            tileIdx = MirrorIndex(tileIdx, columns, rows);
+        }
 
         return tiles[tileIdx].tile_id;
     }
@@ -249,7 +279,10 @@ struct TileMap
         int tileY = y / tile_size.height;
 
         int tileIdx = tileY * columns + tileX;
-        if (yBottomUp) { tileIdx = MirrorIndex(tileIdx, columns, rows); }
+        if (yBottomUp)
+        {
+            tileIdx = MirrorIndex(tileIdx, columns, rows);
+        }
 
         // Tile* tile = &tiles[tileIdx];
         // Tile* copy = tile;

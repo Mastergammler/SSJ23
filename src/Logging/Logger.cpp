@@ -1,5 +1,7 @@
 #include "module.h"
 
+Logger logger = {};
+
 void InitLogger(Logger& logger, const string& log_filePath)
 {
     logger.log_file.open(log_filePath, ios::out | ios::app);
@@ -51,7 +53,10 @@ void Logf(const string message, ...)
     logger.log_condition.notify_one();
 }
 
-void Log(const string message) { Logf(message, ""); }
+void Log(const string message)
+{
+    Logf(message, "");
+}
 
 // template <typename... Args> void Log(const string message, Args... args)
 //{
