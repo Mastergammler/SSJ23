@@ -4,6 +4,8 @@ EntityStore entities;
 TowerStore towers;
 EnemyStore enemies;
 
+const u32 DEBUG_COLOR = 0xFFE8FA;
+
 void InitializeEnemyStorage(int storeCount)
 {
     enemies.size = storeCount;
@@ -132,6 +134,33 @@ Direction oppositeDirection(Direction dir)
     }
 };
 
+bool ReachedOverCenterBound(Entity entity, Tile targetTile, float offset)
+{
+    int tileWidth = _tileMap.tile_size.width;
+    int tileHeight = _tileMap.tile_size.height;
+    int transformY = _tileMap.rows - targetTile.y - 1;
+    int targetPosX = targetTile.x * tileWidth + tileWidth * offset - 1;
+    int targetPosY = transformY * tileHeight + tileHeight * offset - 1;
+
+    // continue moving till center of tile
+    switch (entity.direction)
+    {
+        case NORTH:
+            if (entity.y < targetPosY) return true;
+            break;
+        case SOUTH:
+            if (entity.y > targetPosY) return true;
+            break;
+        case EAST:
+            if (entity.x < targetPosX) return true;
+            break;
+        case WEST:
+            if (entity.x > targetPosX) return true;
+            break;
+    }
+    return false;
+}
+
 Direction GetNextMovementDirection(Entity entity)
 {
     //!! margin, when is it over the tile? tile center? -> yea, entity is center
@@ -139,15 +168,10 @@ Direction GetNextMovementDirection(Entity entity)
     // TODO: multiple targets?
     Tile target = *_tileMap.targets[0];
 
-    int targetPositionX =
-        enemyTile.x * _tileMap.tile_size.width + _tileMap.tile_size.width / 2;
-    int targetPositionY =
-        enemyTile.y * _tileMap.tile_size.height + _tileMap.tile_size.height / 2;
+    // check cross center line
+    if (ReachedOverCenterBound(entity, enemyTile, 0.5)) return entity.direction;
 
-    // move towards the center
-    if (entity.x < targetPositionX || entity.y < targetPositionY)
-        return entity.direction;
-
+    // entity is at (around) center of the tile, choose next direction
     u8 neighbours = enemyTile.adjacent;
     Direction targetXDir = enemyTile.x < target.x ? EAST : WEST;
     Direction targetYDir = enemyTile.y < target.y ? NORTH : EAST;
@@ -186,14 +210,18 @@ void MoveEnemies()
         {
             Enemy enemy = enemies.units[e->storage_id];
             Tile enemyTile = *_tileMap.tileAt(e->x, e->y);
+
             // TODO: multiple targets case?
             Tile target = *_tileMap.targets[0];
 
             if (enemyTile.tile_id != PATH_TILE) continue;
-            if (enemyTile.x == target.x && enemyTile.y == target.y) continue;
+            if (enemyTile.x == target.x && enemyTile.y == target.y)
+            {
+                if (ReachedOverCenterBound(*e, target, 1)) continue;
+            }
 
             Direction moveDir = GetNextMovementDirection(*e);
-            float increase = measure.frame_delta_time * SPEED_MOD * enemy.speed;
+            float increase = measure.frame_delta_time * enemy.speed;
             switch (moveDir)
             {
                 case NORTH: e->move_y += increase; break;
@@ -209,8 +237,6 @@ void MoveEnemies()
         }
     }
 }
-
-const u32 DEBUG_COLOR = 0xFFE8FA;
 
 void Debug_DrawEntityMovementPossibilities(ScreenBuffer buffer)
 {

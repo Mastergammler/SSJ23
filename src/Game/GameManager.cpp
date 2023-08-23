@@ -29,12 +29,12 @@ void StartGame()
 
     int speed = 450;
 
-    CreateEnemyEntity(24, 232, _sprites.enemy_a, SOUTH, speed);
-    CreateEnemyEntity(40, 200, _sprites.enemy_a, SOUTH, speed);
-    // CreateEnemyEntity(32, 150, _sprites.enemy_a, WEST, speed);
-    // CreateEnemyEntity(32, 100, _sprites.enemy_a, WEST, speed);
-    // CreateEnemyEntity(32, 50, _sprites.enemy_a, NORTH, speed);
-    // CreateEnemyEntity(32, 80, _sprites.enemy_a, EAST, speed);
+    // CreateEnemyEntity(24, 232, _sprites.enemy_a, SOUTH, speed);
+    // CreateEnemyEntity(40, 200, _sprites.enemy_a, SOUTH, speed);
+    //  CreateEnemyEntity(32, 150, _sprites.enemy_a, WEST, speed);
+    //  CreateEnemyEntity(32, 100, _sprites.enemy_a, WEST, speed);
+    //  CreateEnemyEntity(32, 50, _sprites.enemy_a, NORTH, speed);
+    //  CreateEnemyEntity(32, 80, _sprites.enemy_a, EAST, speed);
 
     // if (Audio.music.loaded) { PlayAudioFile(&Audio.music, true, 80); }
 }

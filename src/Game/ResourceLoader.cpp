@@ -126,10 +126,14 @@ TileType fromNumber(int num)
     }
 }
 
+// TODO: i really want hot reload right now, to see what changes on different
+// maps
+//  - this would be super helpful
+//  - also great for ppl trying it out?!
 TileMap LoadMaps()
 {
     TileMapRaw rawMap =
-        LoadMap(ABSOLUTE_RES_PATH + "Test/Tilemap_15_20_singlePath.map");
+        LoadMap(ABSOLUTE_RES_PATH + "Test/Tilemap_15_20_LR.map");
 
     Tile* tiles = new Tile[rawMap.rows * rawMap.columns];
     Tile* tmp = tiles;

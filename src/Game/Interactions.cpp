@@ -2,6 +2,21 @@
 
 UiState ui;
 
+void Action_SpawnEnemy()
+{
+    if (ui.show_crafting_panel) return;
+
+    Tile startTile = *_tileMap.spawns[0];
+
+    int invertedY = _tileMap.rows - startTile.y - 1;
+    int spawnX = startTile.x * _tileSize.width + _tileSize.width / 2 - 1;
+    int spawnY = invertedY * _tileSize.height + _tileSize.height / 2 - 1;
+
+    // TODO: get direction for real
+    //  where to get the real speed from?
+    CreateEnemyEntity(spawnX, spawnY, _sprites.enemy_a, SOUTH, 100);
+}
+
 void Action_PlaceTower()
 {
     if (ui.ui_focus) return;

@@ -38,6 +38,7 @@ void ProcessMouseActions();
 void Action_ToggleTowerPreview();
 void Action_ToggleCraftingPanel();
 void Action_PlaceTower();
+void Action_SpawnEnemy();
 
 void DrawGroundLayer(ScreenBuffer buffer);
 void DrawEntityLayer(ScreenBuffer buffer);

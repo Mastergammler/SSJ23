@@ -42,6 +42,15 @@ void InitializeUi(int uiElementCount, int layers)
             Action_ToggleCraftingPanel();
         },
         true);
+    int btn3 = CreateButton(
+        10,
+        2,
+        0.5,
+        [] {
+            PlayAudioFile(&_audio.pop_hi, false, 90);
+            Action_SpawnEnemy();
+        },
+        true);
 
     int btn2 = CreateButton(
         5,
@@ -51,12 +60,6 @@ void InitializeUi(int uiElementCount, int layers)
             PlayAudioFile(&_audio.click_lo, false, 90);
             Action_ToggleTowerPreview();
         },
-        false);
-    int btn3 = CreateButton(
-        8,
-        4,
-        0.5,
-        [] { PlayAudioFile(&_audio.pop_hi, false, 90); },
         false);
     int btn4 = CreateButton(
         12,
