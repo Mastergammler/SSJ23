@@ -1,9 +1,11 @@
 #include "internal.h"
 #include "module.h"
+#include "systems.h"
 
 BitmapCache _bitmaps;
 SoundCache _audio;
 SpriteCache _sprites;
+AnimationCache _animations;
 TileMap _tileMap;
 TileSize _tileSize = TileSize{.width = 16, .height = 16};
 
@@ -27,15 +29,15 @@ void StartGame()
     _sprites.tower_b = Sprite{1, 2, 2, &_bitmaps.characters};
     _sprites.enemy_a = Sprite{1, 1, 24, &_bitmaps.characters};
 
-    int speed = 450;
+    Sprite* enemyWalkAnim = new Sprite[4]{
+        Sprite{1, 1, 25, &_bitmaps.characters},
+        Sprite{1, 1, 26, &_bitmaps.characters},
+        Sprite{1, 1, 27, &_bitmaps.characters},
+        Sprite{1, 1, 28, &_bitmaps.characters},
+    };
 
-    // CreateEnemyEntity(24, 232, _sprites.enemy_a, SOUTH, speed);
-    // CreateEnemyEntity(40, 200, _sprites.enemy_a, SOUTH, speed);
-    //  CreateEnemyEntity(32, 150, _sprites.enemy_a, WEST, speed);
-    //  CreateEnemyEntity(32, 100, _sprites.enemy_a, WEST, speed);
-    //  CreateEnemyEntity(32, 50, _sprites.enemy_a, NORTH, speed);
-    //  CreateEnemyEntity(32, 80, _sprites.enemy_a, EAST, speed);
-
+    // TODO: is the time in seconds?
+    _animations.enemy_anim = SpriteAnimation{4, 0.1, enemyWalkAnim};
     // if (Audio.music.loaded) { PlayAudioFile(&Audio.music, true, 80); }
 }
 
@@ -94,9 +96,10 @@ void UpdateFrame(ScreenBuffer& buffer)
     ProcessMouseActions();
 
     MoveEnemies();
+    AnimateEntities();
 
     DrawGroundLayer(buffer);
     DrawEntityLayer(buffer);
-    Debug_DrawEntityMovementPossibilities(buffer);
+    // Debug_DrawEntityMovementPossibilities(buffer);
     DrawUiLayer(buffer);
 }

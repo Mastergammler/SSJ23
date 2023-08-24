@@ -1,11 +1,7 @@
 #include "internal.h"
+#include "systems.h"
 
 UiElementStorage uiElements;
-UiElement NullElement = {.visible = false,
-                         .initialized = false,
-                         .id = -1,
-                         .layer = -1,
-                         .on_click = [] {}};
 
 int CreateButton(int mapX,
                  int mapY,
@@ -154,67 +150,4 @@ void ProcessMouseActions()
     {
         Action_ToggleTowerPreview();
     }
-}
-
-//-------------
-//  SYSTEMS
-//-------------
-
-void RenderUiElements(ScreenBuffer& buffer, SpriteSheet& sheet)
-{
-    for (int l = 0; l < uiElements.layer_count; ++l)
-    {
-        for (int i = 0; i < uiElements.count; ++i)
-        {
-            UiElement* cur = &uiElements.elements[i];
-            if (!cur->visible || cur->layer != l) continue;
-
-            if (cur->type == UI_PANEL)
-            {
-                DrawPanel(buffer,
-                          cur->x_start,
-                          cur->y_start,
-                          sheet,
-                          cur->sprite_index,
-                          cur->x_tiles,
-                          cur->y_tiles);
-            }
-            else
-            {
-                int spriteIdx =
-                    cur->hovered ? cur->hover_sprite_index : cur->sprite_index;
-                DrawTiles(buffer,
-                          cur->x_start,
-                          cur->y_start,
-                          sheet,
-                          spriteIdx,
-                          cur->x_tiles,
-                          cur->y_tiles);
-                // TODO: kind of a workaround, dunno how to do this better atm
-                cur->hovered = false;
-            }
-        }
-    }
-}
-
-UiElement* FindHighestLayerCollision(int x, int y)
-{
-    UiElement* foundElement = &NullElement;
-    for (int i = 0; i < uiElements.count; ++i)
-    {
-        UiElement* cur = &uiElements.elements[i];
-        if (cur->visible)
-        {
-            if (cur->x_start <= x && cur->x_end >= x && cur->y_start <= y &&
-                cur->y_end >= y)
-            {
-                if (cur->layer > foundElement->layer)
-                {
-                    foundElement = cur;
-                }
-            }
-        }
-    }
-
-    return foundElement;
 }

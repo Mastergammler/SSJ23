@@ -1,8 +1,4 @@
-#include "module.h"
-// TODO: this is now a direct reference, and not done via the module
-//  this breaks the concept a bit, need a better solution
-//  - probelm is the Sprite struct
-#include "types.h"
+#include "../module.h"
 
 enum EntityType
 {

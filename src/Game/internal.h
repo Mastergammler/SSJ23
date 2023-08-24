@@ -1,12 +1,15 @@
 #pragma once
 
-#include "entity.h"
+#include "Components/types.h"
+#include "Entities/types.h"
 #include "module.h"
+#include "types.h"
 
 // Resource cache
 extern BitmapCache _bitmaps;
 extern SoundCache _audio;
 extern SpriteCache _sprites;
+extern AnimationCache _animations;
 
 // Definitions
 extern map<TileEnv, int> pathMap;
@@ -23,6 +26,7 @@ extern UiElementStorage uiElements;
 extern EntityStore entities;
 extern TowerStore towers;
 extern EnemyStore enemies;
+extern ComponentStore components;
 
 void UpdateMouseState();
 
@@ -31,9 +35,8 @@ SoundCache LoadAudioFiles();
 TileMap LoadMaps();
 
 void InitializeUi(int elementCount, int layers);
-void RenderUiElements(ScreenBuffer& buffer, SpriteSheet& sheet);
-UiElement* FindHighestLayerCollision(int x, int y);
 
+SpriteSheet ConvertFromSheet(BitmapBuffer sheet, int tileWidth, int tileHeight);
 void ProcessMouseActions();
 void Action_ToggleTowerPreview();
 void Action_ToggleCraftingPanel();
@@ -49,9 +52,6 @@ int CreateEnemyEntity(int x,
                       int y,
                       Sprite sprite,
                       Direction direction,
-                      int speed);
-void MoveEnemies();
-
+                      int speed,
+                      SpriteAnimation animation);
 void InitializeEntities(int storeCount);
-void RenderEntities(ScreenBuffer buffer);
-void Debug_DrawEntityMovementPossibilities(ScreenBuffer buffer);

@@ -123,20 +123,23 @@ struct UiState
     int crafting_panel_id;
 };
 
-struct Sprite
-{
-    int x_tiles;
-    int y_tiles;
-    int sheet_start_index;
-
-    SpriteSheet* sheet;
-};
-
 struct SpriteCache
 {
     Sprite tower_a;
     Sprite tower_b;
     Sprite enemy_a;
+};
+
+struct SpriteAnimation
+{
+    int sprite_count;
+    float time_per_sprite;
+    Sprite* sprites;
+};
+
+struct AnimationCache
+{
+    SpriteAnimation enemy_anim;
 };
 
 /**

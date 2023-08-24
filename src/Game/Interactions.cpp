@@ -14,7 +14,12 @@ void Action_SpawnEnemy()
 
     // TODO: get direction for real
     //  where to get the real speed from?
-    CreateEnemyEntity(spawnX, spawnY, _sprites.enemy_a, SOUTH, 100);
+    CreateEnemyEntity(spawnX,
+                      spawnY,
+                      _sprites.enemy_a,
+                      SOUTH,
+                      20,
+                      _animations.enemy_anim);
 }
 
 void Action_PlaceTower()

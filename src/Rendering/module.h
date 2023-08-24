@@ -7,6 +7,30 @@
 global_var const u32 BG_COLOR = 0x365a91;
 global_var const u32 TRANS_VALUE = 0x0;
 
+struct SpriteSheet
+{
+    bool loaded;
+
+    int tile_width;
+    int tile_height;
+    int image_width;
+    int image_height;
+    int rows;
+    int columns;
+    int tile_count;
+
+    BitmapBuffer* tiles;
+};
+
+struct Sprite
+{
+    int x_tiles;
+    int y_tiles;
+    int sheet_start_index;
+
+    SpriteSheet* sheet;
+};
+
 void InitBuffer(ScreenBuffer& buffer);
 void DrawBitmap(ScreenBuffer& buffer,
                 BitmapBuffer& bitmap,

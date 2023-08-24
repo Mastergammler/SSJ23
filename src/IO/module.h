@@ -19,7 +19,10 @@ struct BitmapBuffer
     void* buffer;
     BITMAP bitmap;
 
-    BitmapBuffer() { loaded = false; }
+    BitmapBuffer()
+    {
+        loaded = false;
+    }
 
     BitmapBuffer(BITMAP bitmap, void* pixels)
     {
@@ -73,21 +76,5 @@ struct TileMapRaw
     char* data;
 };
 
-struct SpriteSheet
-{
-    bool loaded;
-
-    int tile_width;
-    int tile_height;
-    int image_width;
-    int image_height;
-    int rows;
-    int columns;
-    int tile_count;
-
-    BitmapBuffer* tiles;
-};
-
 TileMapRaw LoadMap(string filePath);
 BitmapBuffer LoadSprite(string path, HINSTANCE hInstance, HDC hdc);
-SpriteSheet ConvertFromSheet(BitmapBuffer sheet, int tileWidth, int tileHeight);
