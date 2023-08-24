@@ -73,3 +73,29 @@ void Action_ToggleCraftingPanel()
     UiElement* panel = &uiElements.elements[ui.crafting_panel_id];
     panel->visible = ui.show_crafting_panel;
 }
+
+void Action_StartGame()
+{
+    UiElement* startBtn = &uiElements.elements[ui.start_game_button_id];
+    UiElement* mapsPanel = &uiElements.elements[ui.map_selection_panel_id];
+    UiElement* exitBtn = &uiElements.elements[ui.exit_game_button_id];
+
+    UiElement* tmp1 = &uiElements.elements[ui.tmp_1];
+    UiElement* tmp2 = &uiElements.elements[ui.tmp_2];
+
+    startBtn->visible = false;
+    mapsPanel->visible = false;
+    exitBtn->visible = false;
+
+    tmp1->visible = true;
+    tmp2->visible = true;
+
+    navigation.in_menu = false;
+    navigation.in_game = true;
+
+    // TODO: trigger transition animation
+    if (_audio.music.loaded)
+    {
+        // PlayAudioFile(&_audio.music, true, 80);
+    }
+}

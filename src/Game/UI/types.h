@@ -25,6 +25,19 @@ enum UiType
     UI_PANEL = 0x1
 };
 
+enum UiPosition
+{
+    UPPER_LEFT,
+    UPPER_MIDDLE,
+    UPPER_RIGHT,
+    CENTERED
+};
+
+struct Position
+{
+    int x, y;
+};
+
 struct UiElement
 {
     bool visible;
@@ -67,4 +80,20 @@ struct UiState
     bool ui_focus;
 
     int crafting_panel_id;
+
+    int tmp_1;
+    int tmp_2;
+
+    // TODO: don't like this saving here
+    //  this needs to be done another way?
+    int start_game_button_id;
+    int map_selection_panel_id;
+    int exit_game_button_id;
+};
+
+struct Navigation
+{
+    bool in_menu;
+    bool in_start_screen;
+    bool in_game;
 };

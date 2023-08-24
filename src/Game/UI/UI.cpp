@@ -5,64 +5,72 @@
 
 MouseState mouseState;
 UiElementStorage uiElements;
+Navigation navigation;
 
-/**
- * Initializes the storage, allocates the memory and initializes it to 0
- *
- * Creates the UI elements that are currently used
- */
-void InitializeUi(int uiElementCount, int layers)
+Position CalculateStartPixelPosition(UiPosition position,
+                                     float borderOffset,
+                                     int xTiles,
+                                     int yTiles)
 {
-    uiElements.size = uiElementCount;
-    uiElements.layer_count = layers;
-    uiElements.elements = new UiElement[uiElementCount];
-    memset(uiElements.elements, 0, sizeof(UiElement) * uiElements.size);
 
-    ui.crafting_panel_id = CreatePanel(2, 10, 8, 4, 0.5, false);
+    int pixelOffsetX =
+        borderOffset > 0 ? borderOffset * (_tileSize.width) - 1 : 0;
+    int pixelOffsetY =
+        borderOffset > 0 ? borderOffset * (_tileSize.height) - 1 : 0;
 
-    int btn1 = CreateButton(
-        3,
-        2,
-        0.5,
-        [] {
-            PlayAudioFile(&_audio.click_hi, false, 90);
-            Action_ToggleCraftingPanel();
-        },
-        true);
-    int btn3 = CreateButton(
-        10,
-        2,
-        0.5,
-        [] {
-            PlayAudioFile(&_audio.pop_hi, false, 90);
-            Action_SpawnEnemy();
-        },
-        true);
-
-    int btn2 = CreateButton(
-        5,
-        4,
-        0.5,
-        [] {
-            PlayAudioFile(&_audio.click_lo, false, 90);
-            Action_ToggleTowerPreview();
-        },
-        false);
-    int btn4 = CreateButton(
-        12,
-        2,
-        0.5,
-        [] { PlayAudioFile(&_audio.pop_lo, false, 90); },
-        false);
+    switch (position)
+    {
+        case UPPER_LEFT:
+        {
+            int x = 0;
+            int y = _tileMap.rows * _tileSize.height - 1;
+            y -= yTiles * _tileSize.height;
+            x += pixelOffsetX;
+            y -= pixelOffsetY;
+            return Position{x, y};
+        }
+        case UPPER_RIGHT:
+        {
+            int x = _tileMap.columns * _tileSize.width - 1;
+            int y = _tileMap.rows * _tileSize.height - 1;
+            x -= xTiles * _tileSize.width;
+            y -= yTiles * _tileSize.height;
+            x -= pixelOffsetX;
+            y -= pixelOffsetY;
+            return Position{x, y};
+        }
+        case UPPER_MIDDLE:
+        {
+            int x = _tileMap.columns * _tileSize.width / 2 - 1;
+            int y = _tileMap.rows * _tileSize.height - 1;
+            x -= xTiles * _tileSize.width / 2;
+            y -= yTiles * _tileSize.height;
+            y -= pixelOffsetY;
+            return Position{x, y};
+        }
+        case CENTERED:
+        {
+            int x = _tileMap.columns * _tileSize.width / 2 - 1;
+            int y = _tileMap.rows * _tileSize.height / 2 - 1;
+            x -= xTiles * _tileSize.width / 2;
+            y -= yTiles * _tileSize.height / 2;
+            return Position{x, y};
+        }
+    };
 }
 
 // TODO: these are hardcoded initializers now
 //  dunno what would be a better way, apart from just recreating the whole
-//  struct or putting hundreds of thing in there maybe some layout default? ->
-//  but i think this is good enough for now
+//  struct or putting hundreds of thing in there maybe some layout default?
+//  -> but i think this is good enough for now
 //  - Working with relative positions (also not to mess it up on map change)
-
-int CreateButton(int mapX, int mapY, float offset, Action onClick, bool visible)
+//  - todo rework for sprite input?
+int CreateButton(UiPosition pos,
+                 float offset,
+                 int spriteIndex,
+                 int hoverIndex,
+                 Action onClick,
+                 bool visible)
 {
     assert(uiElements.count < uiElements.size);
 
@@ -75,15 +83,22 @@ int CreateButton(int mapX, int mapY, float offset, Action onClick, bool visible)
 
     button->x_tiles = 2;
     button->y_tiles = 1;
-    button->x_start = _tileSize.width * (_tileMap.columns - mapX) + offsetPixel;
-    button->y_start = _tileSize.height * (_tileMap.rows - mapY) + offsetPixel;
+
+    Position start = CalculateStartPixelPosition(pos,
+                                                 offset,
+                                                 button->x_tiles,
+                                                 button->y_tiles);
+
+    button->x_start = start.x;
+    button->y_start = start.y;
     button->x_end = button->x_start + button->x_tiles * _tileSize.width;
     button->y_end = button->y_start + button->y_tiles * _tileSize.height;
+
     button->visible = visible;
 
     button->type = UI_SINGLE;
-    button->sprite_index = 8;
-    button->hover_sprite_index = 10;
+    button->sprite_index = spriteIndex;
+    button->hover_sprite_index = hoverIndex;
     button->layer = 0;
 
     button->on_click = onClick;
@@ -91,8 +106,7 @@ int CreateButton(int mapX, int mapY, float offset, Action onClick, bool visible)
     return button->id;
 }
 
-int CreatePanel(int tileX,
-                int tileY,
+int CreatePanel(UiPosition pos,
                 int xSize,
                 int ySize,
                 float offset,
@@ -109,10 +123,16 @@ int CreatePanel(int tileX,
 
     button->x_tiles = xSize;
     button->y_tiles = ySize;
-    button->x_start = _tileSize.width * tileX + offsetPixel;
-    button->y_start = _tileSize.height * tileY + offsetPixel;
+    Position start = CalculateStartPixelPosition(pos,
+                                                 offset,
+                                                 button->x_tiles,
+                                                 button->y_tiles);
+
+    button->x_start = start.x;
+    button->y_start = start.y;
     button->x_end = button->x_start + button->x_tiles * _tileSize.width;
     button->y_end = button->y_start + button->y_tiles * _tileSize.height;
+
     button->visible = visible;
 
     button->type = UI_PANEL;
@@ -174,4 +194,67 @@ void UpdateMouseState()
 
     mouseState.left_down = leftClickedNew;
     mouseState.right_down = rightClickedNew;
+}
+
+/**
+ * Initializes the storage, allocates the memory and initializes it to 0
+ *
+ * Creates the UI elements that are currently used
+ */
+void InitializeUi(int uiElementCount, int layers)
+{
+    uiElements.size = uiElementCount;
+    uiElements.layer_count = layers;
+    uiElements.elements = new UiElement[uiElementCount];
+    memset(uiElements.elements, 0, sizeof(UiElement) * uiElements.size);
+
+    int middleTile = _tileMap.columns / 2;
+
+    // how would i want to define this?
+    // more like Left corner, right corner middle etc
+    // and than a offset to each border
+    // - so how to do that?
+    //
+    // to uniformely lay out i need to know about the other ui parts ...
+
+    ui.map_selection_panel_id = CreatePanel(UPPER_MIDDLE, 3, 3, 6, true);
+    ui.start_game_button_id = CreateButton(
+        UPPER_MIDDLE,
+        4,
+        12,
+        14,
+        [] {
+            PlayAudioFile(&_audio.click_lo, false, 90);
+            Action_StartGame();
+        },
+        true);
+    ui.exit_game_button_id = CreateButton(
+        UPPER_MIDDLE,
+        10,
+        20,
+        22,
+        [] { running = false; },
+        true);
+
+    ui.crafting_panel_id = CreatePanel(UPPER_LEFT, 8, 4, 0.5, false);
+    ui.tmp_1 = CreateButton(
+        UPPER_RIGHT,
+        0.5,
+        8,
+        10,
+        [] {
+            PlayAudioFile(&_audio.click_hi, false, 90);
+            Action_ToggleCraftingPanel();
+        },
+        false);
+    ui.tmp_2 = CreateButton(
+        UPPER_MIDDLE,
+        0.5,
+        8,
+        10,
+        [] {
+            PlayAudioFile(&_audio.pop_hi, false, 90);
+            Action_SpawnEnemy();
+        },
+        false);
 }

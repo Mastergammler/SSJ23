@@ -12,7 +12,7 @@ void InitBuffer(ScreenBuffer& buffer)
     ClearScreen(buffer);
 }
 
-function void ClearScreen(ScreenBuffer& buffer)
+void ClearScreen(ScreenBuffer& buffer)
 {
     u32* pixel = (u32*)buffer.memory;
     for (int i = 0; i < buffer.pixel_count; i++)
@@ -21,11 +21,11 @@ function void ClearScreen(ScreenBuffer& buffer)
     }
 }
 
-function void DrawRect(ScreenBuffer& buffer,
-                       int targetX,
-                       int targetY,
-                       int size,
-                       bool centered)
+void DrawRect(ScreenBuffer& buffer,
+              int targetX,
+              int targetY,
+              int size,
+              bool centered)
 {
     u32* pixel = (u32*)buffer.memory;
 
@@ -62,7 +62,7 @@ function void DrawRect(ScreenBuffer& buffer,
 }
 
 // TODO: has no clipping and no transparency
-function void DrawTiles(ScreenBuffer& buffer, BitmapBuffer& bitmap)
+void FillWithTiles(ScreenBuffer& buffer, BitmapBuffer& bitmap)
 {
     u32* pixel = (u32*)buffer.memory;
     u32* tileStart = (u32*)bitmap.buffer;

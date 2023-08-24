@@ -21,6 +21,7 @@ extern TileMap _tileMap;
 // State tracking
 extern UiState ui;
 extern MouseState mouseState;
+extern Navigation navigation;
 
 // Stores
 extern UiElementStorage uiElements;

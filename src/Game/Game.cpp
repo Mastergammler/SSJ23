@@ -12,6 +12,8 @@ TileSize _tileSize = TileSize{.width = 16, .height = 16};
 
 void StartGame()
 {
+    navigation.in_menu = true;
+
     // TODO: better data structure solution for loading failed!
     if (!_bitmaps.ground.loaded || !_bitmaps.ui.loaded)
     {
@@ -23,7 +25,7 @@ void StartGame()
     }
 
     InitializeUi(8, 3);
-    InitializeEntities(_tileMap.rows * _tileMap.columns);
+    InitializeEntities(_tileMap.rows * _tileMap.columns * 8);
 
     // TODO: TMP
     _sprites.tower_a = Sprite{1, 2, 0, &_bitmaps.characters};
@@ -37,9 +39,10 @@ void StartGame()
         Sprite{1, 1, 28, &_bitmaps.characters},
     };
 
-    // TODO: is the time in seconds?
     _animations.enemy_anim = SpriteAnimation{4, 0.1, enemyWalkAnim};
-    // if (Audio.music.loaded) { PlayAudioFile(&Audio.music, true, 80); }
+
+    // TODO: remove
+    // Action_StartGame();
 }
 
 /**
@@ -93,14 +96,23 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
  */
 void UpdateFrame(ScreenBuffer& buffer)
 {
+
     UpdateMouseState();
     ProcessMouseActions();
 
-    MoveEnemies();
-    AnimateEntities();
+    if (navigation.in_menu)
+    {
+        FillWithTiles(buffer, _bitmaps.ui.tiles[56]);
+    }
+    else if (navigation.in_game)
+    {
 
-    DrawGroundLayer(buffer);
-    DrawEntityLayer(buffer);
-    // Debug_DrawEntityMovementPossibilities(buffer);
+        MoveEnemies();
+        AnimateEntities();
+
+        DrawGroundLayer(buffer);
+        DrawEntityLayer(buffer);
+        // Debug_DrawEntityMovementPossibilities(buffer);
+    }
     DrawUiLayer(buffer);
 }

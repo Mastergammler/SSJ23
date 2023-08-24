@@ -37,6 +37,12 @@ void DrawBitmap(ScreenBuffer& buffer,
                 int bufferX,
                 int bufferY,
                 bool topDown = false);
+
+/**
+ * FIXME: has no clipping yet, if the screen size is not correct for this ..
+ * so the input bitmap must be correct
+ */
+void FillWithTiles(ScreenBuffer& buffer, BitmapBuffer& bitmap);
 // TODO: refactor to use sprite type
 void DrawTiles(ScreenBuffer& buffer,
                int bufferStartX,
@@ -57,6 +63,7 @@ void DrawPanel(ScreenBuffer& buffer,
                int xTiles,
                int yTiles);
 void RenderFrame(HDC hdc, ScreenBuffer buffer, Dimension dim);
+void ClearScreen(ScreenBuffer& buffer);
 
 /**
  * Draws only a jagged line for now
