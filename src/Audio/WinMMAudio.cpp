@@ -20,6 +20,7 @@ int playbackDeviceIdx = 0;
 
 // TODO: read bpm from file?
 int bpm = 128;
+const int GLOBAL_VOLUME = 15;
 
 struct AudioPlayback
 {
@@ -35,7 +36,9 @@ struct AudioPlayback
     int current_sample_position;
     bool playback_finished;
 
-    AudioPlayback() {}
+    AudioPlayback()
+    {
+    }
 
     AudioPlayback(WaveBuffer* wave, bool looping, int bpm, int loop_point_bars)
     {
@@ -80,6 +83,12 @@ void FillNextBuffer(HWAVEOUT device, AudioPlayback& playback, bool writeWave);
  * instances etc
  * - Optimize cache sizes for sounds (how big do they need to be?)
  * -> Maybe this would run much faster / lower latency a bit
+ *
+ * Volume controls the windows volume, not the individual sound volume
+ * That's probably what i need a mixer for?!
+ * But basically just need to adjust the amplitude? (but how to do this while
+ * it's playing???)
+ * -> Not using the volume var atm
  */
 void PlayAudioFile(WaveBuffer* wave, bool loop, int volume)
 {
@@ -112,7 +121,7 @@ void PlayAudioFile(WaveBuffer* wave, bool loop, int volume)
 
     // cout << "Started playback on device: " << playbackDevice << endl;
 
-    int percentage = volume * VOLUME_MAX / 100;
+    int percentage = GLOBAL_VOLUME * VOLUME_MAX / 100;
     long twoChannelVolume = (percentage << 16) | (percentage << 0);
 
     if (waveOutSetVolume(playbackDevice, twoChannelVolume) != MMSYSERR_NOERROR)
@@ -181,9 +190,7 @@ void CALLBACK WaveOutProc(HWAVEOUT playbackDevice,
 
     switch (message)
     {
-        case WOM_CLOSE:
-            Debug("WOM_CLOSE");
-            break;
+        case WOM_CLOSE: Debug("WOM_CLOSE"); break;
         case WOM_OPEN:
         {
             // Debug("WOM_OPEN");
@@ -217,7 +224,10 @@ void CALLBACK WaveOutProc(HWAVEOUT playbackDevice,
                 //      Log( "Error during closing device");
                 //  }
             }
-            else { FillNextBuffer(playbackDevice, *playback, true); }
+            else
+            {
+                FillNextBuffer(playbackDevice, *playback, true);
+            }
         }
         break;
     }
@@ -241,7 +251,10 @@ void generateNextSineChunk(HWAVEOUT device)
         short sampleValue = (short)(sineValue * 10000);
 
         // flipBuffer[buffer_flip][i] = sampleValue;
-        if (i % CHANNELS == 0) { runningSampleIndex++; }
+        if (i % CHANNELS == 0)
+        {
+            runningSampleIndex++;
+        }
     }
 
     // if (waveOutWrite(device,

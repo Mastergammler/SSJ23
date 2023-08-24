@@ -1,6 +1,7 @@
 #include "internal.h"
 #include "module.h"
 #include "systems.h"
+#include "ui.h"
 
 BitmapCache _bitmaps;
 SoundCache _audio;

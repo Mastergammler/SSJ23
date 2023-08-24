@@ -2,8 +2,9 @@
 
 #include "Components/types.h"
 #include "Entities/types.h"
+#include "Loading/types.h"
+#include "UI/types.h"
 #include "module.h"
-#include "types.h"
 
 // Resource cache
 extern BitmapCache _bitmaps;
@@ -28,20 +29,10 @@ extern TowerStore towers;
 extern EnemyStore enemies;
 extern ComponentStore components;
 
-void UpdateMouseState();
-
 BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc);
 SoundCache LoadAudioFiles();
 TileMap LoadMaps();
-
-void InitializeUi(int elementCount, int layers);
-
 SpriteSheet ConvertFromSheet(BitmapBuffer sheet, int tileWidth, int tileHeight);
-void ProcessMouseActions();
-void Action_ToggleTowerPreview();
-void Action_ToggleCraftingPanel();
-void Action_PlaceTower();
-void Action_SpawnEnemy();
 
 void DrawGroundLayer(ScreenBuffer buffer);
 void DrawEntityLayer(ScreenBuffer buffer);

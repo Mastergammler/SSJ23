@@ -1,19 +1,10 @@
-#include "internal.h"
-#include "systems.h"
+#include "../ui.h"
+#include "../../Win32/module.h"
+#include "../internal.h"
+#include "../systems.h"
 
+MouseState mouseState;
 UiElementStorage uiElements;
-
-int CreateButton(int mapX,
-                 int mapY,
-                 float offset,
-                 Action onClick,
-                 bool visible);
-int CreatePanel(int tileX,
-                int tileY,
-                int xSize,
-                int ySize,
-                float offset,
-                bool visible);
 
 /**
  * Initializes the storage, allocates the memory and initializes it to 0
@@ -150,4 +141,37 @@ void ProcessMouseActions()
     {
         Action_ToggleTowerPreview();
     }
+}
+
+void UpdateMouseState()
+{
+    mouseState.left_clicked = false;
+    mouseState.left_released = false;
+    mouseState.right_clicked = false;
+    mouseState.right_released = false;
+
+    mouseState.x = mouse.x;
+    mouseState.y = mouse.y;
+
+    bool leftClickedNew = mouse.buttons & MOUSE_LEFT;
+    bool rightClickedNew = mouse.buttons & MOUSE_RIGHT;
+
+    if (leftClickedNew != mouseState.left_down)
+    {
+        if (leftClickedNew)
+            mouseState.left_clicked = true;
+        else
+            mouseState.left_released = true;
+    }
+
+    if (rightClickedNew != mouseState.right_down)
+    {
+        if (rightClickedNew)
+            mouseState.right_clicked = true;
+        else
+            mouseState.right_released = true;
+    }
+
+    mouseState.left_down = leftClickedNew;
+    mouseState.right_down = rightClickedNew;
 }
