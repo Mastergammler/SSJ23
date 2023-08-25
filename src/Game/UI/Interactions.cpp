@@ -4,7 +4,7 @@ UiState ui;
 
 void Action_SpawnEnemy()
 {
-    if (ui.show_crafting_panel) return;
+    if (ui.show_crafting_panels) return;
 
     Tile startTile = *_tileMap.spawns[0];
 
@@ -69,9 +69,25 @@ void Action_ToggleTowerPreview()
 
 void Action_ToggleCraftingPanel()
 {
-    ui.show_crafting_panel = !ui.show_crafting_panel;
-    UiElement* panel = &uiElements.elements[ui.crafting_panel_id];
-    panel->visible = ui.show_crafting_panel;
+    ui.show_crafting_panels = !ui.show_crafting_panels;
+    UiElement* panel = &uiElements.elements[ui.tower_crafting_panel_id];
+    UiElement* items = &uiElements.elements[ui.items_panel_id];
+    panel->visible = ui.show_crafting_panels;
+    items->visible = ui.show_crafting_panels;
+
+    // hide child elements
+    for (int i = 0; i < uiElements.count; ++i)
+    {
+        UiElement* el = &uiElements.elements[i];
+        if (el->parent_id == items->id)
+        {
+            el->visible = items->visible;
+        }
+        else if (el->parent_id == panel->id)
+        {
+            el->visible = panel->visible;
+        }
+    }
 }
 
 void Action_StartGame()
@@ -80,6 +96,8 @@ void Action_StartGame()
     UiElement* mapsPanel = &uiElements.elements[ui.map_selection_panel_id];
     UiElement* exitBtn = &uiElements.elements[ui.exit_game_button_id];
 
+    UiElement* towerSelection =
+        &uiElements.elements[ui.tower_selection_panel_id];
     UiElement* tmp1 = &uiElements.elements[ui.tmp_1];
     UiElement* tmp2 = &uiElements.elements[ui.tmp_2];
 
@@ -87,6 +105,7 @@ void Action_StartGame()
     mapsPanel->visible = false;
     exitBtn->visible = false;
 
+    towerSelection->visible = true;
     tmp1->visible = true;
     tmp2->visible = true;
 

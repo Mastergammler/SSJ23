@@ -2,7 +2,10 @@
 
 #include "types.h"
 
-function void Debug(string msg) { cout << "[Debug] " << msg << endl; }
+function void Debug(string msg)
+{
+    cout << "[Debug] " << msg << endl;
+}
 
 /**
  * Takes a index that grows from LL to UR and transfroms it
@@ -32,4 +35,7 @@ function int MirrorIndex(int index, int totalColumns, int totalRows)
     return mirroredIndex;
 }
 
-function int MirrorY(int y, int height) { return height - 1 - y; }
+function int MirrorY(int y, int height)
+{
+    return height - 1 - y;
+}

@@ -7,16 +7,28 @@ MouseState mouseState;
 UiElementStorage uiElements;
 Navigation navigation;
 
+/**
+ * Border offset is the no of tiles offset from the border position
+ * (For center it has no impact)
+ * yOffset is the offset in tiles from the top
+ * it is an additional offset and stacks with the border offset
+ *
+ * What is offset is dependant on the UiPosition in use
+ * On Top + offset moves downward
+ * (Things use top down perspective)
+ */
 Position CalculateStartPixelPosition(UiPosition position,
                                      float borderOffset,
                                      int xTiles,
-                                     int yTiles)
+                                     int yTiles,
+                                     float yOffset)
 {
 
-    int pixelOffsetX =
-        borderOffset > 0 ? borderOffset * (_tileSize.width) - 1 : 0;
-    int pixelOffsetY =
-        borderOffset > 0 ? borderOffset * (_tileSize.height) - 1 : 0;
+    int pixelBorderOffsetX =
+        borderOffset > 0 ? borderOffset * _tileSize.width - 1 : 0;
+    int pixelBorderOffsetY =
+        borderOffset > 0 ? borderOffset * _tileSize.height - 1 : 0;
+    int pixelYOffset = yOffset > 0 ? yOffset * _tileSize.height - 1 : 0;
 
     switch (position)
     {
@@ -25,8 +37,9 @@ Position CalculateStartPixelPosition(UiPosition position,
             int x = 0;
             int y = _tileMap.rows * _tileSize.height - 1;
             y -= yTiles * _tileSize.height;
-            x += pixelOffsetX;
-            y -= pixelOffsetY;
+            x += pixelBorderOffsetX;
+            y -= pixelBorderOffsetY;
+            y -= pixelYOffset;
             return Position{x, y};
         }
         case UPPER_RIGHT:
@@ -35,8 +48,9 @@ Position CalculateStartPixelPosition(UiPosition position,
             int y = _tileMap.rows * _tileSize.height - 1;
             x -= xTiles * _tileSize.width;
             y -= yTiles * _tileSize.height;
-            x -= pixelOffsetX;
-            y -= pixelOffsetY;
+            x -= pixelBorderOffsetX;
+            y -= pixelBorderOffsetY;
+            y -= pixelYOffset;
             return Position{x, y};
         }
         case UPPER_MIDDLE:
@@ -45,7 +59,8 @@ Position CalculateStartPixelPosition(UiPosition position,
             int y = _tileMap.rows * _tileSize.height - 1;
             x -= xTiles * _tileSize.width / 2;
             y -= yTiles * _tileSize.height;
-            y -= pixelOffsetY;
+            y -= pixelBorderOffsetY;
+            y -= pixelYOffset;
             return Position{x, y};
         }
         case CENTERED:
@@ -54,6 +69,7 @@ Position CalculateStartPixelPosition(UiPosition position,
             int y = _tileMap.rows * _tileSize.height / 2 - 1;
             x -= xTiles * _tileSize.width / 2;
             y -= yTiles * _tileSize.height / 2;
+            y -= pixelYOffset;
             return Position{x, y};
         }
     };
@@ -70,7 +86,8 @@ int CreateButton(UiPosition pos,
                  int spriteIndex,
                  int hoverIndex,
                  Action onClick,
-                 bool visible)
+                 bool visible,
+                 float yOffset = 0)
 {
     assert(uiElements.count < uiElements.size);
 
@@ -87,7 +104,8 @@ int CreateButton(UiPosition pos,
     Position start = CalculateStartPixelPosition(pos,
                                                  offset,
                                                  button->x_tiles,
-                                                 button->y_tiles);
+                                                 button->y_tiles,
+                                                 yOffset);
 
     button->x_start = start.x;
     button->y_start = start.y;
@@ -106,11 +124,126 @@ int CreateButton(UiPosition pos,
     return button->id;
 }
 
+int CreateItemButton(int parentId, int x, int y, bool visible)
+{
+    assert(uiElements.count < uiElements.size);
+
+    int id = uiElements.count++;
+    UiElement* button = &uiElements.elements[id];
+
+    button->id = id;
+    button->parent_id = parentId;
+    button->initialized = true;
+
+    button->x_tiles = 1;
+    button->y_tiles = 1;
+
+    button->x_start = x;
+    button->y_start = y;
+    button->x_end = button->x_start + button->x_tiles * _tileSize.width;
+    button->y_end = button->y_start + button->y_tiles * _tileSize.height;
+
+    button->visible = visible;
+
+    button->type = UI_SINGLE;
+    button->sprite_index = 19;
+    button->hover_sprite_index = 0;
+    button->layer = 2;
+
+    button->on_click = [] {};
+
+    return button->id;
+}
+
+// for now only uniform 1x1 buttons
+void CreatePanelButtons(int parentId,
+                        float panelPadding,
+                        float spacing,
+                        int items)
+{
+    UiElement panel = uiElements.elements[parentId];
+    assert(panel.initialized);
+
+    // these are width -> not indices
+    int pixelPadding = panelPadding * _tileSize.width;
+    int minPixelSpacing = spacing * _tileSize.width;
+
+    int buttonSizeX = _tileSize.width * 1;
+    int buttonSizeY = _tileSize.height * 1;
+    int buttonSpaceX = buttonSizeX + minPixelSpacing;
+    int buttonSpaceY = buttonSizeY + minPixelSpacing;
+
+    int areaSurfacePixelX = panel.x_end - panel.x_start - 2 * pixelPadding;
+    int areaSurfacePixelY = panel.y_end - panel.y_start - 2 * pixelPadding;
+
+    // 1 spacing is removed, because it's done by padding
+    int buttonsPerRow = (areaSurfacePixelX + minPixelSpacing) / buttonSpaceX;
+    int buttonsPerColumn = (areaSurfacePixelY + minPixelSpacing) / buttonSpaceY;
+    int maxButtonCount = buttonsPerRow * buttonsPerColumn;
+
+    if (maxButtonCount < items)
+    {
+        Logf("Panel %d can only fit %d items, additional items are ignored!",
+             parentId,
+             maxButtonCount);
+    }
+
+    int spaceButtonOnlyX = buttonsPerRow * _tileSize.width;
+    int spaceButtonOnlyY = buttonsPerColumn * _tileSize.height;
+    int availableSpacingSpaceX = areaSurfacePixelX - spaceButtonOnlyX;
+    int availableSpacingSpaceY = areaSurfacePixelY - spaceButtonOnlyY;
+
+    // only spaces in between buttons
+    int actualSpacingX =
+        buttonsPerRow > 1 ? availableSpacingSpaceX / (buttonsPerRow - 1) : 0;
+    int actualSpacingY = buttonsPerColumn > 1
+                             ? availableSpacingSpaceY / (buttonsPerColumn - 1)
+                             : 0;
+    int leftoverSpaceX =
+        buttonsPerRow > 1 ? availableSpacingSpaceX % (buttonsPerRow - 1) : 0;
+    int leftoverSpaceY = buttonsPerColumn > 1
+                             ? availableSpacingSpaceY % (buttonsPerColumn - 1)
+                             : 0;
+
+    int areaStartX = panel.x_start + pixelPadding;
+    int areaStartY = panel.y_end - pixelPadding - _tileSize.height;
+
+    areaStartX += leftoverSpaceX / 2;
+    areaStartY -= leftoverSpaceY / 2;
+
+    // surface = offset
+    int buttonSurfaceX = buttonSizeX + actualSpacingX;
+    int buttonSurfaceY = buttonSizeY + actualSpacingY;
+
+    int rowsToDraw = items / buttonsPerRow;
+    int lastRowItems = items % buttonsPerRow;
+    if (lastRowItems != 0) rowsToDraw++;
+
+    for (int y = 0; y < rowsToDraw - 1; y++)
+    {
+        for (int x = 0; x < buttonsPerRow; x++)
+        {
+            int xPos = areaStartX + x * buttonSurfaceX;
+            int yPos = areaStartY - y * buttonSurfaceY;
+            CreateItemButton(parentId, xPos, yPos, false);
+        }
+    }
+
+    // draw last row - because they might not have all items
+    for (int x = 0; x < lastRowItems; x++)
+    {
+        int xPos = areaStartX + x * buttonSurfaceX;
+        int yPos = areaStartY - (rowsToDraw - 1) * buttonSurfaceY;
+        CreateItemButton(parentId, xPos, yPos, false);
+    }
+}
+
 int CreatePanel(UiPosition pos,
                 int xSize,
                 int ySize,
                 float offset,
-                bool visible)
+                bool visible,
+                float yOffset = 0)
 {
     assert(uiElements.count < uiElements.size);
 
@@ -126,7 +259,8 @@ int CreatePanel(UiPosition pos,
     Position start = CalculateStartPixelPosition(pos,
                                                  offset,
                                                  button->x_tiles,
-                                                 button->y_tiles);
+                                                 button->y_tiles,
+                                                 yOffset);
 
     button->x_start = start.x;
     button->y_start = start.y;
@@ -196,6 +330,23 @@ void UpdateMouseState()
     mouseState.right_down = rightClickedNew;
 }
 
+void SetupNullElement()
+{
+    // first element, is the null element
+    // - how do i make it visible (obvious) that it is the null element?
+    // -> Make it be in the center of the map or something?
+    int id = uiElements.count++;
+    UiElement* nullElement = &uiElements.elements[id];
+    nullElement->visible = false;
+    nullElement->x_start = scale.draw_width / 2;
+    nullElement->x_end = nullElement->x_start;
+    nullElement->y_start = scale.draw_height / 2;
+    nullElement->y_end = nullElement->y_start;
+    nullElement->on_click = [] {
+        Log("Error: On click of null element was executed");
+    };
+}
+
 /**
  * Initializes the storage, allocates the memory and initializes it to 0
  *
@@ -206,16 +357,14 @@ void InitializeUi(int uiElementCount, int layers)
     uiElements.size = uiElementCount;
     uiElements.layer_count = layers;
     uiElements.elements = new UiElement[uiElementCount];
+
     memset(uiElements.elements, 0, sizeof(UiElement) * uiElements.size);
+    SetupNullElement();
 
-    int middleTile = _tileMap.columns / 2;
-
-    // how would i want to define this?
-    // more like Left corner, right corner middle etc
-    // and than a offset to each border
-    // - so how to do that?
-    //
-    // to uniformely lay out i need to know about the other ui parts ...
+    // TODO: do i want a setup that takes previous button into account as well?
+    //  - so that they move automatically?
+    //  - that they detect other buttons that are there, and take that position
+    //  as offset? -> that would be nice, nice to define
 
     ui.map_selection_panel_id = CreatePanel(UPPER_MIDDLE, 3, 3, 6, true);
     ui.start_game_button_id = CreateButton(
@@ -236,7 +385,14 @@ void InitializeUi(int uiElementCount, int layers)
         [] { running = false; },
         true);
 
-    ui.crafting_panel_id = CreatePanel(UPPER_LEFT, 8, 4, 0.5, false);
+    // Game UI
+    ui.tower_crafting_panel_id =
+        CreatePanel(UPPER_RIGHT, 2, 10, 0.5, false, 2.5);
+    ui.items_panel_id = CreatePanel(UPPER_MIDDLE, 15, 10, 0, false, 3);
+    ui.tower_selection_panel_id = CreatePanel(UPPER_LEFT, 15, 2, 0.5, false);
+    CreatePanelButtons(ui.items_panel_id, 0.5, 0.25, 20);
+    CreatePanelButtons(ui.tower_crafting_panel_id, 0.5, 0.25, 6);
+
     ui.tmp_1 = CreateButton(
         UPPER_RIGHT,
         0.5,

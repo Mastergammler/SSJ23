@@ -45,6 +45,10 @@ struct UiElement
     bool hovered;
 
     int id;
+    /**
+     * Id of the parent UI element, or -1 if none
+     */
+    int parent_id;
 
     int x_start;
     int y_start;
@@ -74,12 +78,14 @@ struct UiElementStorage
 
 struct UiState
 {
-    bool show_crafting_panel;
+    bool show_crafting_panels;
     bool tower_placement_mode;
     bool tower_a_selected;
     bool ui_focus;
 
-    int crafting_panel_id;
+    int tower_crafting_panel_id;
+    int items_panel_id;
+    int tower_selection_panel_id;
 
     int tmp_1;
     int tmp_2;

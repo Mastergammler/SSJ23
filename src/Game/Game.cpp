@@ -24,7 +24,7 @@ void StartGame()
         PostQuitMessage(0);
     }
 
-    InitializeUi(8, 3);
+    InitializeUi(256, 3);
     InitializeEntities(_tileMap.rows * _tileMap.columns * 8);
 
     // TODO: TMP
@@ -42,7 +42,7 @@ void StartGame()
     _animations.enemy_anim = SpriteAnimation{4, 0.1, enemyWalkAnim};
 
     // TODO: remove
-    // Action_StartGame();
+    Action_StartGame();
 }
 
 /**
