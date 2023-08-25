@@ -48,15 +48,9 @@ void StartGame()
 
     for (int i = 0; i < itemCount; i++)
     {
-        // create
         int slotId = ui.item_slots.data[i];
-        UiElement* el = &uiElements.elements[slotId];
-
-        int centerX = el->x_start + _tileSize.width / 2;
-        int centerY = el->y_start + _tileSize.height / 2;
-
-        int entityId = CreateItemEntity(centerX, centerY, cat);
-
+        Position centerPos = ItemSlotCenter(slotId);
+        int entityId = CreateItemEntity(centerPos.x, centerPos.y, cat);
         ui.ui_entity_map[slotId] =
             ItemPanelPositionMap{slotId, entityId, slotId};
     }
@@ -132,6 +126,7 @@ void UpdateFrame(ScreenBuffer& buffer)
 
         DrawGroundLayer(buffer);
         DrawEntityLayer(buffer);
+
         // Debug_DrawEntityMovementPossibilities(buffer);
     }
     DrawUiLayer(buffer);

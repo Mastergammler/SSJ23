@@ -1,4 +1,5 @@
 #include "../internal.h"
+#include "../ui.h"
 
 UiState ui;
 
@@ -117,4 +118,101 @@ void Action_StartGame()
     {
         // PlayAudioFile(&_audio.music, true, 80);
     }
+}
+
+void Action_StartDrag()
+{
+    if (!ui.is_dragging)
+    {
+        ui.is_dragging = true;
+
+        UiElement* el = ui.ui_focus_element;
+        ItemPanelPositionMap slotEntityMap = ui.ui_entity_map[el->id];
+
+        ui.dragged_entity_id = slotEntityMap.entity_id;
+    }
+}
+
+void Action_DoDragging()
+{
+    if (ui.is_dragging)
+    {
+        Entity* e = &entities.units[ui.dragged_entity_id];
+
+        e->x = mouseState.x;
+        e->y = mouseState.y;
+    }
+}
+
+// TODO: nodo need to cleanup the ui
+//  need a better tracking system
+//  some way to distinguish between drop and non drops
+//
+// TODO: Refactor UI state system
+// -> its driving me crazy right now, i don't find stuff anymore
+// -> introduce flags for ui items -> then i can add drop_source and drop_target
+// -> And do interactions based on that -> and can remove onclick?
+// -> Or set onClick differently for the build buttons
+
+// FIXME: something is dropped some resetting happening
+// -> when i move something twice
+// -> Because i have no way of distinguishing starts and ends only
+// => Could just do another enum?
+void Action_Drop()
+{
+
+    Entity* e = &entities.units[ui.dragged_entity_id];
+    UiElement* dropTarget = ui.ui_focus_element;
+
+    int initialSlotId = -1;
+    for (const auto& pair : ui.ui_entity_map)
+    {
+        if (pair.second.entity_id == e->id)
+        {
+            initialSlotId = pair.second.initial_slot_id;
+            break;
+        }
+    }
+
+    // entity has to have been tracked somewhere
+    assert(initialSlotId != -1);
+
+    // TODO: use zero element?
+    // This is wrong, because it must be a valid drop target ...
+    // -> only certain elements allowed
+    if (dropTarget->type == UI_DRAG_DROP)
+    {
+        ItemPanelPositionMap mapping = ui.ui_entity_map[dropTarget->id];
+
+        // is default -> empty slot
+        if (mapping.initial_slot_id == 0)
+        {
+            Position slotCenter = ItemSlotCenter(dropTarget->id);
+            e->x = slotCenter.x;
+            e->y = slotCenter.y;
+
+            ItemPanelPositionMap mapping = ui.ui_entity_map[initialSlotId];
+            ui.ui_entity_map.erase(initialSlotId);
+
+            // initial slot stays same, for reset
+            mapping.current_slot_id = dropTarget->id;
+            ui.ui_entity_map[dropTarget->id] = mapping;
+        }
+        // switch entities
+        else
+        {
+            // todo switch stuff
+        }
+    }
+    else
+    {
+        // reset to initial position
+        Position slotCenter = ItemSlotCenter(initialSlotId);
+        e->x = slotCenter.x;
+        e->y = slotCenter.y;
+    }
+
+    // TODO: do we have 0 entity?
+    ui.dragged_entity_id = EntityZero.id;
+    ui.is_dragging = false;
 }

@@ -26,11 +26,21 @@ void InitializeComponentStorage(int storeCount)
     memset(components.memory, 0, sizeof(EntityComponents) * storeCount);
 }
 
+void InitEntityZero()
+{
+    Entity* e = &entities.units[entities.unit_count++];
+    e->x = scale.draw_width / 2;
+    e->y = scale.draw_height / 2;
+}
+
 void InitializeEntities(int storeCount)
 {
     entities.size = storeCount;
     entities.units = new Entity[storeCount];
     memset(entities.units, 0, sizeof(Entity) * storeCount);
+    // TODO: doesn't work with rendering -> because still gets found
+    // crashes then because no sprite
+    // InitEntityZero();
 
     InitializeComponentStorage(storeCount);
     InitializeTowerStorage(storeCount);
@@ -124,8 +134,8 @@ int CreateTowerEntity(int x, int y, Sprite sprite)
     e->x = x;
     e->y = y;
     // tower doesn't need it
-    // e->move_x = x;
-    // e->move_y = y;
+    e->move_x = 0;
+    e->move_y = 0;
     e->type = TOWER;
     e->direction = NORTH;
     e->sprite = sprite;

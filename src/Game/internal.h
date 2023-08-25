@@ -30,6 +30,10 @@ extern TowerStore towers;
 extern EnemyStore enemies;
 extern ComponentStore components;
 
+// Zeros
+const Entity EntityZero =
+    Entity{.initialized = false, .id = -1, .storage_id = -1};
+
 BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc);
 SoundCache LoadAudioFiles();
 TileMap LoadMaps();

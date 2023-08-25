@@ -1,5 +1,7 @@
 #include "../internal.h"
 
+// TODO: use this null element, or another one?
+//  the default one as 0 ??
 UiElement NullElement = {.visible = false,
                          .initialized = false,
                          .id = -1,

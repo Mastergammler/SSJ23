@@ -7,74 +7,6 @@ MouseState mouseState;
 UiElementStorage uiElements;
 Navigation navigation;
 
-/**
- * Border offset is the no of tiles offset from the border position
- * (For center it has no impact)
- * yOffset is the offset in tiles from the top
- * it is an additional offset and stacks with the border offset
- *
- * What is offset is dependant on the UiPosition in use
- * On Top + offset moves downward
- * (Things use top down perspective)
- */
-Position CalculateStartPixelPosition(UiPosition position,
-                                     float borderOffset,
-                                     int xTiles,
-                                     int yTiles,
-                                     float yOffset)
-{
-
-    int pixelBorderOffsetX =
-        borderOffset > 0 ? borderOffset * _tileSize.width - 1 : 0;
-    int pixelBorderOffsetY =
-        borderOffset > 0 ? borderOffset * _tileSize.height - 1 : 0;
-    int pixelYOffset = yOffset > 0 ? yOffset * _tileSize.height - 1 : 0;
-
-    switch (position)
-    {
-        case UPPER_LEFT:
-        {
-            int x = 0;
-            int y = _tileMap.rows * _tileSize.height - 1;
-            y -= yTiles * _tileSize.height;
-            x += pixelBorderOffsetX;
-            y -= pixelBorderOffsetY;
-            y -= pixelYOffset;
-            return Position{x, y};
-        }
-        case UPPER_RIGHT:
-        {
-            int x = _tileMap.columns * _tileSize.width - 1;
-            int y = _tileMap.rows * _tileSize.height - 1;
-            x -= xTiles * _tileSize.width;
-            y -= yTiles * _tileSize.height;
-            x -= pixelBorderOffsetX;
-            y -= pixelBorderOffsetY;
-            y -= pixelYOffset;
-            return Position{x, y};
-        }
-        case UPPER_MIDDLE:
-        {
-            int x = _tileMap.columns * _tileSize.width / 2 - 1;
-            int y = _tileMap.rows * _tileSize.height - 1;
-            x -= xTiles * _tileSize.width / 2;
-            y -= yTiles * _tileSize.height;
-            y -= pixelBorderOffsetY;
-            y -= pixelYOffset;
-            return Position{x, y};
-        }
-        case CENTERED:
-        {
-            int x = _tileMap.columns * _tileSize.width / 2 - 1;
-            int y = _tileMap.rows * _tileSize.height / 2 - 1;
-            x -= xTiles * _tileSize.width / 2;
-            y -= yTiles * _tileSize.height / 2;
-            y -= pixelYOffset;
-            return Position{x, y};
-        }
-    };
-}
-
 // TODO: these are hardcoded initializers now
 //  dunno what would be a better way, apart from just recreating the whole
 //  struct or putting hundreds of thing in there maybe some layout default?
@@ -124,6 +56,9 @@ int CreateButton(UiPosition pos,
     return button->id;
 }
 
+/**
+ * All of these are now supporting/triggering drag drop
+ */
 int CreateItemButton(int parentId, int x, int y, bool visible)
 {
     assert(uiElements.count < uiElements.size);
@@ -145,12 +80,12 @@ int CreateItemButton(int parentId, int x, int y, bool visible)
 
     button->visible = visible;
 
-    button->type = UI_SINGLE;
+    button->type = UI_DRAG_DROP;
     button->sprite_index = 19;
     button->hover_sprite_index = 0;
     button->layer = 2;
 
-    button->on_click = [] {};
+    button->on_click = Action_StartDrag;
 
     return button->id;
 }
@@ -296,11 +231,26 @@ void ProcessMouseActions()
     // TODO: kinda ugly, not a good solution
     hovered->hovered = true;
     ui.ui_focus = hovered->id != -1;
+    ui.ui_focus_element = hovered;
 
     if (mouseState.left_clicked)
     {
         hovered->on_click();
         Action_PlaceTower();
+    }
+    if (mouseState.left_released)
+    {
+        if (ui.is_dragging)
+        {
+            Action_Drop();
+        }
+    }
+    if (mouseState.left_down)
+    {
+        if (ui.is_dragging)
+        {
+            Action_DoDragging();
+        }
     }
     if (mouseState.right_clicked)
     {

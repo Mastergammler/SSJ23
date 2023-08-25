@@ -22,7 +22,8 @@ struct MouseState
 enum UiType
 {
     UI_SINGLE = 0x0,
-    UI_PANEL = 0x1
+    UI_PANEL = 0x1,
+    UI_DRAG_DROP = 0x2
 };
 
 enum UiPosition
@@ -92,6 +93,10 @@ struct UiState
     bool tower_placement_mode;
     bool tower_a_selected;
     bool ui_focus;
+
+    bool is_dragging;
+    UiElement* ui_focus_element;
+    int dragged_entity_id;
 
     int tower_crafting_panel_id;
     int items_panel_id;

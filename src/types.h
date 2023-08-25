@@ -125,3 +125,8 @@ struct IntArray
     int* data;
     int size;
 };
+
+struct v2
+{
+    int x, y;
+};
