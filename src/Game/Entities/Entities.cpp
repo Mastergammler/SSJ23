@@ -118,8 +118,6 @@ int CreateTower(int entityId)
 
 int CreateTowerEntity(int x, int y, Sprite sprite)
 {
-    assert(entities.unit_count < entities.size);
-
     Entity* e = InitNextEntity();
     e->storage_id = CreateTower(e->id);
 
@@ -133,4 +131,18 @@ int CreateTowerEntity(int x, int y, Sprite sprite)
     e->sprite = sprite;
 
     return e->id;
-};
+}
+
+int CreateItemEntity(int x, int y, Sprite sprite)
+{
+    Entity* e = InitNextEntity();
+    // TODO: no storage yet
+
+    e->x = x;
+    e->y = y;
+
+    e->type = CRAFT_ITEM;
+    e->sprite = sprite;
+
+    return e->id;
+}

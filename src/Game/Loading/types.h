@@ -42,6 +42,7 @@ struct BitmapCache
     SpriteSheet ground = {};
     SpriteSheet ui = {};
     SpriteSheet characters = {};
+    SpriteSheet items = {};
 };
 
 struct SoundCache

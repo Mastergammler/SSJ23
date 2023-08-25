@@ -76,6 +76,16 @@ struct UiElementStorage
     int layer_count;
 };
 
+struct ItemPanelPositionMap
+{
+    int current_slot_id;
+    int entity_id;
+    /**
+     * for resetting
+     */
+    int initial_slot_id;
+};
+
 struct UiState
 {
     bool show_crafting_panels;
@@ -95,6 +105,9 @@ struct UiState
     int start_game_button_id;
     int map_selection_panel_id;
     int exit_game_button_id;
+
+    map<int, ItemPanelPositionMap> ui_entity_map = {};
+    IntArray item_slots;
 };
 
 struct Navigation

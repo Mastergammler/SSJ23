@@ -125,6 +125,11 @@ void DrawEntityLayer(ScreenBuffer buffer)
 void DrawUiLayer(ScreenBuffer buffer)
 {
     RenderUiElements(buffer, _bitmaps.ui);
+    // needs to be on top of the rest of the ui stuff
+    if (ui.show_crafting_panels)
+    {
+        RenderCraftingItems(buffer);
+    }
 
     // draw mouse
     DrawBitmap(buffer,

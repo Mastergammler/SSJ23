@@ -40,6 +40,7 @@ void DrawEntityLayer(ScreenBuffer buffer);
 void DrawUiLayer(ScreenBuffer buffer);
 
 int CreateTowerEntity(int x, int y, Sprite sprite);
+int CreateItemEntity(int x, int y, Sprite sprite);
 int CreateEnemyEntity(int x,
                       int y,
                       Sprite sprite,

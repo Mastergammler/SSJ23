@@ -21,6 +21,43 @@ void RenderEntities(ScreenBuffer buffer)
         int renderOrderIndex = renderOrder[i];
         Entity e = entities.units[renderOrderIndex];
 
+        // craft items are rendered separately, because they need to be on top
+        // of the ui
+        if (e.type == CRAFT_ITEM) continue;
+
+        int drawStartX = e.x - (_tileSize.width / 2 - 1);
+        int drawStartY = e.y - (_tileSize.height / 2 - 1);
+
+        Sprite sprite;
+        if (e.component_mask & ANIMATOR)
+        {
+            Animator anim = components.memory[e.id].animator;
+            sprite = anim.samples[anim.sample_index];
+        }
+        else
+        {
+            sprite = e.sprite;
+        }
+
+        DrawTiles(buffer,
+                  drawStartX,
+                  drawStartY,
+                  *sprite.sheet,
+                  sprite.sheet_start_index,
+                  sprite.x_tiles,
+                  sprite.y_tiles);
+    }
+}
+
+void RenderCraftingItems(ScreenBuffer buffer)
+{
+
+    for (int i = 0; i < entities.unit_count; ++i)
+    {
+        Entity e = entities.units[i];
+
+        if (e.type != CRAFT_ITEM) continue;
+
         int drawStartX = e.x - (_tileSize.width / 2 - 1);
         int drawStartY = e.y - (_tileSize.height / 2 - 1);
 

@@ -4,7 +4,9 @@ enum EntityType
 {
     TOWER = 0x0,
     ENEMY = 0x1,
-    PROJECTILE = 0x10
+    PROJECTILE = 0x10,
+    CRAFT_ITEM = 0x11,
+    TOWER_PROTO = 0x100,
 };
 
 /**

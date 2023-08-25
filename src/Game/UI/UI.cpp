@@ -156,11 +156,12 @@ int CreateItemButton(int parentId, int x, int y, bool visible)
 }
 
 // for now only uniform 1x1 buttons
-void CreatePanelButtons(int parentId,
-                        float panelPadding,
-                        float spacing,
-                        int items)
+IntArray CreatePanelButtons(int parentId,
+                            float panelPadding,
+                            float spacing,
+                            int items)
 {
+
     UiElement panel = uiElements.elements[parentId];
     assert(panel.initialized);
 
@@ -219,13 +220,19 @@ void CreatePanelButtons(int parentId,
     int lastRowItems = items % buttonsPerRow;
     if (lastRowItems != 0) rowsToDraw++;
 
+    // return it properly
+    int* panelButtonIds = new int[items];
+    int idAccIdx = 0;
+
     for (int y = 0; y < rowsToDraw - 1; y++)
     {
         for (int x = 0; x < buttonsPerRow; x++)
         {
             int xPos = areaStartX + x * buttonSurfaceX;
             int yPos = areaStartY - y * buttonSurfaceY;
-            CreateItemButton(parentId, xPos, yPos, false);
+
+            panelButtonIds[idAccIdx++] =
+                CreateItemButton(parentId, xPos, yPos, false);
         }
     }
 
@@ -234,8 +241,12 @@ void CreatePanelButtons(int parentId,
     {
         int xPos = areaStartX + x * buttonSurfaceX;
         int yPos = areaStartY - (rowsToDraw - 1) * buttonSurfaceY;
-        CreateItemButton(parentId, xPos, yPos, false);
+
+        panelButtonIds[idAccIdx++] =
+            CreateItemButton(parentId, xPos, yPos, false);
     }
+
+    return IntArray{panelButtonIds, items};
 }
 
 int CreatePanel(UiPosition pos,
@@ -390,7 +401,7 @@ void InitializeUi(int uiElementCount, int layers)
         CreatePanel(UPPER_RIGHT, 2, 10, 0.5, false, 2.5);
     ui.items_panel_id = CreatePanel(UPPER_MIDDLE, 15, 10, 0, false, 3);
     ui.tower_selection_panel_id = CreatePanel(UPPER_LEFT, 15, 2, 0.5, false);
-    CreatePanelButtons(ui.items_panel_id, 0.5, 0.25, 20);
+    ui.item_slots = CreatePanelButtons(ui.items_panel_id, 0.5, 0.25, 20);
     CreatePanelButtons(ui.tower_crafting_panel_id, 0.5, 0.25, 6);
 
     ui.tmp_1 = CreateButton(

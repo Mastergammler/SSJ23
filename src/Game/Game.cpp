@@ -24,7 +24,7 @@ void StartGame()
         PostQuitMessage(0);
     }
 
-    InitializeUi(256, 3);
+    InitializeUi(64, 3);
     InitializeEntities(_tileMap.rows * _tileMap.columns * 8);
 
     // TODO: TMP
@@ -40,6 +40,26 @@ void StartGame()
     };
 
     _animations.enemy_anim = SpriteAnimation{4, 0.1, enemyWalkAnim};
+
+    // TODO: load actual items with sprite from file
+    Sprite cat = Sprite{1, 1, 1, &_bitmaps.items};
+    int itemCount = 18;
+    assert(ui.item_slots.size >= itemCount);
+
+    for (int i = 0; i < itemCount; i++)
+    {
+        // create
+        int slotId = ui.item_slots.data[i];
+        UiElement* el = &uiElements.elements[slotId];
+
+        int centerX = el->x_start + _tileSize.width / 2;
+        int centerY = el->y_start + _tileSize.height / 2;
+
+        int entityId = CreateItemEntity(centerX, centerY, cat);
+
+        ui.ui_entity_map[slotId] =
+            ItemPanelPositionMap{slotId, entityId, slotId};
+    }
 
     // TODO: remove
     Action_StartGame();

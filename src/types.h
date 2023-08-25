@@ -119,3 +119,9 @@ struct WaveBuffer
     u16* data;
     bool loaded;
 };
+
+struct IntArray
+{
+    int* data;
+    int size;
+};

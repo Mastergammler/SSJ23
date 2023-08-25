@@ -92,8 +92,16 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
     if (charactersSheet.loaded)
     {
         cache.characters = ConvertFromSheet(charactersSheet,
-                                            _tileSize.height,
-                                            _tileSize.width);
+                                            _tileSize.width,
+                                            _tileSize.height);
+    }
+
+    BitmapBuffer itemsSheet =
+        LoadSprite(ABSOLUTE_RES_PATH + "Sprites/Items_8x8.bmp", hInstance, hdc);
+    if (itemsSheet.loaded)
+    {
+        cache.items =
+            ConvertFromSheet(itemsSheet, _tileSize.width, _tileSize.height);
     }
 
     return cache;
