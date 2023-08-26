@@ -38,6 +38,7 @@ IndentCaseBlocks: false
 
 BreakBeforeBinaryOperators: None
 AlignOperands: Align
+ContinuationIndentWidth: 40 
 
 AllowShortBlocksOnASingleLine: false
 AllowShortFunctionsOnASingleLine: false

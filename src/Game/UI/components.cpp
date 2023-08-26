@@ -20,59 +20,48 @@ Position ItemSlotCenter(int slotId)
  * On Top + offset moves downward
  * (Things use top down perspective)
  */
-Position CalculateStartPixelPosition(UiPosition position,
-                                     float borderOffset,
-                                     int xTiles,
-                                     int yTiles,
-                                     float yOffset)
+Position CalculateStartPixelPosition(Anchor anchor, Sprite sprite)
 {
+    // no -1 needed, because an offset, is a length!
+    int xOffsetPixel = anchor.x_offset * _tileSize.width;
+    int yOffsetPixel = anchor.y_offset * _tileSize.height;
 
-    int pixelBorderOffsetX =
-        borderOffset > 0 ? borderOffset * _tileSize.width - 1 : 0;
-    int pixelBorderOffsetY =
-        borderOffset > 0 ? borderOffset * _tileSize.height - 1 : 0;
-    int pixelYOffset = yOffset > 0 ? yOffset * _tileSize.height - 1 : 0;
-
-    switch (position)
+    switch (anchor.reference_point)
     {
         case UPPER_LEFT:
         {
             int x = 0;
             int y = _tileMap.rows * _tileSize.height - 1;
-            y -= yTiles * _tileSize.height;
-            x += pixelBorderOffsetX;
-            y -= pixelBorderOffsetY;
-            y -= pixelYOffset;
+            y -= sprite.y_tiles * _tileSize.height;
+            x += xOffsetPixel;
+            y -= yOffsetPixel;
             return Position{x, y};
         }
         case UPPER_RIGHT:
         {
             int x = _tileMap.columns * _tileSize.width - 1;
             int y = _tileMap.rows * _tileSize.height - 1;
-            x -= xTiles * _tileSize.width;
-            y -= yTiles * _tileSize.height;
-            x -= pixelBorderOffsetX;
-            y -= pixelBorderOffsetY;
-            y -= pixelYOffset;
+            x -= sprite.x_tiles * _tileSize.width;
+            y -= sprite.y_tiles * _tileSize.height;
+            x -= xOffsetPixel;
+            y -= yOffsetPixel;
             return Position{x, y};
         }
         case UPPER_MIDDLE:
         {
             int x = _tileMap.columns * _tileSize.width / 2 - 1;
             int y = _tileMap.rows * _tileSize.height - 1;
-            x -= xTiles * _tileSize.width / 2;
-            y -= yTiles * _tileSize.height;
-            y -= pixelBorderOffsetY;
-            y -= pixelYOffset;
+            x -= sprite.x_tiles * _tileSize.width / 2;
+            y -= sprite.y_tiles * _tileSize.height;
+            y -= yOffsetPixel;
             return Position{x, y};
         }
         case CENTERED:
         {
             int x = _tileMap.columns * _tileSize.width / 2 - 1;
             int y = _tileMap.rows * _tileSize.height / 2 - 1;
-            x -= xTiles * _tileSize.width / 2;
-            y -= yTiles * _tileSize.height / 2;
-            y -= pixelYOffset;
+            x -= sprite.x_tiles * _tileSize.width / 2;
+            y -= sprite.y_tiles * _tileSize.height / 2;
             return Position{x, y};
         }
     };

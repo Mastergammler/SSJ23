@@ -3,11 +3,8 @@
 void InitializeUi(int uiElementCount, int layers);
 
 Position ItemSlotCenter(int slotId);
-Position CalculateStartPixelPosition(UiPosition position,
-                                     float borderOffset,
-                                     int xTiles,
-                                     int yTiles,
-                                     float yOffset);
+
+Position CalculateStartPixelPosition(Anchor anchor, Sprite sprite);
 
 void UpdateMouseState();
 void ProcessMouseActions();
@@ -20,3 +17,4 @@ void Action_StartGame();
 void Action_StartDrag();
 void Action_DoDragging();
 void Action_Drop();
+void Action_Exit();

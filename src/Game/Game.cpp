@@ -3,19 +3,14 @@
 #include "systems.h"
 #include "ui.h"
 
-BitmapCache _bitmaps;
-SoundCache _audio;
-SpriteCache _sprites;
-AnimationCache _animations;
 TileMap _tileMap;
 TileSize _tileSize = TileSize{.width = 16, .height = 16};
 
 void StartGame()
 {
-    navigation.in_menu = true;
 
     // TODO: better data structure solution for loading failed!
-    if (!_bitmaps.ground.loaded || !_bitmaps.ui.loaded)
+    if (!Res.bitmaps.ground.loaded || !Res.bitmaps.ui.loaded)
     {
         Log("Unable to rendere because resources not loaded");
         //  TODO: Play elevator music / show error screen
@@ -24,39 +19,46 @@ void StartGame()
         PostQuitMessage(0);
     }
 
-    InitializeUi(64, 3);
     InitializeEntities(_tileMap.rows * _tileMap.columns * 8);
+    InitializeUi(64, 3);
+
+    navigation.in_menu = true;
+    UiElement* startBtn = &uiElements.elements[ui.menu.start_game_button];
+    UiElement* mapsPanel = &uiElements.elements[ui.menu.map_selection_panel];
+    UiElement* exitBtn = &uiElements.elements[ui.menu.exit_game_button];
+
+    startBtn->visible = true;
+    mapsPanel->visible = true;
+    exitBtn->visible = true;
 
     // TODO: TMP
-    _sprites.tower_a = Sprite{1, 2, 0, &_bitmaps.characters};
-    _sprites.tower_b = Sprite{1, 2, 2, &_bitmaps.characters};
-    _sprites.enemy_a = Sprite{1, 1, 24, &_bitmaps.characters};
+    Res.sprites.tower_a = Sprite{1, 2, 0, &Res.bitmaps.characters};
+    Res.sprites.tower_b = Sprite{1, 2, 2, &Res.bitmaps.characters};
+    Res.sprites.enemy_a = Sprite{1, 1, 24, &Res.bitmaps.characters};
 
     Sprite* enemyWalkAnim = new Sprite[4]{
-        Sprite{1, 1, 25, &_bitmaps.characters},
-        Sprite{1, 1, 26, &_bitmaps.characters},
-        Sprite{1, 1, 27, &_bitmaps.characters},
-        Sprite{1, 1, 28, &_bitmaps.characters},
+                                            Sprite{1,
+                                                   1,
+                                                   25,
+                                                   &Res.bitmaps.characters},
+                                            Sprite{1,
+                                                   1,
+                                                   26,
+                                                   &Res.bitmaps.characters},
+                                            Sprite{1,
+                                                   1,
+                                                   27,
+                                                   &Res.bitmaps.characters},
+                                            Sprite{1,
+                                                   1,
+                                                   28,
+                                                   &Res.bitmaps.characters},
     };
 
-    _animations.enemy_anim = SpriteAnimation{4, 0.1, enemyWalkAnim};
-
-    // TODO: load actual items with sprite from file
-    Sprite cat = Sprite{1, 1, 1, &_bitmaps.items};
-    int itemCount = 18;
-    assert(ui.item_slots.size >= itemCount);
-
-    for (int i = 0; i < itemCount; i++)
-    {
-        int slotId = ui.item_slots.data[i];
-        Position centerPos = ItemSlotCenter(slotId);
-        int entityId = CreateItemEntity(centerPos.x, centerPos.y, cat);
-        ui.ui_entity_map[slotId] =
-            ItemPanelPositionMap{slotId, entityId, slotId};
-    }
+    Res.animations.enemy_anim = SpriteAnimation{4, 0.1, enemyWalkAnim};
 
     // TODO: remove
-    Action_StartGame();
+    // Action_StartGame();
 }
 
 /**
@@ -70,11 +72,11 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
 
     measure.Update();
     individualCounter.Update();
-    _bitmaps = LoadSprites(hInstance, hdc);
+    Res.bitmaps = LoadSprites(hInstance, hdc);
     Logf("  Sprites loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
 
     individualCounter.Update();
-    _audio = LoadAudioFiles();
+    Res.audio = LoadAudioFiles();
     Logf("  Audio loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
 
     individualCounter.Update();
@@ -116,7 +118,7 @@ void UpdateFrame(ScreenBuffer& buffer)
 
     if (navigation.in_menu)
     {
-        FillWithTiles(buffer, _bitmaps.ui.tiles[56]);
+        FillWithTiles(buffer, Res.bitmaps.ui.tiles[56]);
     }
     else if (navigation.in_game)
     {

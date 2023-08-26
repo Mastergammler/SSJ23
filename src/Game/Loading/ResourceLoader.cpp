@@ -1,5 +1,6 @@
 #include "../internal.h"
 
+Resources Res;
 global_var const string ABSOLUTE_RES_PATH = "I:/02 Areas/Dev/Cpp/SSJ23/res/";
 
 /**
@@ -7,21 +8,21 @@ global_var const string ABSOLUTE_RES_PATH = "I:/02 Areas/Dev/Cpp/SSJ23/res/";
  * When the path tiles are the controlling ones
  */
 map<TileEnv, int> pathMap = {
-    // TODO: adjust single
-    {SINGLE, 12},
-    {MIDDLE, 6},
-    {TOP, 4},
-    {BOTTOM, 20},
-    {LEFT, 11},
-    {RIGHT, 13},
-    {TL, 3},
-    {TR, 5},
-    {BL, 19},
-    {BR, 21},
-    {ITL, 0},
-    {ITR, 2},
-    {IBL, 16},
-    {IBR, 18}};
+                                        // TODO: adjust single
+                                        {SINGLE, 12},
+                                        {MIDDLE, 6},
+                                        {TOP, 4},
+                                        {BOTTOM, 20},
+                                        {LEFT, 11},
+                                        {RIGHT, 13},
+                                        {TL, 3},
+                                        {TR, 5},
+                                        {BL, 19},
+                                        {BR, 21},
+                                        {ITL, 0},
+                                        {ITR, 2},
+                                        {IBL, 16},
+                                        {IBR, 18}};
 
 const int SHEET_ROWS = 8;
 const int SHEET_COLUMNS = 8;
@@ -56,8 +57,9 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
 {
     BitmapCache cache = {};
 
-    BitmapBuffer bmp1 =
-        LoadSprite(ABSOLUTE_RES_PATH + "Sprites/Cursor.bmp", hInstance, hdc);
+    BitmapBuffer bmp1 = LoadSprite(ABSOLUTE_RES_PATH + "Sprites/Cursor.bmp",
+                                   hInstance,
+                                   hdc);
     if (bmp1.loaded)
     {
         cache.cursor_sprite = bmp1;
@@ -70,25 +72,30 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
         cache.tile_highlight = bmp2;
     }
 
-    BitmapBuffer tilesSheet =
-        LoadSprite(ABSOLUTE_RES_PATH + "Sprites/Tiles_8x8.bmp", hInstance, hdc);
+    BitmapBuffer tilesSheet = LoadSprite(ABSOLUTE_RES_PATH + "Sprites/"
+                                                             "Tiles_8x8.bmp",
+                                         hInstance,
+                                         hdc);
     if (tilesSheet.loaded)
     {
-        cache.ground =
-            ConvertFromSheet(tilesSheet, _tileSize.width, _tileSize.height);
+        cache.ground = ConvertFromSheet(tilesSheet,
+                                        _tileSize.width,
+                                        _tileSize.height);
     }
 
-    BitmapBuffer uiSheet =
-        LoadSprite(ABSOLUTE_RES_PATH + "Sprites/UI_8x8.bmp", hInstance, hdc);
+    BitmapBuffer uiSheet = LoadSprite(ABSOLUTE_RES_PATH + "Sprites/UI_8x8.bmp",
+                                      hInstance,
+                                      hdc);
     if (uiSheet.loaded)
     {
         cache.ui = ConvertFromSheet(uiSheet, _tileSize.width, _tileSize.height);
     }
 
-    BitmapBuffer charactersSheet =
-        LoadSprite(ABSOLUTE_RES_PATH + "Sprites/Characters_8x8.bmp",
-                   hInstance,
-                   hdc);
+    BitmapBuffer charactersSheet = LoadSprite(ABSOLUTE_RES_PATH + "Sprites/"
+                                                                  "Characters_"
+                                                                  "8x8.bmp",
+                                              hInstance,
+                                              hdc);
     if (charactersSheet.loaded)
     {
         cache.characters = ConvertFromSheet(charactersSheet,
@@ -96,12 +103,15 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
                                             _tileSize.height);
     }
 
-    BitmapBuffer itemsSheet =
-        LoadSprite(ABSOLUTE_RES_PATH + "Sprites/Items_8x8.bmp", hInstance, hdc);
+    BitmapBuffer itemsSheet = LoadSprite(ABSOLUTE_RES_PATH + "Sprites/"
+                                                             "Items_8x8.bmp",
+                                         hInstance,
+                                         hdc);
     if (itemsSheet.loaded)
     {
-        cache.items =
-            ConvertFromSheet(itemsSheet, _tileSize.width, _tileSize.height);
+        cache.items = ConvertFromSheet(itemsSheet,
+                                       _tileSize.width,
+                                       _tileSize.height);
     }
 
     return cache;
@@ -118,14 +128,14 @@ SoundCache LoadAudioFiles()
     }
 
     // Sounds
-    WaveBuffer clickLo =
-        LoadWaveFile(ABSOLUTE_RES_PATH + "Sounds/Click-Lo.wav");
+    WaveBuffer clickLo = LoadWaveFile(ABSOLUTE_RES_PATH +
+                                      "Sounds/Click-Lo.wav");
     if (clickLo.loaded)
     {
         cache.click_lo = clickLo;
     }
-    WaveBuffer clickHi =
-        LoadWaveFile(ABSOLUTE_RES_PATH + "Sounds/Click-Hi.wav");
+    WaveBuffer clickHi = LoadWaveFile(ABSOLUTE_RES_PATH +
+                                      "Sounds/Click-Hi.wav");
     if (clickHi.loaded)
     {
         cache.click_hi = clickHi;
@@ -189,8 +199,8 @@ TileType fromNumber(int num)
 //  - also great for ppl trying it out?!
 TileMap LoadMaps()
 {
-    TileMapRaw rawMap =
-        LoadMap(ABSOLUTE_RES_PATH + "Test/Tilemap_15_20_singlePath.map");
+    TileMapRaw rawMap = LoadMap(ABSOLUTE_RES_PATH +
+                                "Test/Tilemap_15_20_singlePath.map");
 
     Tile* tiles = new Tile[rawMap.rows * rawMap.columns];
     Tile* tmp = tiles;
@@ -288,8 +298,8 @@ SpriteSheet ConvertFromSheet(BitmapBuffer sheetBitmap,
         int tileRow = tileIdx / tilesPerRow;
         int tileCol = tileIdx % tilesPerRow;
 
-        int tilePixelIndex =
-            (sheetBitmap.width * tileHeight) * tileRow + tileCol * tileWidth;
+        int tilePixelIndex = (sheetBitmap.width * tileHeight) * tileRow +
+                             tileCol * tileWidth;
         u32* tileStartPixel = (u32*)sheetBitmap.buffer;
         tileStartPixel += tilePixelIndex;
 

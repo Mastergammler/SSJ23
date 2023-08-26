@@ -1,12 +1,85 @@
+#include "../../Win32/module.h"
 #include "../internal.h"
+#include "../systems.h"
 #include "../ui.h"
 
 UiState ui;
+MouseState mouseState;
+Navigation navigation;
+
+void UpdateMouseState()
+{
+    mouseState.left_clicked = false;
+    mouseState.left_released = false;
+    mouseState.right_clicked = false;
+    mouseState.right_released = false;
+
+    mouseState.x = mouse.x;
+    mouseState.y = mouse.y;
+
+    bool leftClickedNew = mouse.buttons & MOUSE_LEFT;
+    bool rightClickedNew = mouse.buttons & MOUSE_RIGHT;
+
+    if (leftClickedNew != mouseState.left_down)
+    {
+        if (leftClickedNew)
+            mouseState.left_clicked = true;
+        else
+            mouseState.left_released = true;
+    }
+
+    if (rightClickedNew != mouseState.right_down)
+    {
+        if (rightClickedNew)
+            mouseState.right_clicked = true;
+        else
+            mouseState.right_released = true;
+    }
+
+    mouseState.left_down = leftClickedNew;
+    mouseState.right_down = rightClickedNew;
+}
+
+void ProcessMouseActions()
+{
+    UiElement* hovered = FindHighestLayerCollision(mouseState.x, mouseState.y);
+    hovered->hovered = true;
+    ui.ui_focus = hovered->id != -1;
+    ui.ui_focus_element = hovered;
+
+    if (mouseState.left_clicked)
+    {
+        hovered->on_click();
+        Action_PlaceTower();
+    }
+
+    if (mouseState.left_released)
+    {
+        if (ui.is_dragging)
+        {
+            Action_Drop();
+        }
+    }
+
+    if (mouseState.left_down)
+    {
+        if (ui.is_dragging)
+        {
+            Action_DoDragging();
+        }
+    }
+
+    if (mouseState.right_clicked)
+    {
+        Action_ToggleTowerPreview();
+    }
+}
 
 void Action_SpawnEnemy()
 {
-    if (ui.show_crafting_panels) return;
+    if (ui.crafting.visible) return;
 
+    PlayAudioFile(&Res.audio.pop_hi, false, 90);
     Tile startTile = *_tileMap.spawns[0];
 
     int invertedY = _tileMap.rows - startTile.y - 1;
@@ -17,17 +90,17 @@ void Action_SpawnEnemy()
     //  where to get the real speed from?
     CreateEnemyEntity(spawnX,
                       spawnY,
-                      _sprites.enemy_a,
+                      Res.sprites.enemy_a,
                       SOUTH,
                       20,
-                      _animations.enemy_anim);
+                      Res.animations.enemy_anim);
 }
 
 void Action_PlaceTower()
 {
     if (ui.ui_focus) return;
 
-    if (ui.tower_placement_mode)
+    if (ui.placement.active)
     {
         Tile* tile = _tileMap.tileAt(mouseState.x, mouseState.y);
 
@@ -37,10 +110,10 @@ void Action_PlaceTower()
 
         if (tile->tile_id == GRASS_TILE && !tile->is_occupied)
         {
-            Sprite towerSprite =
-                ui.tower_a_selected ? _sprites.tower_a : _sprites.tower_b;
+            Sprite towerSprite = ui.placement.tower_a_selected ? Res.sprites.tower_a
+                                                               : Res.sprites.tower_b;
             CreateTowerEntity(centerX, centerY, towerSprite);
-            PlayAudioFile(&_audio.pop_lo, false, 90);
+            PlayAudioFile(&Res.audio.pop_lo, false, 90);
 
             tile->is_occupied = true;
         }
@@ -50,33 +123,35 @@ void Action_PlaceTower()
 void Action_ToggleTowerPreview()
 {
     // 3 way switch
-    if (ui.tower_placement_mode)
+    if (ui.placement.active)
     {
-        if (ui.tower_a_selected)
+        if (ui.placement.tower_a_selected)
         {
-            ui.tower_a_selected = !ui.tower_a_selected;
+            ui.placement.tower_a_selected = !ui.placement.tower_a_selected;
         }
         else
         {
-            ui.tower_placement_mode = !ui.tower_placement_mode;
+            ui.placement.active = !ui.placement.active;
         }
     }
     else
     {
-        ui.tower_placement_mode = true;
-        ui.tower_a_selected = true;
+        ui.placement.active = true;
+        ui.placement.tower_a_selected = true;
     }
 }
 
 void Action_ToggleCraftingPanel()
 {
-    ui.show_crafting_panels = !ui.show_crafting_panels;
-    UiElement* panel = &uiElements.elements[ui.tower_crafting_panel_id];
-    UiElement* items = &uiElements.elements[ui.items_panel_id];
-    panel->visible = ui.show_crafting_panels;
-    items->visible = ui.show_crafting_panels;
+    PlayAudioFile(&Res.audio.click_hi, false, 90);
 
-    // hide child elements
+    ui.crafting.visible = !ui.crafting.visible;
+    UiElement* panel = &uiElements.elements[ui.crafting.tower_panel];
+    UiElement* items = &uiElements.elements[ui.crafting.items_panel];
+    panel->visible = ui.crafting.visible;
+    items->visible = ui.crafting.visible;
+
+    // show/hide child elements
     for (int i = 0; i < uiElements.count; ++i)
     {
         UiElement* el = &uiElements.elements[i];
@@ -93,30 +168,30 @@ void Action_ToggleCraftingPanel()
 
 void Action_StartGame()
 {
-    UiElement* startBtn = &uiElements.elements[ui.start_game_button_id];
-    UiElement* mapsPanel = &uiElements.elements[ui.map_selection_panel_id];
-    UiElement* exitBtn = &uiElements.elements[ui.exit_game_button_id];
+    PlayAudioFile(&Res.audio.click_lo, false, 90);
+    UiElement* startBtn = &uiElements.elements[ui.menu.start_game_button];
+    UiElement* mapsPanel = &uiElements.elements[ui.menu.map_selection_panel];
+    UiElement* exitBtn = &uiElements.elements[ui.menu.exit_game_button];
 
-    UiElement* towerSelection =
-        &uiElements.elements[ui.tower_selection_panel_id];
-    UiElement* tmp1 = &uiElements.elements[ui.tmp_1];
+    UiElement* towerSelection = &uiElements.elements[ui.placement.tower_selection_panel];
+    UiElement* openCrafting = &uiElements.elements[ui.crafting.show_hide_button];
     UiElement* tmp2 = &uiElements.elements[ui.tmp_2];
 
     startBtn->visible = false;
     mapsPanel->visible = false;
     exitBtn->visible = false;
 
-    towerSelection->visible = true;
-    tmp1->visible = true;
+    towerSelection->visible = false;
+    openCrafting->visible = true;
     tmp2->visible = true;
 
     navigation.in_menu = false;
     navigation.in_game = true;
 
     // TODO: trigger transition animation
-    if (_audio.music.loaded)
+    if (Res.audio.music.loaded)
     {
-        // PlayAudioFile(&_audio.music, true, 80);
+        // PlayAudioFile(&res.audio.music, true, 80);
     }
 }
 
@@ -127,7 +202,7 @@ void Action_StartDrag()
         ui.is_dragging = true;
 
         UiElement* el = ui.ui_focus_element;
-        ItemPanelPositionMap slotEntityMap = ui.ui_entity_map[el->id];
+        EntitySlotMap slotEntityMap = ui.crafting.item_slot_mapping[el->id];
 
         ui.dragged_entity_id = slotEntityMap.entity_id;
     }
@@ -165,7 +240,7 @@ void Action_Drop()
     UiElement* dropTarget = ui.ui_focus_element;
 
     int initialSlotId = -1;
-    for (const auto& pair : ui.ui_entity_map)
+    for (const auto& pair : ui.crafting.item_slot_mapping)
     {
         if (pair.second.entity_id == e->id)
         {
@@ -182,7 +257,7 @@ void Action_Drop()
     // -> only certain elements allowed
     if (dropTarget->type == UI_DRAG_DROP)
     {
-        ItemPanelPositionMap mapping = ui.ui_entity_map[dropTarget->id];
+        EntitySlotMap mapping = ui.crafting.item_slot_mapping[dropTarget->id];
 
         // is default -> empty slot
         if (mapping.initial_slot_id == 0)
@@ -191,12 +266,12 @@ void Action_Drop()
             e->x = slotCenter.x;
             e->y = slotCenter.y;
 
-            ItemPanelPositionMap mapping = ui.ui_entity_map[initialSlotId];
-            ui.ui_entity_map.erase(initialSlotId);
+            EntitySlotMap mapping = ui.crafting.item_slot_mapping[initialSlotId];
+            ui.crafting.item_slot_mapping.erase(initialSlotId);
 
             // initial slot stays same, for reset
             mapping.current_slot_id = dropTarget->id;
-            ui.ui_entity_map[dropTarget->id] = mapping;
+            ui.crafting.item_slot_mapping[dropTarget->id] = mapping;
         }
         // switch entities
         else
@@ -215,4 +290,9 @@ void Action_Drop()
     // TODO: do we have 0 entity?
     ui.dragged_entity_id = EntityZero.id;
     ui.is_dragging = false;
+}
+
+void Action_Exit()
+{
+    running = false;
 }

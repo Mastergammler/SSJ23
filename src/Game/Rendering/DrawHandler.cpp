@@ -96,44 +96,47 @@ void DrawTilemap(ScreenBuffer& buffer, SpriteSheet& sheet)
 
         if (cur.is_start)
         {
-            DrawBitmap(buffer, _bitmaps.ui.tiles[3], drawX, drawY);
+            DrawBitmap(buffer, Res.bitmaps.ui.tiles[3], drawX, drawY);
         }
         else if (cur.is_end)
         {
-            DrawBitmap(buffer, _bitmaps.ui.tiles[4], drawX, drawY);
+            DrawBitmap(buffer, Res.bitmaps.ui.tiles[4], drawX, drawY);
         }
     }
 }
 
 void DrawGroundLayer(ScreenBuffer buffer)
 {
-    DrawTilemap(buffer, _bitmaps.ground);
+    DrawTilemap(buffer, Res.bitmaps.ground);
 }
 
 void DrawEntityLayer(ScreenBuffer buffer)
 {
     RenderEntities(buffer);
 
-    if (ui.tower_placement_mode && !ui.ui_focus)
+    if (ui.placement.active && !ui.ui_focus)
     {
-        Sprite towerSprite =
-            ui.tower_a_selected ? _sprites.tower_a : _sprites.tower_b;
-        DrawTowerPreview(buffer, _bitmaps.characters, _bitmaps.ui, towerSprite);
+        Sprite towerSprite = ui.placement.tower_a_selected ? Res.sprites.tower_a
+                                                           : Res.sprites.tower_b;
+        DrawTowerPreview(buffer,
+                         Res.bitmaps.characters,
+                         Res.bitmaps.ui,
+                         towerSprite);
     }
 }
 
 void DrawUiLayer(ScreenBuffer buffer)
 {
-    RenderUiElements(buffer, _bitmaps.ui);
+    RenderUiElements(buffer, Res.bitmaps.ui);
     // needs to be on top of the rest of the ui stuff
-    if (ui.show_crafting_panels)
+    if (ui.crafting.visible)
     {
         RenderCraftingItems(buffer);
     }
 
     // draw mouse
     DrawBitmap(buffer,
-               _bitmaps.cursor_sprite,
+               Res.bitmaps.cursor_sprite,
                mouseState.x,
                mouseState.y,
                true);

@@ -225,3 +225,11 @@ struct TileMap
         return tiles + tileIdx;
     }
 };
+
+struct Resources
+{
+    BitmapCache bitmaps;
+    SoundCache audio;
+    SpriteCache sprites;
+    AnimationCache animations;
+};

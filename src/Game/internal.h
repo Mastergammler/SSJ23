@@ -7,10 +7,15 @@
 #include "module.h"
 
 // Resource cache
-extern BitmapCache _bitmaps;
-extern SoundCache _audio;
-extern SpriteCache _sprites;
-extern AnimationCache _animations;
+// NOTE: i kinda like this concept
+// maybe i can do more of those
+// - Mem -> for ECS stuff
+// - Game -> for tile maps etc (ui also)
+// Has also the benefit, that you can text search for all it's usages
+// And maybe even free etc it all together
+// Maybe stuff should be grouped in a way, where it wants to be
+// allocated and freed together?
+extern Resources Res;
 
 // Definitions
 extern map<TileEnv, int> pathMap;
@@ -31,8 +36,9 @@ extern EnemyStore enemies;
 extern ComponentStore components;
 
 // Zeros
-const Entity EntityZero =
-    Entity{.initialized = false, .id = -1, .storage_id = -1};
+const Entity EntityZero = Entity{.initialized = false,
+                                 .id = -1,
+                                 .storage_id = -1};
 
 BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc);
 SoundCache LoadAudioFiles();

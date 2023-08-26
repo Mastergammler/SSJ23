@@ -1,7 +1,26 @@
 #include "../module.h"
 
-// NOTE: the mouse can only interact with one element at a time
-// drag and drop state should go on the ui elements
+enum UiType
+{
+    UI_BUTTON = 0x0,
+    UI_PANEL = 0x1,
+    UI_DRAG_DROP = 0x2
+};
+
+enum UiFlag
+{
+    DRAG_SOURCE = 0b1 << 0,
+    DROP_TARGET = 0b1 << 1
+};
+
+enum UiPosition
+{
+    UPPER_LEFT,
+    UPPER_MIDDLE,
+    UPPER_RIGHT,
+    CENTERED
+};
+
 struct MouseState
 {
     int x;
@@ -19,24 +38,42 @@ struct MouseState
     bool right_released;
 };
 
-enum UiType
+struct UiSprite : Sprite
 {
-    UI_SINGLE = 0x0,
-    UI_PANEL = 0x1,
-    UI_DRAG_DROP = 0x2
-};
+    UiSprite(int xTiles,
+             int yTiles,
+             int spriteIndex,
+             int hoverIndex,
+             SpriteSheet* sheet)
+    {
+        this->x_tiles = xTiles;
+        this->y_tiles = yTiles;
+        this->sheet_start_index = spriteIndex;
+        this->hover_start_index = hoverIndex;
+        this->sheet = sheet;
+    }
 
-enum UiPosition
-{
-    UPPER_LEFT,
-    UPPER_MIDDLE,
-    UPPER_RIGHT,
-    CENTERED
+    int hover_start_index;
 };
 
 struct Position
 {
     int x, y;
+};
+
+struct Anchor
+{
+    UiPosition reference_point;
+
+    /**
+     * x offset in tiles
+     */
+    float x_offset;
+
+    /**
+     * y offset in tiles
+     */
+    float y_offset;
 };
 
 struct UiElement
@@ -50,6 +87,8 @@ struct UiElement
      * Id of the parent UI element, or -1 if none
      */
     int parent_id;
+
+    int flags;
 
     int x_start;
     int y_start;
@@ -77,47 +116,70 @@ struct UiElementStorage
     int layer_count;
 };
 
-struct ItemPanelPositionMap
-{
-    int current_slot_id;
-    int entity_id;
-    /**
-     * for resetting
-     */
-    int initial_slot_id;
-};
-
-struct UiState
-{
-    bool show_crafting_panels;
-    bool tower_placement_mode;
-    bool tower_a_selected;
-    bool ui_focus;
-
-    bool is_dragging;
-    UiElement* ui_focus_element;
-    int dragged_entity_id;
-
-    int tower_crafting_panel_id;
-    int items_panel_id;
-    int tower_selection_panel_id;
-
-    int tmp_1;
-    int tmp_2;
-
-    // TODO: don't like this saving here
-    //  this needs to be done another way?
-    int start_game_button_id;
-    int map_selection_panel_id;
-    int exit_game_button_id;
-
-    map<int, ItemPanelPositionMap> ui_entity_map = {};
-    IntArray item_slots;
-};
+//-------------
+//  UI STATE
+//-------------
 
 struct Navigation
 {
     bool in_menu;
     bool in_start_screen;
     bool in_game;
+};
+
+struct EntitySlotMap
+{
+    int current_slot_id;
+    int entity_id;
+
+    /**
+     * for resetting
+     */
+    int initial_slot_id;
+};
+
+struct MenuElements
+{
+    int start_game_button;
+    int map_selection_panel;
+    int exit_game_button;
+};
+
+struct CraftingElements
+{
+    bool visible;
+
+    int show_hide_button;
+    int tower_panel;
+    int items_panel;
+
+    IntArray item_slots;
+    IntArray tower_slots;
+    map<int, EntitySlotMap> item_slot_mapping;
+};
+
+struct PlacementElements
+{
+    bool active;
+    int tower_selection_panel;
+
+    // tmp
+    bool tower_a_selected;
+};
+
+struct UiState
+{
+    bool ui_focus;
+    bool is_dragging;
+    UiElement* ui_focus_element;
+
+    MenuElements menu = {};
+    CraftingElements crafting = {};
+    PlacementElements placement = {};
+
+    // TODO: this seems wrong here, do i really need it?
+    int dragged_entity_id;
+
+    // tmp
+    int tmp_2;
 };
