@@ -58,7 +58,7 @@ void StartGame()
     Res.animations.enemy_anim = SpriteAnimation{4, 0.1, enemyWalkAnim};
 
     // TODO: remove
-    // Action_StartGame();
+    Action_StartGame();
 }
 
 /**

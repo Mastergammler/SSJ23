@@ -66,3 +66,93 @@ Position CalculateStartPixelPosition(Anchor anchor, Sprite sprite)
         }
     };
 }
+
+UniformGrid CalculateGridPositions(UiElement panel,
+                                   float padding,
+                                   float spacing,
+                                   int items,
+                                   Sprite sprite)
+{
+    // these are width -> not indices
+    int pixelPadding = padding * _tileSize.width;
+    int minPixelSpacing = spacing * _tileSize.width;
+
+    int buttonSizeX = _tileSize.width * sprite.x_tiles;
+    int buttonSizeY = _tileSize.height * sprite.y_tiles;
+    int buttonSpaceX = buttonSizeX + minPixelSpacing;
+    int buttonSpaceY = buttonSizeY + minPixelSpacing;
+
+    int areaSurfacePixelX = panel.x_end - panel.x_start - 2 * pixelPadding;
+    int areaSurfacePixelY = panel.y_end - panel.y_start - 2 * pixelPadding;
+
+    // 1 spacing is removed, because it's done by padding
+    int buttonsPerRow = (areaSurfacePixelX + minPixelSpacing) / buttonSpaceX;
+    int buttonsPerColumn = (areaSurfacePixelY + minPixelSpacing) / buttonSpaceY;
+    int maxButtonCount = buttonsPerRow * buttonsPerColumn;
+
+    if (maxButtonCount < items)
+    {
+        Logf("Panel %d can only fit %d items, additional items are "
+             "ignored!",
+             panel.id,
+             maxButtonCount);
+    }
+
+    int spaceButtonOnlyX = buttonsPerRow * _tileSize.width;
+    int spaceButtonOnlyY = buttonsPerColumn * _tileSize.height;
+    int availableSpacingSpaceX = areaSurfacePixelX - spaceButtonOnlyX;
+    int availableSpacingSpaceY = areaSurfacePixelY - spaceButtonOnlyY;
+
+    // only spaces in between buttons
+    int actualSpacingX = buttonsPerRow > 1 ? availableSpacingSpaceX / (buttonsPerRow -
+                                                                       1)
+                                           : 0;
+    int actualSpacingY = buttonsPerColumn > 1 ? availableSpacingSpaceY / (buttonsPerColumn -
+                                                                          1)
+                                              : 0;
+    int leftoverSpaceX = buttonsPerRow > 1 ? availableSpacingSpaceX % (buttonsPerRow -
+                                                                       1)
+                                           : 0;
+    int leftoverSpaceY = buttonsPerColumn > 1 ? availableSpacingSpaceY % (buttonsPerColumn -
+                                                                          1)
+                                              : 0;
+
+    int areaStartX = panel.x_start + pixelPadding;
+    int areaStartY = panel.y_end - pixelPadding - _tileSize.height;
+
+    areaStartX += leftoverSpaceX / 2;
+    areaStartY -= leftoverSpaceY / 2;
+
+    // surface = offset
+    int buttonSurfaceX = buttonSizeX + actualSpacingX;
+    int buttonSurfaceY = buttonSizeY + actualSpacingY;
+
+    int rowsToDraw = items / buttonsPerRow;
+    int lastRowItems = items % buttonsPerRow;
+    if (lastRowItems != 0) rowsToDraw++;
+
+    Position* itemPositions = new Position[items];
+    int itemPosIndex = 0;
+
+    for (int y = 0; y < rowsToDraw - 1; y++)
+    {
+        for (int x = 0; x < buttonsPerRow; x++)
+        {
+            int xPos = areaStartX + x * buttonSurfaceX;
+            int yPos = areaStartY - y * buttonSurfaceY;
+
+            itemPositions[itemPosIndex++] = Position{xPos, yPos};
+        }
+    }
+
+    // draw last row - because they might not have all items
+    for (int x = 0; x < lastRowItems; x++)
+    {
+        int xPos = areaStartX + x * buttonSurfaceX;
+        int yPos = areaStartY - (rowsToDraw - 1) * buttonSurfaceY;
+
+        itemPositions[itemPosIndex++] = Position{xPos, yPos};
+    }
+
+    return UniformGrid{rowsToDraw, buttonsPerRow, items, itemPositions};
+}

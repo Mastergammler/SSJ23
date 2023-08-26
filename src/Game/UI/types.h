@@ -61,6 +61,16 @@ struct Position
     int x, y;
 };
 
+struct UniformGrid
+{
+    int rows;
+    int columns;
+
+    int items;
+
+    Position* item_draw_positions;
+};
+
 struct Anchor
 {
     UiPosition reference_point;
@@ -155,7 +165,14 @@ struct CraftingElements
 
     IntArray item_slots;
     IntArray tower_slots;
-    map<int, EntitySlotMap> item_slot_mapping;
+
+    /**
+     * count of available items
+     * for each item there has to exist a entity slot entry
+     * ! But there can be more item slots than items !
+     */
+    int item_count;
+    EntitySlotMap* slot_map;
 };
 
 struct PlacementElements

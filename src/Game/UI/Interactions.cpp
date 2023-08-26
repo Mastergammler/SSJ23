@@ -71,7 +71,14 @@ void ProcessMouseActions()
 
     if (mouseState.right_clicked)
     {
-        Action_ToggleTowerPreview();
+        if (ui.ui_focus)
+        {
+            Action_ResetItemToStartPosition();
+        }
+        else
+        {
+            Action_ToggleTowerPreview();
+        }
     }
 }
 
@@ -195,16 +202,39 @@ void Action_StartGame()
     }
 }
 
+EntitySlotMap* FindBySlotId(int slotId)
+{
+    for (int i = 0; i < ui.crafting.item_count; i++)
+    {
+        EntitySlotMap* cur = &ui.crafting.slot_map[i];
+        if (cur->current_slot_id == slotId) return cur;
+    }
+    return NULL;
+}
+
+EntitySlotMap* FindByEntityId(int entityId)
+{
+    for (int i = 0; i < ui.crafting.item_count; i++)
+    {
+        EntitySlotMap* cur = &ui.crafting.slot_map[i];
+        if (cur->entity_id == entityId) return cur;
+    }
+    return NULL;
+}
+
 void Action_StartDrag()
 {
     if (!ui.is_dragging)
     {
-        ui.is_dragging = true;
-
         UiElement* el = ui.ui_focus_element;
-        EntitySlotMap slotEntityMap = ui.crafting.item_slot_mapping[el->id];
+        if (el->flags & DRAG_SOURCE)
+        {
+            EntitySlotMap* slotEntityMap = FindBySlotId(el->id);
+            if (!slotEntityMap) return;
 
-        ui.dragged_entity_id = slotEntityMap.entity_id;
+            ui.dragged_entity_id = slotEntityMap->entity_id;
+            ui.is_dragging = true;
+        }
     }
 }
 
@@ -229,67 +259,61 @@ void Action_DoDragging()
 // -> And do interactions based on that -> and can remove onclick?
 // -> Or set onClick differently for the build buttons
 
-// FIXME: something is dropped some resetting happening
-// -> when i move something twice
-// -> Because i have no way of distinguishing starts and ends only
-// => Could just do another enum?
+void Action_ResetItemToStartPosition()
+{
+    UiElement* hoveredElement = ui.ui_focus_element;
+
+    // We're only resetting on drop targets
+    // On DRAG_SOURCE it should not matter, as the position would be the same
+    if (hoveredElement->flags & DROP_TARGET)
+    {
+        EntitySlotMap* map = FindBySlotId(hoveredElement->id);
+        if (!map) return;
+
+        Entity* e = &entities.units[map->entity_id];
+        Position slotCenter = ItemSlotCenter(map->initial_slot_id);
+        e->x = slotCenter.x;
+        e->y = slotCenter.y;
+
+        map->current_slot_id = map->initial_slot_id;
+    }
+}
+
 void Action_Drop()
 {
-
     Entity* e = &entities.units[ui.dragged_entity_id];
-    UiElement* dropTarget = ui.ui_focus_element;
+    UiElement* hoveredElement = ui.ui_focus_element;
 
-    int initialSlotId = -1;
-    for (const auto& pair : ui.crafting.item_slot_mapping)
+    EntitySlotMap* entitySlot = FindByEntityId(e->id);
+    assert(entitySlot);
+
+    // TODO: is this the way?, i mean i'm not really using it anyway?
+    ui.dragged_entity_id = EntityZero.id;
+    ui.is_dragging = false;
+
+    if (hoveredElement->flags & DROP_TARGET)
     {
-        if (pair.second.entity_id == e->id)
+        EntitySlotMap* targetSlotMapping = FindBySlotId(hoveredElement->id);
+        if (targetSlotMapping)
         {
-            initialSlotId = pair.second.initial_slot_id;
-            break;
+            Action_ResetItemToStartPosition();
         }
-    }
 
-    // entity has to have been tracked somewhere
-    assert(initialSlotId != -1);
+        Position slotCenter = ItemSlotCenter(hoveredElement->id);
+        e->x = slotCenter.x;
+        e->y = slotCenter.y;
 
-    // TODO: use zero element?
-    // This is wrong, because it must be a valid drop target ...
-    // -> only certain elements allowed
-    if (dropTarget->type == UI_DRAG_DROP)
-    {
-        EntitySlotMap mapping = ui.crafting.item_slot_mapping[dropTarget->id];
-
-        // is default -> empty slot
-        if (mapping.initial_slot_id == 0)
-        {
-            Position slotCenter = ItemSlotCenter(dropTarget->id);
-            e->x = slotCenter.x;
-            e->y = slotCenter.y;
-
-            EntitySlotMap mapping = ui.crafting.item_slot_mapping[initialSlotId];
-            ui.crafting.item_slot_mapping.erase(initialSlotId);
-
-            // initial slot stays same, for reset
-            mapping.current_slot_id = dropTarget->id;
-            ui.crafting.item_slot_mapping[dropTarget->id] = mapping;
-        }
-        // switch entities
-        else
-        {
-            // todo switch stuff
-        }
+        entitySlot->current_slot_id = hoveredElement->id;
     }
     else
     {
         // reset to initial position
-        Position slotCenter = ItemSlotCenter(initialSlotId);
+        Position slotCenter = ItemSlotCenter(entitySlot->initial_slot_id);
         e->x = slotCenter.x;
         e->y = slotCenter.y;
-    }
 
-    // TODO: do we have 0 entity?
-    ui.dragged_entity_id = EntityZero.id;
-    ui.is_dragging = false;
+        return;
+    }
 }
 
 void Action_Exit()
