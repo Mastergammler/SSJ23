@@ -53,6 +53,33 @@ map<TileEnv, int> grassMap = {{SINGLE, 12},
                               {IBL, 16 + SHEET_OFFSET},
                               {IBR, 18 + SHEET_OFFSET}};
 
+/**
+ * Needs to be loaded after the bitmaps, because relies on them!?
+ * Nah just the files for now
+ */
+void LoadItems()
+{
+    // TODO: do conversion with sounds etc
+    ItemArray loaded = LoadItems(ABSOLUTE_RES_PATH + "Items");
+
+    for (int i = 0; i < loaded.count; i++)
+    {
+        ItemData item = loaded.items[i];
+        if (item.loaded)
+        {
+            // TODO: create entity & items to display
+            // and ui items etc etc
+            Logf("Loaded file %s %s %d %d",
+                 item.shoot_sound.c_str(),
+                 item.hit_sound.c_str(),
+                 item.pillar_sprite_idx,
+                 item.effect_types);
+        }
+    }
+
+    Res.items = loaded;
+}
+
 BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
 {
     BitmapCache cache = {};

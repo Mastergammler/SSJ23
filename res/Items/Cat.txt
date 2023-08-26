@@ -1,0 +1,15 @@
+# item properties
+weight=3
+aero=2
+power=1
+stability=0.5
+sturdieness=0.1
+
+# effects encoding
+effects=101011
+
+# visuals
+hit_sound=click_lo
+shoot_sound=click_lo
+bullet_sprite=1
+pillar_sprite=1

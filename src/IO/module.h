@@ -6,6 +6,29 @@
 #include "../types.h"
 #include "../utils.h"
 
+struct ItemData
+{
+    bool loaded;
+
+    float weight;
+    float aero;
+    float stability;
+    float sturdieness;
+    float power;
+
+    int effect_types;
+    string shoot_sound;
+    string hit_sound;
+    int bullet_sprite_idx;
+    int pillar_sprite_idx;
+};
+
+struct ItemArray
+{
+    ItemData* items;
+    int count;
+};
+
 struct BitmapBuffer
 {
     bool loaded;
@@ -76,5 +99,6 @@ struct TileMapRaw
     char* data;
 };
 
+ItemArray LoadItems(string filePath);
 TileMapRaw LoadMap(string filePath);
 BitmapBuffer LoadSprite(string path, HINSTANCE hInstance, HDC hdc);

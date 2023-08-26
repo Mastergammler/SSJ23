@@ -4,6 +4,22 @@ EntityStore entities;
 TowerStore towers;
 EnemyStore enemies;
 ComponentStore components;
+ItemStore items;
+CannonTypeStore cannons;
+
+void InitializeItemStorage(int storeCount)
+{
+    cannons.size = storeCount;
+    cannons.units = new CannonType[storeCount];
+    memset(cannons.units, 0, sizeof(CannonType) * storeCount);
+}
+
+void InitializeCannonTypeStorage(int storeCount)
+{
+    items.size = storeCount;
+    items.units = new Item[storeCount];
+    memset(items.units, 0, sizeof(Item) * storeCount);
+}
 
 void InitializeEnemyStorage(int storeCount)
 {
@@ -45,6 +61,8 @@ void InitializeEntities(int storeCount)
     InitializeComponentStorage(storeCount);
     InitializeTowerStorage(storeCount);
     InitializeEnemyStorage(storeCount);
+    InitializeItemStorage(storeCount);
+    InitializeCannonTypeStorage(storeCount);
 }
 
 Entity* InitNextEntity()
@@ -143,16 +161,83 @@ int CreateTowerEntity(int x, int y, Sprite sprite)
     return e->id;
 }
 
-int CreateItemEntity(int x, int y, Sprite sprite)
+int CreateItem(int entityId, ItemData data)
+{
+    assert(items.unit_count < items.size);
+
+    int id = items.unit_count++;
+    Item* i = &items.units[id];
+
+    i->initialized = true;
+    i->storage_id = id;
+    i->entity_id = entityId;
+
+    i->sturdieness = data.sturdieness;
+    i->stability = data.stability;
+    i->power = data.power;
+    i->aero = data.aero;
+    i->weight = data.weight;
+    i->effects = data.effect_types;
+
+    i->bullet_sprite_idx = data.bullet_sprite_idx;
+    i->pillar_sprite_idx = data.pillar_sprite_idx;
+
+    // TODO: how to map these and put these in?
+    i->hit_sound_idx = 0;
+    i->shoot_sound_idx = 0;
+
+    return i->storage_id;
+}
+
+int CreateItemEntity(int x, int y, ItemData data)
 {
     Entity* e = InitNextEntity();
-    // TODO: no storage yet
+    Sprite sprite = Sprite{1, 1, data.bullet_sprite_idx, &Res.bitmaps.items};
 
     e->x = x;
     e->y = y;
+    e->storage_id = CreateItem(e->id, data);
 
     e->type = CRAFT_ITEM;
     e->sprite = sprite;
+    e->initialized = true;
+
+    return e->id;
+}
+
+int CreateCannonType(int entityId, int bulletId, int postId)
+{
+    assert(cannons.unit_count < cannons.size);
+    int id = cannons.unit_count++;
+    CannonType* t = &cannons.units[id];
+
+    t->storage_id = id;
+    t->entity_id = entityId;
+
+    t->bullet_item_id = bulletId;
+    t->post_item_id = postId;
+    t->initialized = true;
+
+    return t->storage_id;
+}
+
+/**
+ */
+int CreatCannonTypeEntity(int x, int y, int bulletItemId, int postItemId)
+{
+    Entity* e = InitNextEntity();
+
+    Item bullet = items.units[bulletItemId];
+    // take bullet type as sprite
+    Sprite sprite = Sprite{1, 1, bullet.bullet_sprite_idx, &Res.bitmaps.items};
+
+    e->x = x;
+    e->y = y;
+    e->storage_id = CreateCannonType(e->id, bulletItemId, postItemId);
+
+    e->type = TOWER_PROTO;
+    e->sprite = sprite;
+    e->initialized = true;
 
     return e->id;
 }

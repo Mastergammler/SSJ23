@@ -81,20 +81,11 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
 
     individualCounter.Update();
     _tileMap = LoadMaps();
-
-    for (int i = 0; i < _tileMap.spawn_count; i++)
-    {
-        Tile tar = *_tileMap.spawns[i];
-        Logf("Spawn %d: %d,%d", i, tar.x, tar.y);
-    }
-
-    for (int i = 0; i < _tileMap.target_count; i++)
-    {
-        Tile tar = *_tileMap.targets[i];
-        Logf("Target %d: %d,%d", i, tar.x, tar.y);
-    }
-
     Logf("  Tilemap loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
+
+    individualCounter.Update();
+    LoadItems();
+    Logf("  Items loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
 
     Logf("Resources loaded in %.2f ms", measure.CheckDeltaTimeMs());
 
@@ -112,7 +103,6 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
  */
 void UpdateFrame(ScreenBuffer& buffer)
 {
-
     UpdateMouseState();
     ProcessMouseActions();
 

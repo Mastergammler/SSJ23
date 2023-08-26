@@ -1,4 +1,5 @@
 #include "module.h"
+#include <sstream>
 
 struct PlayerData
 {
@@ -63,6 +64,100 @@ TileMapRaw LoadMap(string filePath)
     }
 
     return TileMapRaw{true, rows, columns, values};
+}
+
+ItemData LoadItem(string filePath)
+{
+    map<string, string> fileMap;
+    ifstream item(filePath);
+
+    if (item.is_open())
+    {
+
+        string line;
+        while (getline(item, line))
+        {
+            if (line.empty() || line[0] == '#') continue;
+
+            istringstream streamLine(line);
+            string key;
+            string value;
+
+            if (getline(streamLine, key, '='))
+            {
+                if (getline(streamLine, value))
+                {
+                    fileMap[key] = value;
+                }
+            }
+        }
+        item.close();
+    }
+    else
+    {
+        Logf("Unable to open file %s", filePath.c_str());
+        return ItemData{};
+    }
+
+    Logf("Parsing values for file %s", filePath.c_str());
+
+    // FIXME: doesn't ignore whitespace
+    // Crashes then becaues can't parse it
+    ItemData data = {};
+    data.weight = stof(fileMap["weight"]);
+    data.aero = stof(fileMap["aero"]);
+    data.power = stof(fileMap["power"]);
+    data.stability = stof(fileMap["stability"]);
+    data.sturdieness = stof(fileMap["sturdieness"]);
+
+    data.effect_types = stoi(fileMap["effects"], 0, 2);
+    data.hit_sound = fileMap["hit_sound"];
+    data.shoot_sound = fileMap["shoot_sound"];
+    data.bullet_sprite_idx = stoi(fileMap["bullet_sprite"]);
+    data.pillar_sprite_idx = stoi(fileMap["pillar_sprite"]);
+
+    data.loaded = true;
+
+    return data;
+}
+ItemArray LoadItems(string directoryPath)
+{
+    WIN32_FIND_DATA fileData;
+
+    string searchPath = directoryPath + "\\*.*";
+    HANDLE hFind = FindFirstFile(searchPath.c_str(), &fileData);
+
+    vector<string> files;
+
+    if (hFind != INVALID_HANDLE_VALUE)
+    {
+        do
+        {
+            if (fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) continue;
+            string fileName = fileData.cFileName;
+            files.push_back(fileName);
+        }
+        while (FindNextFile(hFind, &fileData) != 0);
+
+        FindClose(hFind);
+    }
+    else
+    {
+        Logf("Error finding files while searching directory %s",
+             directoryPath.c_str());
+    }
+
+    int itemCount = files.size();
+    Logf("Detected %d item files in items directory", itemCount);
+    ItemData* items = new ItemData[itemCount];
+
+    int index = 0;
+    for (string file : files)
+    {
+        items[index++] = LoadItem(directoryPath + "\\" + file);
+    }
+
+    return ItemArray{items, itemCount};
 }
 
 vector<PlayerData> LoadFile(string filePath)

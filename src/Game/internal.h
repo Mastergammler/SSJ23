@@ -42,6 +42,7 @@ const Entity EntityZero = Entity{.initialized = false,
 
 BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc);
 SoundCache LoadAudioFiles();
+void LoadItems();
 TileMap LoadMaps();
 SpriteSheet ConvertFromSheet(BitmapBuffer sheet, int tileWidth, int tileHeight);
 
@@ -49,8 +50,9 @@ void DrawGroundLayer(ScreenBuffer buffer);
 void DrawEntityLayer(ScreenBuffer buffer);
 void DrawUiLayer(ScreenBuffer buffer);
 
+int CreatCannonTypeEntity(int x, int y, int bulletItemId, int postItemId);
 int CreateTowerEntity(int x, int y, Sprite sprite);
-int CreateItemEntity(int x, int y, Sprite sprite);
+int CreateItemEntity(int x, int y, ItemData data);
 int CreateEnemyEntity(int x,
                       int y,
                       Sprite sprite,

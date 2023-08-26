@@ -232,4 +232,5 @@ struct Resources
     SoundCache audio;
     SpriteCache sprites;
     AnimationCache animations;
+    ItemArray items;
 };

@@ -1,6 +1,7 @@
 #include "../internal.h"
 #include "../ui.h"
 
+// test test test
 UiElementStorage uiElements;
 
 // TODO: still has a few hard coded initializers
@@ -176,6 +177,24 @@ void CreateMenuElements()
                                             Action_Exit);
 }
 
+void CreateCraftingItems()
+{
+    int itemCount = Res.items.count;
+    assert(ui.crafting.item_slots.size >= itemCount);
+
+    ui.crafting.item_count = itemCount;
+    ui.crafting.slot_map = new EntitySlotMap[ui.crafting.item_count];
+
+    for (int i = 0; i < itemCount; i++)
+    {
+        ItemData item = Res.items.items[i];
+        int slotId = ui.crafting.item_slots.data[i];
+        Position centerPos = ItemSlotCenter(slotId);
+        int entityId = CreateItemEntity(centerPos.x, centerPos.y, item);
+        ui.crafting.slot_map[i] = EntitySlotMap{slotId, entityId, slotId};
+    }
+}
+
 void CreateGameElements()
 {
     UiSprite defaultButton = UiSprite{2, 1, 8, 10, &Res.bitmaps.ui};
@@ -214,20 +233,7 @@ void CreateGameElements()
                             defaultButton,
                             Action_SpawnEnemy);
 
-    Sprite cat = Sprite{1, 1, 1, &Res.bitmaps.items};
-    int itemCount = 18;
-    assert(ui.crafting.item_slots.size >= itemCount);
-
-    ui.crafting.item_count = itemCount;
-    ui.crafting.slot_map = new EntitySlotMap[ui.crafting.item_count];
-
-    for (int i = 0; i < ui.crafting.item_count; i++)
-    {
-        int slotId = ui.crafting.item_slots.data[i];
-        Position centerPos = ItemSlotCenter(slotId);
-        int entityId = CreateItemEntity(centerPos.x, centerPos.y, cat);
-        ui.crafting.slot_map[i] = EntitySlotMap{slotId, entityId, slotId};
-    }
+    CreateCraftingItems();
 }
 
 /**

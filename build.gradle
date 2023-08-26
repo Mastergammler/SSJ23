@@ -6,19 +6,14 @@
  */
 
  plugins {
-    id 'native-component'
+    //id 'native-component'
     id 'cpp'
+    id 'cpp-application'
 }
 
 model {
-    toolChains {
-        clang(Clang){ }
-    }
-    platforms {
-        windows_x86_64 {
-            architecture 'x86_64'
-        }
-    }
+    toolChains { clang(Clang){ } }
+    platforms { windows_x86_64 { architecture 'x86_64' } }
     components {
         main(NativeExecutableSpec){
             targetPlatform 'windows_x86_64'
@@ -28,21 +23,18 @@ model {
                 cppCompiler.args '-Werror=return-type'
                 cppCompiler.args '-Wall'
                 cppCompiler.args '-Wpedantic'
+                cppCompiler.args '-o DefenceIY.exe'
                 linker.args '-luser32'
                 linker.args '-lgdi32'
                 linker.args '-lwinmm'
             }
-            sources {
-                cpp {
-                    source {
+            binaries { executable { baseName = 'DefenceIY' } }
+            sources { cpp { source {
                         srcDir "src"
-                            include "**/*cpp"
-                    }
-                }
-            }
-        }
-    }
- }
+                        include "**/*cpp"
+                    } } }
+        } }
+}
 
 task run(type: Exec) {
     dependsOn 'build'

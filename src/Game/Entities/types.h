@@ -104,3 +104,51 @@ struct EnemyStore
     int unit_count;
     int size;
 };
+
+struct Item
+{
+    bool initialized;
+
+    int entity_id;
+    int storage_id;
+
+    float weight;
+    float aero;
+    float stability;
+    float sturdieness;
+    float power;
+
+    int effects;
+
+    int bullet_sprite_idx;
+    int pillar_sprite_idx;
+
+    // TODO: how to actually map these?
+    int shoot_sound_idx;
+    int hit_sound_idx;
+};
+
+struct ItemStore
+{
+    Item* units;
+    int unit_count;
+    int size;
+};
+
+struct CannonType
+{
+    bool initialized;
+
+    int entity_id;
+    int storage_id;
+
+    int bullet_item_id;
+    int post_item_id;
+};
+
+struct CannonTypeStore
+{
+    CannonType* units;
+    int unit_count;
+    int size;
+};
