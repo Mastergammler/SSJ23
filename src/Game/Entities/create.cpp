@@ -126,7 +126,7 @@ int CreateEnemyEntity(int x,
     return e->id;
 }
 
-int CreateTower(int entityId, Sprite bullet, Sprite pillar)
+int CreateTower(int entityId, int x, int y, Sprite bullet, Sprite pillar)
 {
     assert(towers.unit_count < towers.size);
 
@@ -136,8 +136,27 @@ int CreateTower(int entityId, Sprite bullet, Sprite pillar)
     t->storage_id = id;
     t->entity_id = entityId;
 
+    // TODO: define tiles
+
+    Tile* towerTile = Game.tile_map.tileAt(x, y);
+
+    // TODO: initialize properly
+    // FIXME: !!!! boundary check!
+    Tile* left = towerTile - 1;
+    Tile* right = towerTile + 1;
+    Tile* top = towerTile - Game.tile_map.columns;
+    Tile* bottom = towerTile + Game.tile_map.columns;
+
+    t->relevant_tiles = new Tile*[4];
+    t->tile_count = 4;
+
+    t->relevant_tiles[0] = left;
+    t->relevant_tiles[1] = right;
+    t->relevant_tiles[2] = top;
+    t->relevant_tiles[3] = bottom;
+
     // TODO:
-    t->radius = 0;
+    t->radius = 3;
     t->initialized = true;
     t->pillar_sprite = pillar;
     t->bullet_sprite = bullet;
@@ -148,7 +167,7 @@ int CreateTower(int entityId, Sprite bullet, Sprite pillar)
 int CreateTowerEntity(int x, int y, Sprite bulletSprite, Sprite pillarSprite)
 {
     Entity* e = InitNextEntity();
-    e->storage_id = CreateTower(e->id, bulletSprite, pillarSprite);
+    e->storage_id = CreateTower(e->id, x, y, bulletSprite, pillarSprite);
 
     e->x = x;
     e->y = y;

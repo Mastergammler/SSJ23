@@ -22,5 +22,6 @@ void RenderEntitiesOfType(ScreenBuffer buffer, EntityType type);
 
 //----------------
 //  Debug
+void Debug_DrawTowerRangeAndDetection(ScreenBuffer buffer);
 void Debug_DrawEntityMovementPossibilities(ScreenBuffer buffer);
 void Debug_PrintEnemyTilePositions();

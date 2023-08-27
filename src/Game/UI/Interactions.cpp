@@ -374,10 +374,6 @@ void Action_Exit()
 
 void Action_SelectTowerType()
 {
-    // TODO: should i restrict this?
-    // might be unintuitive ...
-    // if (ui.ui_focus) return;
-
     UiElement* hoveredElement = ui.ui_focus_element;
     // no a real ui items
     if (hoveredElement->id == NullElement.id) return;

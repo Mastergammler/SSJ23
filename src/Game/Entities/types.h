@@ -1,3 +1,4 @@
+#include "../Loading/types.h"
 #include "../module.h"
 
 enum EntityType
@@ -84,6 +85,16 @@ struct Tower
     //  - sprite for is broken (change entity sprite?)
     Sprite bullet_sprite;
     Sprite pillar_sprite;
+
+    /**
+     * Tiles that the tower checks for attacking
+     * The tile tracks what units are on it at every moment
+     * And then the tower knows where or who to attack
+     *
+     * Links to the original tile in the tile map
+     */
+    Tile** relevant_tiles;
+    int tile_count;
 };
 
 struct TowerStore

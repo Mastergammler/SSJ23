@@ -1,7 +1,5 @@
 #include "../internal.h"
 
-const u32 DEBUG_COLOR = 0xFFE8FA;
-
 void RenderEntities(ScreenBuffer buffer)
 {
 
@@ -109,35 +107,6 @@ void RenderEntitiesOfType(ScreenBuffer buffer, EntityType type)
                   sprite.sheet_start_index,
                   sprite.x_tiles,
                   sprite.y_tiles);
-    }
-}
-
-void Debug_DrawEntityMovementPossibilities(ScreenBuffer buffer)
-{
-    for (int i = 0; i < entities.unit_count; ++i)
-    {
-        Entity e = entities.units[i];
-
-        if (e.type != ENEMY) continue;
-
-        Tile enemyTile = *Game.tile_map.tileAt(e.x, e.y);
-
-        if (enemyTile.adjacent & NORTH)
-        {
-            DrawLine(buffer, e.x, e.y, e.x, e.y + 12, DEBUG_COLOR);
-        }
-        if (enemyTile.adjacent & SOUTH)
-        {
-            DrawLine(buffer, e.x, e.y - 12, e.x, e.y, DEBUG_COLOR);
-        }
-        if (enemyTile.adjacent & EAST)
-        {
-            DrawLine(buffer, e.x, e.y, e.x + 12, e.y, DEBUG_COLOR);
-        }
-        if (enemyTile.adjacent & WEST)
-        {
-            DrawLine(buffer, e.x - 12, e.y, e.x, e.y, DEBUG_COLOR);
-        }
     }
 }
 

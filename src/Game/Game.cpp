@@ -114,12 +114,12 @@ void UpdateFrame(ScreenBuffer& buffer)
     }
     else if (navigation.in_game)
     {
-
         MoveEnemies();
         // Debug_PrintEnemyTilePositions();
         AnimateEntities();
 
         DrawGroundLayer(buffer);
+        Debug_DrawTowerRangeAndDetection(buffer);
         DrawEntityLayer(buffer);
 
         // Debug_DrawEntityMovementPossibilities(buffer);
