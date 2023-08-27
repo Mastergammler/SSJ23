@@ -24,8 +24,8 @@ int CreateButton(Anchor anchor, UiSprite sprite, Action onClick, int layer = 0)
 
     button->x_start = start.x;
     button->y_start = start.y;
-    button->x_end = button->x_start + button->x_tiles * _tileSize.width;
-    button->y_end = button->y_start + button->y_tiles * _tileSize.height;
+    button->x_end = button->x_start + button->x_tiles * Game.tile_size.width;
+    button->y_end = button->y_start + button->y_tiles * Game.tile_size.height;
 
     button->visible = false;
 
@@ -59,8 +59,8 @@ int CreateItemButton(int parentId, int x, int y, UiSprite sprite, int flags = 0)
 
     button->x_start = x;
     button->y_start = y;
-    button->x_end = button->x_start + button->x_tiles * _tileSize.width;
-    button->y_end = button->y_start + button->y_tiles * _tileSize.height;
+    button->x_end = button->x_start + button->x_tiles * Game.tile_size.width;
+    button->y_end = button->y_start + button->y_tiles * Game.tile_size.height;
 
     button->visible = false;
 
@@ -102,8 +102,6 @@ IntArray CreatePanelButtons(int parentId,
                                              itemFlags);
     }
 
-    Logf("Created %d item slots", grid.items);
-
     return IntArray{panelButtonIds, grid.items};
 }
 
@@ -126,8 +124,8 @@ int CreatePanel(Anchor anchor, UiSprite sprite)
 
     button->x_start = start.x;
     button->y_start = start.y;
-    button->x_end = button->x_start + button->x_tiles * _tileSize.width;
-    button->y_end = button->y_start + button->y_tiles * _tileSize.height;
+    button->x_end = button->x_start + button->x_tiles * Game.tile_size.width;
+    button->y_end = button->y_start + button->y_tiles * Game.tile_size.height;
 
     button->visible = false;
 

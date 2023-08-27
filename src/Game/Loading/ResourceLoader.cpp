@@ -3,55 +3,56 @@
 Resources Res;
 global_var const string ABSOLUTE_RES_PATH = "I:/02 Areas/Dev/Cpp/SSJ23/res/";
 
-/**
- * Maps the tiles to the index of the tile sheet
- * When the path tiles are the controlling ones
- */
-map<TileEnv, int> pathMap = {
-                                        // TODO: adjust single
-                                        {SINGLE, 12},
-                                        {MIDDLE, 6},
-                                        {TOP, 4},
-                                        {BOTTOM, 20},
-                                        {LEFT, 11},
-                                        {RIGHT, 13},
-                                        {TL, 3},
-                                        {TR, 5},
-                                        {BL, 19},
-                                        {BR, 21},
-                                        {ITL, 0},
-                                        {ITR, 2},
-                                        {IBL, 16},
-                                        {IBR, 18}};
-
 const int SHEET_ROWS = 8;
 const int SHEET_COLUMNS = 8;
 const int SHEET_OFFSET = 3 * SHEET_ROWS;
 
-/**
- * Maps the tiles to the index of the tile sheet for grass tiles
- * When the grass tiles are the controlling ones
- */
-map<TileEnv, int> grassMap = {{SINGLE, 12},
-                              {MIDDLE, 36},
-                              {VERTICAL, 6 + SHEET_OFFSET},
-                              {HORIZONTAL, 7 + SHEET_OFFSET},
-                              {TOP, 4 + SHEET_OFFSET},
-                              {TOP_END, 14 + SHEET_OFFSET},
-                              {BOTTOM, 20 + SHEET_OFFSET},
-                              {BOTTOM_END, 22 + SHEET_OFFSET},
-                              {LEFT, 11 + SHEET_OFFSET},
-                              {LEFT_END, 15 + SHEET_OFFSET},
-                              {RIGHT, 13 + SHEET_OFFSET},
-                              {RIGHT_END, 23 + SHEET_OFFSET},
-                              {TL, 3 + SHEET_OFFSET},
-                              {TR, 5 + SHEET_OFFSET},
-                              {BL, 19 + SHEET_OFFSET},
-                              {BR, 21 + SHEET_OFFSET},
-                              {ITL, 0 + SHEET_OFFSET},
-                              {ITR, 2 + SHEET_OFFSET},
-                              {IBL, 16 + SHEET_OFFSET},
-                              {IBR, 18 + SHEET_OFFSET}};
+void InitStaticResources()
+{
+    /**
+     * Maps the tiles to the index of the tile sheet
+     * When the path tiles are the controlling ones
+     */
+    Game.path_mappings = {// TODO: adjust single
+                          {SINGLE, 12},
+                          {MIDDLE, 6},
+                          {TOP, 4},
+                          {BOTTOM, 20},
+                          {LEFT, 11},
+                          {RIGHT, 13},
+                          {TL, 3},
+                          {TR, 5},
+                          {BL, 19},
+                          {BR, 21},
+                          {ITL, 0},
+                          {ITR, 2},
+                          {IBL, 16},
+                          {IBR, 18}};
+    /**
+     * Maps the tiles to the index of the tile sheet for grass tiles
+     * When the grass tiles are the controlling ones
+     */
+    Game.grass_mappings = {{SINGLE, 12},
+                           {MIDDLE, 36},
+                           {VERTICAL, 6 + SHEET_OFFSET},
+                           {HORIZONTAL, 7 + SHEET_OFFSET},
+                           {TOP, 4 + SHEET_OFFSET},
+                           {TOP_END, 14 + SHEET_OFFSET},
+                           {BOTTOM, 20 + SHEET_OFFSET},
+                           {BOTTOM_END, 22 + SHEET_OFFSET},
+                           {LEFT, 11 + SHEET_OFFSET},
+                           {LEFT_END, 15 + SHEET_OFFSET},
+                           {RIGHT, 13 + SHEET_OFFSET},
+                           {RIGHT_END, 23 + SHEET_OFFSET},
+                           {TL, 3 + SHEET_OFFSET},
+                           {TR, 5 + SHEET_OFFSET},
+                           {BL, 19 + SHEET_OFFSET},
+                           {BR, 21 + SHEET_OFFSET},
+                           {ITL, 0 + SHEET_OFFSET},
+                           {ITR, 2 + SHEET_OFFSET},
+                           {IBL, 16 + SHEET_OFFSET},
+                           {IBR, 18 + SHEET_OFFSET}};
+}
 
 /**
  * Needs to be loaded after the bitmaps, because relies on them!?
@@ -69,11 +70,6 @@ void LoadItems()
         {
             // TODO: create entity & items to display
             // and ui items etc etc
-            Logf("Loaded file %s %s %d %d",
-                 item.shoot_sound.c_str(),
-                 item.hit_sound.c_str(),
-                 item.pillar_sprite_idx,
-                 item.effect_types);
         }
     }
 
@@ -106,8 +102,8 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
     if (tilesSheet.loaded)
     {
         cache.ground = ConvertFromSheet(tilesSheet,
-                                        _tileSize.width,
-                                        _tileSize.height);
+                                        Game.tile_size.width,
+                                        Game.tile_size.height);
     }
 
     BitmapBuffer uiSheet = LoadSprite(ABSOLUTE_RES_PATH + "Sprites/UI_8x8.bmp",
@@ -115,7 +111,9 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
                                       hdc);
     if (uiSheet.loaded)
     {
-        cache.ui = ConvertFromSheet(uiSheet, _tileSize.width, _tileSize.height);
+        cache.ui = ConvertFromSheet(uiSheet,
+                                    Game.tile_size.width,
+                                    Game.tile_size.height);
     }
 
     BitmapBuffer charactersSheet = LoadSprite(ABSOLUTE_RES_PATH + "Sprites/"
@@ -126,8 +124,8 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
     if (charactersSheet.loaded)
     {
         cache.characters = ConvertFromSheet(charactersSheet,
-                                            _tileSize.width,
-                                            _tileSize.height);
+                                            Game.tile_size.width,
+                                            Game.tile_size.height);
     }
 
     BitmapBuffer itemsSheet = LoadSprite(ABSOLUTE_RES_PATH + "Sprites/"
@@ -137,8 +135,8 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
     if (itemsSheet.loaded)
     {
         cache.items = ConvertFromSheet(itemsSheet,
-                                       _tileSize.width,
-                                       _tileSize.height);
+                                       Game.tile_size.width,
+                                       Game.tile_size.height);
     }
 
     return cache;
@@ -253,6 +251,9 @@ TileMap LoadMaps()
         for (int col = 0; col < rawMap.columns; col++)
         {
             Tile tile = Tile{};
+            tile.entities = new EntityTracker{};
+            tile.entities->entity_ids = new int[tile.entities->MAX_COUNT];
+
             char val = *values++;
 
             tile.x = col;
@@ -287,7 +288,7 @@ TileMap LoadMaps()
     TileMap map = {};
     map.columns = rawMap.columns;
     map.rows = rawMap.rows;
-    map.tile_size = _tileSize;
+    map.tile_size = Game.tile_size;
     map.tile_count = map.columns * map.rows;
     map.tiles = tiles;
     map.spawn_count = startTileCount;

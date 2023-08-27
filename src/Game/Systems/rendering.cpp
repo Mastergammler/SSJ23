@@ -25,8 +25,8 @@ void RenderEntities(ScreenBuffer buffer)
         // of the ui
         if (e.type == CRAFT_ITEM || e.type == TOWER_PROTO) continue;
 
-        int drawStartX = e.x - (_tileSize.width / 2 - 1);
-        int drawStartY = e.y - (_tileSize.height / 2 - 1);
+        int drawStartX = e.x - (Game.tile_size.width / 2 - 1);
+        int drawStartY = e.y - (Game.tile_size.height / 2 - 1);
 
         Sprite sprite;
         if (e.component_mask & ANIMATOR)
@@ -44,7 +44,7 @@ void RenderEntities(ScreenBuffer buffer)
             Tower t = towers.units[e.storage_id];
 
             // should not be draw on lower border
-            int yOffset = _tileSize.height / 2 - 2;
+            int yOffset = Game.tile_size.height / 2 - 2;
             // pillar
             DrawTiles(buffer,
                       drawStartX,
@@ -55,8 +55,8 @@ void RenderEntities(ScreenBuffer buffer)
                       t.pillar_sprite.y_tiles);
 
             int onTopOffset = yOffset +
-                              _tileSize.height * t.pillar_sprite.y_tiles -
-                              _tileSize.height / 2 + 2;
+                              Game.tile_size.height * t.pillar_sprite.y_tiles -
+                              Game.tile_size.height / 2 + 2;
             // bullet
             DrawTiles(buffer,
                       drawStartX,
@@ -88,8 +88,8 @@ void RenderEntitiesOfType(ScreenBuffer buffer, EntityType type)
 
         if (e.type != type) continue;
 
-        int drawStartX = e.x - (_tileSize.width / 2 - 1);
-        int drawStartY = e.y - (_tileSize.height / 2 - 1);
+        int drawStartX = e.x - (Game.tile_size.width / 2 - 1);
+        int drawStartY = e.y - (Game.tile_size.height / 2 - 1);
 
         Sprite sprite;
         if (e.component_mask & ANIMATOR)
@@ -120,7 +120,7 @@ void Debug_DrawEntityMovementPossibilities(ScreenBuffer buffer)
 
         if (e.type != ENEMY) continue;
 
-        Tile enemyTile = *_tileMap.tileAt(e.x, e.y);
+        Tile enemyTile = *Game.tile_map.tileAt(e.x, e.y);
 
         if (enemyTile.adjacent & NORTH)
         {

@@ -87,6 +87,18 @@ enum TileType
     PATH_TILE = 1
 };
 
+struct EntityTracker
+{
+    /**
+     * We only track 16 units per tile, which sholud be more than sufficient
+     * If we have more, the rest are ignored
+     */
+    const int MAX_COUNT = 16;
+
+    int entity_count;
+    int* entity_ids;
+};
+
 struct Tile
 {
     bool is_occupied;
@@ -104,6 +116,11 @@ struct Tile
     int y;
 
     TileType tile_id;
+
+    /**
+     * tracking for the entities that occupie this field atm
+     */
+    EntityTracker* entities;
     int is_start;
     int is_end;
 

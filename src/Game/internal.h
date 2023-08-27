@@ -6,6 +6,15 @@
 #include "UI/types.h"
 #include "module.h"
 
+struct Gameplay
+{
+    TileMap tile_map;
+    TileSize tile_size;
+
+    map<TileEnv, int> path_mappings;
+    map<TileEnv, int> grass_mappings;
+};
+
 // Resource cache
 // NOTE: i kinda like this concept
 // maybe i can do more of those
@@ -16,12 +25,7 @@
 // Maybe stuff should be grouped in a way, where it wants to be
 // allocated and freed together?
 extern Resources Res;
-
-// Definitions
-extern map<TileEnv, int> pathMap;
-extern map<TileEnv, int> grassMap;
-extern TileSize _tileSize;
-extern TileMap _tileMap;
+extern Gameplay Game;
 
 // State tracking
 extern UiState ui;
@@ -50,6 +54,7 @@ const UiElement NullElement = {.visible = false,
                                    Log("Error: Null element on-click invoked!");
                                }};
 
+void InitStaticResources();
 BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc);
 SoundCache LoadAudioFiles();
 void LoadItems();

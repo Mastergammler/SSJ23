@@ -11,13 +11,13 @@ void DrawTowerPreview(ScreenBuffer buffer,
                       Sprite bulletSprite,
                       Sprite pillarSprite)
 {
-    int tileIdxX = mouseState.x / _tileSize.width;
-    int tileIdxY = mouseState.y / _tileSize.height;
+    int tileIdxX = mouseState.x / Game.tile_size.width;
+    int tileIdxY = mouseState.y / Game.tile_size.height;
 
-    int tileXStart = tileIdxX * _tileSize.width;
-    int tileYStart = tileIdxY * _tileSize.height;
+    int tileXStart = tileIdxX * Game.tile_size.width;
+    int tileYStart = tileIdxY * Game.tile_size.height;
 
-    Tile* tile = _tileMap.tileAt(mouseState.x, mouseState.y);
+    Tile* tile = Game.tile_map.tileAt(mouseState.x, mouseState.y);
 
     int uiIdx;
     int shadowIdx;
@@ -50,16 +50,16 @@ void DrawTowerPreview(ScreenBuffer buffer,
         // tower pillar
         DrawTiles(buffer,
                   tileXStart,
-                  tileYStart + _tileSize.height,
+                  tileYStart + Game.tile_size.height,
                   *pillarSprite.sheet,
                   pillarSprite.sheet_start_index,
                   pillarSprite.x_tiles,
                   pillarSprite.y_tiles);
         // tower bullet type
-        int tileYOffset = pillarSprite.y_tiles * _tileSize.height - 4;
+        int tileYOffset = pillarSprite.y_tiles * Game.tile_size.height - 4;
         DrawTiles(buffer,
                   tileXStart,
-                  tileYStart + _tileSize.height + tileYOffset,
+                  tileYStart + Game.tile_size.height + tileYOffset,
                   *bulletSprite.sheet,
                   bulletSprite.sheet_start_index,
                   bulletSprite.x_tiles,
@@ -71,15 +71,15 @@ void DrawTowerPreview(ScreenBuffer buffer,
 // - 2nd map for id 0 or id 1 stuff
 void DrawTilemap(ScreenBuffer& buffer, SpriteSheet& sheet)
 {
-    Tile* tile = _tileMap.tiles;
-    for (int i = 0; i < _tileMap.tile_count; i++)
+    Tile* tile = Game.tile_map.tiles;
+    for (int i = 0; i < Game.tile_map.tile_count; i++)
     {
         Tile cur = *tile++;
         int tileId = cur.tile_id;
-        int tileIdx = cur.y * _tileMap.columns + cur.x;
+        int tileIdx = cur.y * Game.tile_map.columns + cur.x;
 
-        int drawX = cur.x * _tileSize.width;
-        int drawY = (_tileMap.rows - 1 - cur.y) * _tileSize.height;
+        int drawX = cur.x * Game.tile_size.width;
+        int drawY = (Game.tile_map.rows - 1 - cur.y) * Game.tile_size.height;
 
         int sheetIdx;
 
@@ -102,7 +102,7 @@ void DrawTilemap(ScreenBuffer& buffer, SpriteSheet& sheet)
                 ts = (TileEnv)(cur.adjacent & 0b11110000);
             }
 
-            sheetIdx = grassMap[ts];
+            sheetIdx = Game.grass_mappings[ts];
         }
 
         DrawBitmap(buffer, sheet.tiles[sheetIdx], drawX, drawY);

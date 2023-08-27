@@ -16,9 +16,9 @@ Direction oppositeDirection(Direction dir)
 
 bool ReachedOverCenterBound(Entity entity, Tile targetTile, float offset)
 {
-    int tileWidth = _tileMap.tile_size.width;
-    int tileHeight = _tileMap.tile_size.height;
-    int transformY = _tileMap.rows - targetTile.y - 1;
+    int tileWidth = Game.tile_map.tile_size.width;
+    int tileHeight = Game.tile_map.tile_size.height;
+    int transformY = Game.tile_map.rows - targetTile.y - 1;
     int targetPosX = targetTile.x * tileWidth + tileWidth * offset - 1;
     int targetPosY = transformY * tileHeight + tileHeight * offset - 1;
 
@@ -44,9 +44,9 @@ bool ReachedOverCenterBound(Entity entity, Tile targetTile, float offset)
 Direction GetNextMovementDirection(Entity entity)
 {
     //!! margin, when is it over the tile? tile center? -> yea, entity is center
-    Tile enemyTile = *_tileMap.tileAt(entity.x, entity.y);
+    Tile enemyTile = *Game.tile_map.tileAt(entity.x, entity.y);
     // TODO: multiple targets?
-    Tile target = *_tileMap.targets[0];
+    Tile target = *Game.tile_map.targets[0];
 
     // check cross center line
     if (ReachedOverCenterBound(entity, enemyTile, 0.5)) return entity.direction;
@@ -82,6 +82,13 @@ void MoveEnemies()
     // -> hmm that's bad also, then all would always only move synchronized
     // => That's wired (feature for spooky stuff)
 
+    // clean tilemap position caches
+    for (int i = 0; i < Game.tile_map.tile_count; ++i)
+    {
+        Tile tile = Game.tile_map.tiles[i];
+        tile.entities->entity_count = 0;
+    }
+
     for (int i = 0; i < entities.unit_count; i++)
     {
         Entity* e = &entities.units[i];
@@ -89,10 +96,10 @@ void MoveEnemies()
         if (e->type == ENEMY)
         {
             Enemy enemy = enemies.units[e->storage_id];
-            Tile enemyTile = *_tileMap.tileAt(e->x, e->y);
+            Tile enemyTile = *Game.tile_map.tileAt(e->x, e->y);
 
             // TODO: multiple targets case?
-            Tile target = *_tileMap.targets[0];
+            Tile target = *Game.tile_map.targets[0];
 
             if (enemyTile.tile_id != PATH_TILE) continue;
             if (enemyTile.x == target.x && enemyTile.y == target.y)
@@ -114,6 +121,10 @@ void MoveEnemies()
             e->y = e->move_y;
             e->x = e->move_x;
             e->direction = moveDir;
+
+            Tile* newEnemyTile = Game.tile_map.tileAt(e->x, e->y);
+            newEnemyTile->entities->entity_ids[newEnemyTile->entities->entity_count++] =
+                                                    e->id;
         }
     }
 }

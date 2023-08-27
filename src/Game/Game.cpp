@@ -3,12 +3,10 @@
 #include "systems.h"
 #include "ui.h"
 
-TileMap _tileMap;
-TileSize _tileSize = TileSize{.width = 16, .height = 16};
+Gameplay Game;
 
 void StartGame()
 {
-
     // TODO: better data structure solution for loading failed!
     if (!Res.bitmaps.ground.loaded || !Res.bitmaps.ui.loaded)
     {
@@ -19,7 +17,7 @@ void StartGame()
         PostQuitMessage(0);
     }
 
-    InitializeEntities(_tileMap.rows * _tileMap.columns * 8);
+    InitializeEntities(Game.tile_map.rows * Game.tile_map.columns * 8);
     InitializeUi(64, 3);
 
     navigation.in_menu = true;
@@ -67,6 +65,10 @@ void StartGame()
  */
 void InitGame(HINSTANCE hInstance, HDC hdc)
 {
+    // Static resources
+    Game.tile_size = TileSize{.width = 16, .height = 16};
+    InitStaticResources();
+
     FpsCounter individualCounter = {};
     Log("Start Loading Resources");
 
@@ -80,7 +82,7 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     Logf("  Audio loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
 
     individualCounter.Update();
-    _tileMap = LoadMaps();
+    Game.tile_map = LoadMaps();
     Logf("  Tilemap loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
 
     individualCounter.Update();
@@ -114,6 +116,7 @@ void UpdateFrame(ScreenBuffer& buffer)
     {
 
         MoveEnemies();
+        // Debug_PrintEnemyTilePositions();
         AnimateEntities();
 
         DrawGroundLayer(buffer);

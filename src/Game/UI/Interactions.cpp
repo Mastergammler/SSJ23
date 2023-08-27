@@ -50,7 +50,7 @@ void ProcessMouseActions()
 
     if (mouseState.left_clicked)
     {
-        hovered->on_click();
+        if (ui.ui_focus) hovered->on_click();
         Action_PlaceTower();
     }
 
@@ -92,11 +92,13 @@ void Action_SpawnEnemy()
     if (ui.crafting.visible) return;
 
     PlayAudioFile(&Res.audio.pop_hi, false, 90);
-    Tile startTile = *_tileMap.spawns[0];
+    Tile startTile = *Game.tile_map.spawns[0];
 
-    int invertedY = _tileMap.rows - startTile.y - 1;
-    int spawnX = startTile.x * _tileSize.width + _tileSize.width / 2 - 1;
-    int spawnY = invertedY * _tileSize.height + _tileSize.height / 2 - 1;
+    int invertedY = Game.tile_map.rows - startTile.y - 1;
+    int spawnX = startTile.x * Game.tile_size.width + Game.tile_size.width / 2 -
+                 1;
+    int spawnY = invertedY * Game.tile_size.height + Game.tile_size.height / 2 -
+                 1;
 
     // TODO: get direction for real
     //  where to get the real speed from?
@@ -114,13 +116,15 @@ void Action_PlaceTower()
 
     if (ui.placement.active)
     {
-        Tile* tile = _tileMap.tileAt(mouseState.x, mouseState.y);
+        Tile* tile = Game.tile_map.tileAt(mouseState.x, mouseState.y);
 
         // offset a bit towards the top, because else it will be placed at the
         // bottom?
-        int centerX = tile->x * _tileSize.width + (_tileSize.width / 2 - 1);
-        int centerY = MirrorY(tile->y, _tileMap.rows) * _tileSize.height +
-                      (_tileSize.height / 2 - 1);
+        int centerX = tile->x * Game.tile_size.width +
+                      (Game.tile_size.width / 2 - 1);
+        int centerY = MirrorY(tile->y,
+                              Game.tile_map.rows) * Game.tile_size.height +
+                      (Game.tile_size.height / 2 - 1);
 
         if (tile->tile_id == GRASS_TILE && !tile->is_occupied)
         {

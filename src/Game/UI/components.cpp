@@ -4,8 +4,8 @@ Position ItemSlotCenter(int slotId)
 {
     UiElement* el = &uiElements.elements[slotId];
 
-    int centerX = el->x_start + _tileSize.width * el->x_tiles / 2 - 1;
-    int centerY = el->y_start + _tileSize.height * el->y_tiles / 2 - 1;
+    int centerX = el->x_start + Game.tile_size.width * el->x_tiles / 2 - 1;
+    int centerY = el->y_start + Game.tile_size.height * el->y_tiles / 2 - 1;
 
     return Position{centerX, centerY};
 }
@@ -23,46 +23,46 @@ Position ItemSlotCenter(int slotId)
 Position CalculateStartPixelPosition(Anchor anchor, Sprite sprite)
 {
     // no -1 needed, because an offset, is a length!
-    int xOffsetPixel = anchor.x_offset * _tileSize.width;
-    int yOffsetPixel = anchor.y_offset * _tileSize.height;
+    int xOffsetPixel = anchor.x_offset * Game.tile_size.width;
+    int yOffsetPixel = anchor.y_offset * Game.tile_size.height;
 
     switch (anchor.reference_point)
     {
         case UPPER_LEFT:
         {
             int x = 0;
-            int y = _tileMap.rows * _tileSize.height - 1;
-            y -= sprite.y_tiles * _tileSize.height;
+            int y = Game.tile_map.rows * Game.tile_size.height - 1;
+            y -= sprite.y_tiles * Game.tile_size.height;
             x += xOffsetPixel;
             y -= yOffsetPixel;
             return Position{x, y};
         }
         case UPPER_RIGHT:
         {
-            int x = _tileMap.columns * _tileSize.width - 1;
-            int y = _tileMap.rows * _tileSize.height - 1;
-            x -= sprite.x_tiles * _tileSize.width;
-            y -= sprite.y_tiles * _tileSize.height;
+            int x = Game.tile_map.columns * Game.tile_size.width - 1;
+            int y = Game.tile_map.rows * Game.tile_size.height - 1;
+            x -= sprite.x_tiles * Game.tile_size.width;
+            y -= sprite.y_tiles * Game.tile_size.height;
             x -= xOffsetPixel;
             y -= yOffsetPixel;
             return Position{x, y};
         }
         case UPPER_MIDDLE:
         {
-            int x = _tileMap.columns * _tileSize.width / 2 - 1;
-            int y = _tileMap.rows * _tileSize.height - 1;
-            x -= sprite.x_tiles * _tileSize.width / 2;
-            y -= sprite.y_tiles * _tileSize.height;
+            int x = Game.tile_map.columns * Game.tile_size.width / 2 - 1;
+            int y = Game.tile_map.rows * Game.tile_size.height - 1;
+            x -= sprite.x_tiles * Game.tile_size.width / 2;
+            y -= sprite.y_tiles * Game.tile_size.height;
             y -= yOffsetPixel;
             x += xOffsetPixel;
             return Position{x, y};
         }
         case CENTERED:
         {
-            int x = _tileMap.columns * _tileSize.width / 2 - 1;
-            int y = _tileMap.rows * _tileSize.height / 2 - 1;
-            x -= sprite.x_tiles * _tileSize.width / 2;
-            y -= sprite.y_tiles * _tileSize.height / 2;
+            int x = Game.tile_map.columns * Game.tile_size.width / 2 - 1;
+            int y = Game.tile_map.rows * Game.tile_size.height / 2 - 1;
+            x -= sprite.x_tiles * Game.tile_size.width / 2;
+            y -= sprite.y_tiles * Game.tile_size.height / 2;
             y -= yOffsetPixel;
             x += xOffsetPixel;
 
@@ -78,11 +78,11 @@ UniformGrid CalculateGridPositions(UiElement panel,
                                    Sprite sprite)
 {
     // these are width -> not indices
-    int pixelPadding = padding * _tileSize.width;
-    int minPixelSpacing = spacing * _tileSize.width;
+    int pixelPadding = padding * Game.tile_size.width;
+    int minPixelSpacing = spacing * Game.tile_size.width;
 
-    int buttonSizeX = _tileSize.width * sprite.x_tiles;
-    int buttonSizeY = _tileSize.height * sprite.y_tiles;
+    int buttonSizeX = Game.tile_size.width * sprite.x_tiles;
+    int buttonSizeY = Game.tile_size.height * sprite.y_tiles;
     int buttonSpaceX = buttonSizeX + minPixelSpacing;
     int buttonSpaceY = buttonSizeY + minPixelSpacing;
 
@@ -102,8 +102,10 @@ UniformGrid CalculateGridPositions(UiElement panel,
              maxButtonCount);
     }
 
-    int spaceButtonOnlyX = buttonsPerRow * _tileSize.width * sprite.x_tiles;
-    int spaceButtonOnlyY = buttonsPerColumn * _tileSize.height * sprite.y_tiles;
+    int spaceButtonOnlyX = buttonsPerRow * Game.tile_size.width *
+                           sprite.x_tiles;
+    int spaceButtonOnlyY = buttonsPerColumn * Game.tile_size.height *
+                           sprite.y_tiles;
     int availableSpacingSpaceX = areaSurfacePixelX - spaceButtonOnlyX;
     int availableSpacingSpaceY = areaSurfacePixelY - spaceButtonOnlyY;
 
@@ -123,7 +125,7 @@ UniformGrid CalculateGridPositions(UiElement panel,
 
     int areaStartX = panel.x_start + pixelPadding;
     int areaStartY = panel.y_end - pixelPadding -
-                     _tileSize.height * sprite.y_tiles;
+                     Game.tile_size.height * sprite.y_tiles;
 
     areaStartX += leftoverSpaceX / 2;
     areaStartY -= leftoverSpaceY / 2;
