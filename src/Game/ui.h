@@ -18,6 +18,7 @@ void Action_ToggleCraftingPanel();
 void Action_PlaceTower();
 void Action_SpawnEnemy();
 void Action_CraftTower();
+void Action_SelectTowerType();
 
 void Action_StartGame();
 void Action_Exit();

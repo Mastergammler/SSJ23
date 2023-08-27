@@ -82,6 +82,8 @@ struct Tower
     // TODO: new values
     //  - state, is broken etc
     //  - sprite for is broken (change entity sprite?)
+    Sprite bullet_sprite;
+    Sprite pillar_sprite;
 };
 
 struct TowerStore
@@ -138,6 +140,18 @@ struct ItemStore
     int size;
 };
 
+// TODO: everything i need
+struct Projectile
+{
+    int effect_mask;
+    float speed;
+    // alive or destroyed etc
+    int state;
+
+    // hit sound here?
+    int sound_idx;
+};
+
 struct CannonType
 {
     bool initialized;
@@ -146,9 +160,18 @@ struct CannonType
     int storage_id;
 
     int bullet_item_id;
-    int post_item_id;
+    int pillar_item_id;
 
     // TODO: calc values?
+
+    float breaking_probability;
+    // in tiles
+    float range;
+    // shots per s?
+    float fire_rate;
+    float accuracy;
+    // in what unit? -> tiles/s ?
+    float bullet_speed;
 };
 
 struct CannonTypeStore

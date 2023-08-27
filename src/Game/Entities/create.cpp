@@ -1,9 +1,9 @@
 #include "../internal.h"
 
+ComponentStore components;
 EntityStore entities;
 TowerStore towers;
 EnemyStore enemies;
-ComponentStore components;
 ItemStore items;
 CannonTypeStore cannons;
 
@@ -126,7 +126,7 @@ int CreateEnemyEntity(int x,
     return e->id;
 }
 
-int CreateTower(int entityId)
+int CreateTower(int entityId, Sprite bullet, Sprite pillar)
 {
     assert(towers.unit_count < towers.size);
 
@@ -138,16 +138,17 @@ int CreateTower(int entityId)
 
     // TODO:
     t->radius = 0;
-
     t->initialized = true;
+    t->pillar_sprite = pillar;
+    t->bullet_sprite = bullet;
 
     return t->storage_id;
 }
 
-int CreateTowerEntity(int x, int y, Sprite sprite)
+int CreateTowerEntity(int x, int y, Sprite bulletSprite, Sprite pillarSprite)
 {
     Entity* e = InitNextEntity();
-    e->storage_id = CreateTower(e->id);
+    e->storage_id = CreateTower(e->id, bulletSprite, pillarSprite);
 
     e->x = x;
     e->y = y;
@@ -156,7 +157,7 @@ int CreateTowerEntity(int x, int y, Sprite sprite)
     e->move_y = 0;
     e->type = TOWER;
     e->direction = NORTH;
-    e->sprite = sprite;
+    e->sprite = bulletSprite;
 
     return e->id;
 }
@@ -215,7 +216,7 @@ int CreateCannonType(int entityId, int bulletId, int postId)
     t->entity_id = entityId;
 
     t->bullet_item_id = bulletId;
-    t->post_item_id = postId;
+    t->pillar_item_id = postId;
     t->initialized = true;
 
     return t->storage_id;

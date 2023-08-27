@@ -8,7 +8,8 @@
 void DrawTowerPreview(ScreenBuffer buffer,
                       SpriteSheet characterSheet,
                       SpriteSheet uiSheet,
-                      Sprite towerSprite)
+                      Sprite bulletSprite,
+                      Sprite pillarSprite)
 {
     int tileIdxX = mouseState.x / _tileSize.width;
     int tileIdxY = mouseState.y / _tileSize.height;
@@ -39,18 +40,30 @@ void DrawTowerPreview(ScreenBuffer buffer,
     }
     else
     {
+        // shadow
         DrawBitmap(buffer,
                    characterSheet.tiles[shadowIdx],
                    tileXStart,
                    tileYStart);
+        // ui overlay
         DrawBitmap(buffer, uiSheet.tiles[uiIdx], tileXStart, tileYStart);
+        // tower pillar
         DrawTiles(buffer,
                   tileXStart,
-                  tileYStart + _tileSize.height / 2,
-                  *towerSprite.sheet,
-                  towerSprite.sheet_start_index,
-                  towerSprite.x_tiles,
-                  towerSprite.y_tiles);
+                  tileYStart + _tileSize.height,
+                  *pillarSprite.sheet,
+                  pillarSprite.sheet_start_index,
+                  pillarSprite.x_tiles,
+                  pillarSprite.y_tiles);
+        // tower bullet type
+        int tileYOffset = pillarSprite.y_tiles * _tileSize.height - 4;
+        DrawTiles(buffer,
+                  tileXStart,
+                  tileYStart + _tileSize.height + tileYOffset,
+                  *bulletSprite.sheet,
+                  bulletSprite.sheet_start_index,
+                  bulletSprite.x_tiles,
+                  bulletSprite.y_tiles);
     }
 }
 
@@ -114,14 +127,15 @@ void DrawEntityLayer(ScreenBuffer buffer)
 {
     RenderEntities(buffer);
 
+    // TODO: should i restrict this for ui focus?
     if (ui.placement.active && !ui.ui_focus)
     {
-        Sprite towerSprite = ui.placement.tower_a_selected ? Res.sprites.tower_a
-                                                           : Res.sprites.tower_b;
+        // FIXME: potential of nullpointer, if sprite not set yet
         DrawTowerPreview(buffer,
                          Res.bitmaps.characters,
                          Res.bitmaps.ui,
-                         towerSprite);
+                         ui.placement.preview_bullet_sprite,
+                         ui.placement.preview_pillar_sprite);
     }
 }
 
@@ -130,13 +144,11 @@ void DrawUiLayer(ScreenBuffer buffer)
     RenderUiElements(buffer, Res.bitmaps.ui);
 
     // needs to be on top of the rest of the ui stuff
+    RenderEntitiesOfType(buffer, TOWER_PROTO);
     if (ui.crafting.visible)
     {
-        RenderEntitiesOnTop(buffer, CRAFT_ITEM);
+        RenderEntitiesOfType(buffer, CRAFT_ITEM);
     }
-
-    // TODO: kinda inefficient, going through both of those twice
-    RenderEntitiesOnTop(buffer, TOWER_PROTO);
 
     // draw mouse
     DrawBitmap(buffer,

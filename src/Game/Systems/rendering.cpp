@@ -39,17 +39,47 @@ void RenderEntities(ScreenBuffer buffer)
             sprite = e.sprite;
         }
 
-        DrawTiles(buffer,
-                  drawStartX,
-                  drawStartY,
-                  *sprite.sheet,
-                  sprite.sheet_start_index,
-                  sprite.x_tiles,
-                  sprite.y_tiles);
+        if (e.type == TOWER)
+        {
+            Tower t = towers.units[e.storage_id];
+
+            // should not be draw on lower border
+            int yOffset = _tileSize.height / 2 - 2;
+            // pillar
+            DrawTiles(buffer,
+                      drawStartX,
+                      drawStartY + yOffset,
+                      *t.pillar_sprite.sheet,
+                      t.pillar_sprite.sheet_start_index,
+                      t.pillar_sprite.x_tiles,
+                      t.pillar_sprite.y_tiles);
+
+            int onTopOffset = yOffset +
+                              _tileSize.height * t.pillar_sprite.y_tiles -
+                              _tileSize.height / 2 + 2;
+            // bullet
+            DrawTiles(buffer,
+                      drawStartX,
+                      drawStartY + onTopOffset,
+                      *t.bullet_sprite.sheet,
+                      t.bullet_sprite.sheet_start_index,
+                      t.bullet_sprite.x_tiles,
+                      t.bullet_sprite.y_tiles);
+        }
+        else
+        {
+            DrawTiles(buffer,
+                      drawStartX,
+                      drawStartY,
+                      *sprite.sheet,
+                      sprite.sheet_start_index,
+                      sprite.x_tiles,
+                      sprite.y_tiles);
+        }
     }
 }
 
-void RenderEntitiesOnTop(ScreenBuffer buffer, EntityType type)
+void RenderEntitiesOfType(ScreenBuffer buffer, EntityType type)
 {
 
     for (int i = 0; i < entities.unit_count; ++i)

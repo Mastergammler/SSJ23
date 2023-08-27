@@ -78,7 +78,11 @@ void ProcessMouseActions()
         }
         else
         {
-            Action_ToggleTowerPreview();
+            if (ui.placement.active)
+            {
+                // ability to deselect placement
+                Action_ToggleTowerPreview();
+            }
         }
     }
 }
@@ -112,15 +116,18 @@ void Action_PlaceTower()
     {
         Tile* tile = _tileMap.tileAt(mouseState.x, mouseState.y);
 
+        // offset a bit towards the top, because else it will be placed at the
+        // bottom?
         int centerX = tile->x * _tileSize.width + (_tileSize.width / 2 - 1);
         int centerY = MirrorY(tile->y, _tileMap.rows) * _tileSize.height +
                       (_tileSize.height / 2 - 1);
 
         if (tile->tile_id == GRASS_TILE && !tile->is_occupied)
         {
-            Sprite towerSprite = ui.placement.tower_a_selected ? Res.sprites.tower_a
-                                                               : Res.sprites.tower_b;
-            CreateTowerEntity(centerX, centerY, towerSprite);
+            CreateTowerEntity(centerX,
+                              centerY,
+                              ui.placement.preview_bullet_sprite,
+                              ui.placement.preview_pillar_sprite);
             PlayAudioFile(&Res.audio.pop_lo, false, 90);
 
             tile->is_occupied = true;
@@ -130,23 +137,7 @@ void Action_PlaceTower()
 
 void Action_ToggleTowerPreview()
 {
-    // 3 way switch
-    if (ui.placement.active)
-    {
-        if (ui.placement.tower_a_selected)
-        {
-            ui.placement.tower_a_selected = !ui.placement.tower_a_selected;
-        }
-        else
-        {
-            ui.placement.active = !ui.placement.active;
-        }
-    }
-    else
-    {
-        ui.placement.active = true;
-        ui.placement.tower_a_selected = true;
-    }
+    ui.placement.active = !ui.placement.active;
 }
 
 void Action_ToggleCraftingPanel()
@@ -205,21 +196,23 @@ void Action_StartGame()
     }
 }
 
-EntitySlotMap* FindBySlotId(int slotId)
+// TODO: kinda crappy that the slot map and it's count are not connected
+//  - but this would lead to alot more nesting
+EntitySlotMap* FindBySlotId(int slotId, EntitySlotMap* map, int count)
 {
-    for (int i = 0; i < ui.crafting.item_count; i++)
+    for (int i = 0; i < count; i++)
     {
-        EntitySlotMap* cur = &ui.crafting.slot_map[i];
+        EntitySlotMap* cur = &map[i];
         if (cur->current_slot_id == slotId) return cur;
     }
     return NULL;
 }
 
-EntitySlotMap* FindByEntityId(int entityId)
+EntitySlotMap* FindByEntityId(int entityId, EntitySlotMap* map, int count)
 {
-    for (int i = 0; i < ui.crafting.item_count; i++)
+    for (int i = 0; i < count; i++)
     {
-        EntitySlotMap* cur = &ui.crafting.slot_map[i];
+        EntitySlotMap* cur = &map[i];
         if (cur->entity_id == entityId) return cur;
     }
     return NULL;
@@ -232,7 +225,9 @@ void Action_StartDrag()
         UiElement* el = ui.ui_focus_element;
         if (el->flags & DRAG_SOURCE)
         {
-            EntitySlotMap* slotEntityMap = FindBySlotId(el->id);
+            EntitySlotMap* slotEntityMap = FindBySlotId(el->id,
+                                                        ui.crafting.slot_map,
+                                                        ui.crafting.item_count);
             if (!slotEntityMap) return;
 
             ui.dragged_entity_id = slotEntityMap->entity_id;
@@ -284,8 +279,12 @@ EntitySlotMap* FindNextAvailablePlacementSlot()
 
 void Action_CraftTower()
 {
-    EntitySlotMap* bulletSlot = FindBySlotId(ui.crafting.tower_slot_bullet);
-    EntitySlotMap* pillarSlot = FindBySlotId(ui.crafting.tower_slot_pillar);
+    EntitySlotMap* bulletSlot = FindBySlotId(ui.crafting.tower_slot_bullet,
+                                             ui.crafting.slot_map,
+                                             ui.crafting.item_count);
+    EntitySlotMap* pillarSlot = FindBySlotId(ui.crafting.tower_slot_pillar,
+                                             ui.crafting.slot_map,
+                                             ui.crafting.item_count);
 
     if (bulletSlot && pillarSlot)
     {
@@ -319,7 +318,9 @@ void Action_ResetItemToStartPosition()
     // On DRAG_SOURCE it should not matter, as the position would be the same
     if (hoveredElement->flags & DROP_TARGET)
     {
-        EntitySlotMap* map = FindBySlotId(hoveredElement->id);
+        EntitySlotMap* map = FindBySlotId(hoveredElement->id,
+                                          ui.crafting.slot_map,
+                                          ui.crafting.item_count);
         ResetSlotAndEntity(map);
     }
 }
@@ -329,12 +330,16 @@ void Action_Drop()
     Entity* e = &entities.units[ui.dragged_entity_id];
     UiElement* hoveredElement = ui.ui_focus_element;
 
-    EntitySlotMap* entitySlot = FindByEntityId(e->id);
+    EntitySlotMap* entitySlot = FindByEntityId(e->id,
+                                               ui.crafting.slot_map,
+                                               ui.crafting.item_count);
     assert(entitySlot);
 
     if (hoveredElement->flags & DROP_TARGET)
     {
-        EntitySlotMap* targetSlotMapping = FindBySlotId(hoveredElement->id);
+        EntitySlotMap* targetSlotMapping = FindBySlotId(hoveredElement->id,
+                                                        ui.crafting.slot_map,
+                                                        ui.crafting.item_count);
         if (targetSlotMapping)
         {
             Action_ResetItemToStartPosition();
@@ -348,7 +353,9 @@ void Action_Drop()
     }
     else
     {
-        EntitySlotMap* draggedEntity = FindByEntityId(ui.dragged_entity_id);
+        EntitySlotMap* draggedEntity = FindByEntityId(ui.dragged_entity_id,
+                                                      ui.crafting.slot_map,
+                                                      ui.crafting.item_count);
         ResetSlotAndEntity(draggedEntity);
     }
 
@@ -359,4 +366,41 @@ void Action_Drop()
 void Action_Exit()
 {
     running = false;
+}
+
+void Action_SelectTowerType()
+{
+    // TODO: should i restrict this?
+    // might be unintuitive ...
+    // if (ui.ui_focus) return;
+
+    UiElement* hoveredElement = ui.ui_focus_element;
+    // no a real ui items
+    if (hoveredElement->id == NullElement.id) return;
+
+    EntitySlotMap* hoveredTower = FindBySlotId(hoveredElement->id,
+                                               ui.placement.slot_map,
+                                               ui.placement.item_count);
+
+    // Not a selectable tower yet
+    if (!hoveredTower || hoveredTower->entity_id == EntityZero.id) return;
+
+    Entity e = entities.units[hoveredTower->entity_id];
+    CannonType c = cannons.units[e.storage_id];
+
+    Item bullet = items.units[c.bullet_item_id];
+    Item post = items.units[c.pillar_item_id];
+
+    ui.placement.preview_bullet_sprite = Sprite{1,
+                                                1,
+                                                bullet.bullet_sprite_idx,
+                                                &Res.bitmaps.items};
+    // TODO: change should be 2x1 in the future
+    // but currently there are non of those
+    ui.placement.preview_pillar_sprite = Sprite{1,
+                                                1,
+                                                post.pillar_sprite_idx,
+                                                &Res.bitmaps.items};
+
+    if (!ui.placement.active) Action_ToggleTowerPreview();
 }

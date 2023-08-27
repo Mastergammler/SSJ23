@@ -30,10 +30,12 @@ extern Navigation navigation;
 
 // Stores
 extern UiElementStorage uiElements;
+extern ComponentStore components;
 extern EntityStore entities;
 extern TowerStore towers;
 extern EnemyStore enemies;
-extern ComponentStore components;
+extern ItemStore items;
+extern CannonTypeStore cannons;
 
 // Zeros
 const Entity EntityZero = Entity{.initialized = false,
@@ -59,7 +61,7 @@ void DrawEntityLayer(ScreenBuffer buffer);
 void DrawUiLayer(ScreenBuffer buffer);
 
 int CreatCannonTypeEntity(int x, int y, int bulletItemId, int postItemId);
-int CreateTowerEntity(int x, int y, Sprite sprite);
+int CreateTowerEntity(int x, int y, Sprite bullet, Sprite pillar);
 int CreateItemEntity(int x, int y, ItemData data);
 int CreateEnemyEntity(int x,
                       int y,

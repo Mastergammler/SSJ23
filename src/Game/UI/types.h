@@ -187,10 +187,10 @@ struct PlacementElements
     bool active;
     int tower_selection_panel;
 
-    // tmp
-    bool tower_a_selected;
-    IntArray item_slots;
+    Sprite preview_bullet_sprite;
+    Sprite preview_pillar_sprite;
 
+    IntArray item_slots;
     int item_count;
     EntitySlotMap* slot_map;
 };

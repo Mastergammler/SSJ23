@@ -11,5 +11,5 @@ effects=101011
 # visuals
 hit_sound=click_lo
 shoot_sound=click_lo
-bullet_sprite=11
-pillar_sprite=11
+bullet_sprite=9
+pillar_sprite=9

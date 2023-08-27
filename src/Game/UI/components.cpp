@@ -4,8 +4,8 @@ Position ItemSlotCenter(int slotId)
 {
     UiElement* el = &uiElements.elements[slotId];
 
-    int centerX = el->x_start + _tileSize.width * el->x_tiles / 2;
-    int centerY = el->y_start + _tileSize.height * el->y_tiles / 2;
+    int centerX = el->x_start + _tileSize.width * el->x_tiles / 2 - 1;
+    int centerY = el->y_start + _tileSize.height * el->y_tiles / 2 - 1;
 
     return Position{centerX, centerY};
 }

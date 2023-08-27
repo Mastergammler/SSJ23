@@ -200,10 +200,10 @@ void CreateCraftingItems()
     }
 }
 
+// i might not want to show them all on startup?
+// because only want to show the ones that are actually created / available
 void ShowTowerButtons()
 {
-    // TODO: should be done dynamically
-
     int itemCount = ui.placement.item_slots.size;
 
     ui.placement.item_count = itemCount;
@@ -213,18 +213,17 @@ void ShowTowerButtons()
     {
         int itemId = ui.placement.item_slots.data[i];
         UiElement* el = &uiElements.elements[itemId];
-        el->visible = true;
 
+        el->visible = true;
+        el->on_click = Action_SelectTowerType;
         ui.placement.slot_map[i] = EntitySlotMap{el->id, EntityZero.id, el->id};
 
-        // first button is special
+        // first button is special and does other stuff
         if (i == 0)
         {
             el->sprite_index = 31;
             el->hover_sprite_index = 39;
-            el->on_click = [] {
-                // TODO:
-            };
+            el->on_click = [] {};
             ui.placement.slot_map[i] = EntitySlotMap{NullElement.id,
                                                      EntityZero.id,
                                                      NullElement.id};
