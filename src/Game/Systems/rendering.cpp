@@ -23,7 +23,7 @@ void RenderEntities(ScreenBuffer buffer)
 
         // craft items are rendered separately, because they need to be on top
         // of the ui
-        if (e.type == CRAFT_ITEM) continue;
+        if (e.type == CRAFT_ITEM || e.type == TOWER_PROTO) continue;
 
         int drawStartX = e.x - (_tileSize.width / 2 - 1);
         int drawStartY = e.y - (_tileSize.height / 2 - 1);
@@ -49,14 +49,14 @@ void RenderEntities(ScreenBuffer buffer)
     }
 }
 
-void RenderCraftingItems(ScreenBuffer buffer)
+void RenderEntitiesOnTop(ScreenBuffer buffer, EntityType type)
 {
 
     for (int i = 0; i < entities.unit_count; ++i)
     {
         Entity e = entities.units[i];
 
-        if (e.type != CRAFT_ITEM) continue;
+        if (e.type != type) continue;
 
         int drawStartX = e.x - (_tileSize.width / 2 - 1);
         int drawStartY = e.y - (_tileSize.height / 2 - 1);
@@ -132,8 +132,8 @@ void RenderUiElements(ScreenBuffer& buffer, SpriteSheet& sheet)
             }
             else
             {
-                int spriteIdx =
-                    cur->hovered ? cur->hover_sprite_index : cur->sprite_index;
+                int spriteIdx = cur->hovered ? cur->hover_sprite_index
+                                             : cur->sprite_index;
                 DrawTiles(buffer,
                           cur->x_start,
                           cur->y_start,

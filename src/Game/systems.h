@@ -18,7 +18,7 @@ void AnimateEntities();
 //  Rendering
 void RenderEntities(ScreenBuffer buffer);
 void RenderUiElements(ScreenBuffer& buffer, SpriteSheet& sheet);
-void RenderCraftingItems(ScreenBuffer buffer);
+void RenderEntitiesOnTop(ScreenBuffer buffer, EntityType type);
 
 //----------------
 //  Debug

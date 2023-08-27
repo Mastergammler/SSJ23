@@ -4,8 +4,8 @@ Position ItemSlotCenter(int slotId)
 {
     UiElement* el = &uiElements.elements[slotId];
 
-    int centerX = el->x_start + _tileSize.width / 2;
-    int centerY = el->y_start + _tileSize.height / 2;
+    int centerX = el->x_start + _tileSize.width * el->x_tiles / 2;
+    int centerY = el->y_start + _tileSize.height * el->y_tiles / 2;
 
     return Position{centerX, centerY};
 }
@@ -54,6 +54,7 @@ Position CalculateStartPixelPosition(Anchor anchor, Sprite sprite)
             x -= sprite.x_tiles * _tileSize.width / 2;
             y -= sprite.y_tiles * _tileSize.height;
             y -= yOffsetPixel;
+            x += xOffsetPixel;
             return Position{x, y};
         }
         case CENTERED:
@@ -62,6 +63,9 @@ Position CalculateStartPixelPosition(Anchor anchor, Sprite sprite)
             int y = _tileMap.rows * _tileSize.height / 2 - 1;
             x -= sprite.x_tiles * _tileSize.width / 2;
             y -= sprite.y_tiles * _tileSize.height / 2;
+            y -= yOffsetPixel;
+            x += xOffsetPixel;
+
             return Position{x, y};
         }
     };
@@ -98,8 +102,8 @@ UniformGrid CalculateGridPositions(UiElement panel,
              maxButtonCount);
     }
 
-    int spaceButtonOnlyX = buttonsPerRow * _tileSize.width;
-    int spaceButtonOnlyY = buttonsPerColumn * _tileSize.height;
+    int spaceButtonOnlyX = buttonsPerRow * _tileSize.width * sprite.x_tiles;
+    int spaceButtonOnlyY = buttonsPerColumn * _tileSize.height * sprite.y_tiles;
     int availableSpacingSpaceX = areaSurfacePixelX - spaceButtonOnlyX;
     int availableSpacingSpaceY = areaSurfacePixelY - spaceButtonOnlyY;
 
@@ -118,7 +122,8 @@ UniformGrid CalculateGridPositions(UiElement panel,
                                               : 0;
 
     int areaStartX = panel.x_start + pixelPadding;
-    int areaStartY = panel.y_end - pixelPadding - _tileSize.height;
+    int areaStartY = panel.y_end - pixelPadding -
+                     _tileSize.height * sprite.y_tiles;
 
     areaStartX += leftoverSpaceX / 2;
     areaStartY -= leftoverSpaceY / 2;
@@ -129,7 +134,10 @@ UniformGrid CalculateGridPositions(UiElement panel,
 
     int rowsToDraw = items / buttonsPerRow;
     int lastRowItems = items % buttonsPerRow;
-    if (lastRowItems != 0) rowsToDraw++;
+    if (lastRowItems != 0)
+        rowsToDraw++;
+    else
+        lastRowItems = buttonsPerRow;
 
     Position* itemPositions = new Position[items];
     int itemPosIndex = 0;

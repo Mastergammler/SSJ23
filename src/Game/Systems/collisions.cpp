@@ -1,16 +1,17 @@
 #include "../internal.h"
 
-// TODO: use this null element, or another one?
-//  the default one as 0 ??
-UiElement NullElement = {.visible = false,
-                         .initialized = false,
-                         .id = -1,
-                         .layer = -1,
-                         .on_click = [] {}};
+// can't return the const element directly, that's why we copy it here
+// Not sure if that's the best handling, but ui relies on many places on finding
+// an element -> so we want to prevent returning null here
+UiElement nullElemCopy = UiElement{.visible = NullElement.visible,
+                                   .initialized = NullElement.initialized,
+                                   .id = NullElement.id,
+                                   .layer = NullElement.layer,
+                                   .on_click = NullElement.on_click};
 
 UiElement* FindHighestLayerCollision(int x, int y)
 {
-    UiElement* foundElement = &NullElement;
+    UiElement* foundElement = &nullElemCopy;
     for (int i = 0; i < uiElements.count; ++i)
     {
         UiElement* cur = &uiElements.elements[i];

@@ -40,6 +40,14 @@ const Entity EntityZero = Entity{.initialized = false,
                                  .id = -1,
                                  .storage_id = -1};
 
+const UiElement NullElement = {.visible = false,
+                               .initialized = false,
+                               .id = -1,
+                               .layer = -1,
+                               .on_click = [] {
+                                   Log("Error: Null element on-click invoked!");
+                               }};
+
 BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc);
 SoundCache LoadAudioFiles();
 void LoadItems();

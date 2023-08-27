@@ -47,8 +47,9 @@ struct AudioPlayback
         this->bpm = bpm;
         // only for 4/4 right now
         this->loop_point_beats = loop_point_bars * 4;
-        this->loop_point_samples =
-            2 * SAMPLING_RATE * 60 * loop_point_beats / bpm - 1;
+        this->loop_point_samples = 2 * SAMPLING_RATE * 60 * loop_point_beats /
+                                                                           bpm -
+                                   1;
         this->current_sample_position = 0;
         this->playback_finished = false;
     }
@@ -113,7 +114,6 @@ void PlayAudioFile(WaveBuffer* wave, bool loop, int volume)
                         (DWORD_PTR)playback,
                         CALLBACK_FUNCTION) != MMSYSERR_NOERROR)
         {
-            Debug("Unable to open audio device");
             Log("Unable to open audio device");
             return;
         }
@@ -126,7 +126,6 @@ void PlayAudioFile(WaveBuffer* wave, bool loop, int volume)
 
     if (waveOutSetVolume(playbackDevice, twoChannelVolume) != MMSYSERR_NOERROR)
     {
-        Debug("waveOUtGetVolume failed");
         Log("Unable to set the volume on the audio device");
         return;
     }
@@ -143,8 +142,7 @@ void PlayAudioFile(WaveBuffer* wave, bool loop, int volume)
                                  sizeof(playback->header[i])) !=
             MMSYSERR_NOERROR)
         {
-            Debug("waveOutPrepareHeader[%d] failed");
-            Log("Preparing the header failed");
+            Logf("Preparing the header %d failed", i);
             return;
         }
 
@@ -152,8 +150,7 @@ void PlayAudioFile(WaveBuffer* wave, bool loop, int volume)
                          &playback->header[i],
                          sizeof(playback->header[i])) != MMSYSERR_NOERROR)
         {
-            Debug("waveOutWrite[%d] failed");
-            Log("Unable to write to the audio device");
+            Logf("Unable to write %d to the audio device", i);
             return;
         }
     }
@@ -170,9 +167,8 @@ void FillNextBuffer(HWAVEOUT device, AudioPlayback& playback, bool writeWave)
         waveOutWrite(device,
                      &playback.header[playback.buffer_flip],
                      sizeof(playback.header[playback.buffer_flip])) !=
-            MMSYSERR_NOERROR)
+                                                MMSYSERR_NOERROR)
     {
-        Debug("waveOutWrite failed");
         Log("Unable to write buffer to device");
     }
 

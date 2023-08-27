@@ -128,11 +128,15 @@ void DrawEntityLayer(ScreenBuffer buffer)
 void DrawUiLayer(ScreenBuffer buffer)
 {
     RenderUiElements(buffer, Res.bitmaps.ui);
+
     // needs to be on top of the rest of the ui stuff
     if (ui.crafting.visible)
     {
-        RenderCraftingItems(buffer);
+        RenderEntitiesOnTop(buffer, CRAFT_ITEM);
     }
+
+    // TODO: kinda inefficient, going through both of those twice
+    RenderEntitiesOnTop(buffer, TOWER_PROTO);
 
     // draw mouse
     DrawBitmap(buffer,

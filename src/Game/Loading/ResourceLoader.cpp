@@ -172,12 +172,24 @@ SoundCache LoadAudioFiles()
     {
         cache.pop_lo = popLo;
     }
+
     WaveBuffer popHi = LoadWaveFile(ABSOLUTE_RES_PATH + "Sounds/Pop-Hi.wav");
     if (popHi.loaded)
     {
         cache.pop_hi = popHi;
     }
-
+    WaveBuffer craftError = LoadWaveFile(ABSOLUTE_RES_PATH +
+                                         "Sounds/Craft-Error.wav");
+    if (craftError.loaded)
+    {
+        cache.craft_error = craftError;
+    }
+    WaveBuffer craftSuccess = LoadWaveFile(ABSOLUTE_RES_PATH +
+                                           "Sounds/Craft-Success.wav");
+    if (craftSuccess.loaded)
+    {
+        cache.craft_success = craftSuccess;
+    }
     return cache;
 }
 

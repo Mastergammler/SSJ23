@@ -5,7 +5,7 @@
 UiElementStorage uiElements;
 
 // TODO: still has a few hard coded initializers
-int CreateButton(Anchor anchor, UiSprite sprite, Action onClick)
+int CreateButton(Anchor anchor, UiSprite sprite, Action onClick, int layer = 0)
 {
     assert(uiElements.count < uiElements.size);
 
@@ -30,7 +30,7 @@ int CreateButton(Anchor anchor, UiSprite sprite, Action onClick)
     button->visible = false;
 
     button->type = UI_BUTTON;
-    button->layer = 0;
+    button->layer = layer;
 
     button->on_click = onClick;
 
@@ -73,7 +73,7 @@ int CreateItemButton(int parentId, int x, int y, UiSprite sprite, int flags = 0)
 }
 
 // TODO: only for uniform buttons right now
-// TEST: bigger sized buttons
+// FIXME: doesn't restrict button count correctly
 IntArray CreatePanelButtons(int parentId,
                             float panelPadding,
                             float spacing,
@@ -81,7 +81,6 @@ IntArray CreatePanelButtons(int parentId,
                             UiSprite itemSprite,
                             int itemFlags = 0)
 {
-
     UiElement panel = uiElements.elements[parentId];
     assert(panel.initialized);
 
@@ -102,6 +101,8 @@ IntArray CreatePanelButtons(int parentId,
                                              itemSprite,
                                              itemFlags);
     }
+
+    Logf("Created %d item slots", grid.items);
 
     return IntArray{panelButtonIds, grid.items};
 }
@@ -179,6 +180,10 @@ void CreateMenuElements()
 
 void CreateCraftingItems()
 {
+    assert(ui.crafting.tower_slots.size == 2);
+    ui.crafting.tower_slot_bullet = ui.crafting.tower_slots.data[0];
+    ui.crafting.tower_slot_pillar = ui.crafting.tower_slots.data[1];
+
     int itemCount = Res.items.count;
     assert(ui.crafting.item_slots.size >= itemCount);
 
@@ -195,21 +200,57 @@ void CreateCraftingItems()
     }
 }
 
+void ShowTowerButtons()
+{
+    // TODO: should be done dynamically
+
+    int itemCount = ui.placement.item_slots.size;
+
+    ui.placement.item_count = itemCount;
+    ui.placement.slot_map = new EntitySlotMap[ui.placement.item_count];
+
+    for (int i = 0; i < itemCount; i++)
+    {
+        int itemId = ui.placement.item_slots.data[i];
+        UiElement* el = &uiElements.elements[itemId];
+        el->visible = true;
+
+        ui.placement.slot_map[i] = EntitySlotMap{el->id, EntityZero.id, el->id};
+
+        // first button is special
+        if (i == 0)
+        {
+            el->sprite_index = 31;
+            el->hover_sprite_index = 39;
+            el->on_click = [] {
+                // TODO:
+            };
+            ui.placement.slot_map[i] = EntitySlotMap{NullElement.id,
+                                                     EntityZero.id,
+                                                     NullElement.id};
+        }
+    }
+}
+
 void CreateGameElements()
 {
     UiSprite defaultButton = UiSprite{2, 1, 8, 10, &Res.bitmaps.ui};
+    UiSprite grayButton = UiSprite{1, 1, 5, 6, &Res.bitmaps.ui};
     UiSprite panel3x3 = UiSprite{3, 3, 16, 16, &Res.bitmaps.ui};
-    UiSprite panel2x10 = UiSprite{2, 10, 16, 16, &Res.bitmaps.ui};
-    UiSprite panel15x10 = UiSprite{15, 10, 16, 16, &Res.bitmaps.ui};
+    UiSprite panel3x10 = UiSprite{3, 10, 16, 16, &Res.bitmaps.ui};
+    UiSprite panel15x10 = UiSprite{8, 10, 16, 16, &Res.bitmaps.ui};
     UiSprite panel15x2 = UiSprite{15, 2, 16, 16, &Res.bitmaps.ui};
     UiSprite itemSlot = UiSprite{1, 1, 19, 0, &Res.bitmaps.ui};
+    UiSprite bigItem = UiSprite{2, 2, 27, 29, &Res.bitmaps.ui};
 
     ui.crafting.tower_panel = CreatePanel(Anchor{UPPER_RIGHT, 0.5, 3},
-                                          panel2x10);
-    ui.crafting.items_panel = CreatePanel(Anchor{UPPER_MIDDLE, 0, 3},
+                                          panel3x10);
+    ui.crafting.items_panel = CreatePanel(Anchor{UPPER_MIDDLE, 2, 3},
                                           panel15x10);
-    ui.placement.tower_selection_panel = CreatePanel(Anchor{UPPER_LEFT, 2, 2.5},
-                                                     panel15x2);
+    ui.placement.tower_selection_panel = CreatePanel(
+                                            Anchor{UPPER_LEFT, -0.25, 0},
+                                            panel15x2);
+
     ui.crafting.item_slots = CreatePanelButtons(ui.crafting.items_panel,
                                                 0.5,
                                                 0.25,
@@ -219,21 +260,39 @@ void CreateGameElements()
     ui.crafting.tower_slots = CreatePanelButtons(ui.crafting.tower_panel,
                                                  0.5,
                                                  0.25,
-                                                 6,
-                                                 itemSlot,
+                                                 2,
+                                                 bigItem,
                                                  (DRAG_SOURCE | DROP_TARGET));
+    ui.placement.item_slots = CreatePanelButtons(
+                                            ui.placement.tower_selection_panel,
+                                            0.5,
+                                            0.25,
+                                            // Do a hard limit for now, maybe
+                                            // even as ristriction After that
+                                            // you can't creat new ones anymore
+                                            // -> so it becomes more about
+                                            // strategy ?!
+                                            9,
+                                            grayButton,
+                                            0);
 
     ui.crafting.show_hide_button = CreateButton(Anchor{UPPER_RIGHT, 0.5, 0.5},
                                                 defaultButton,
                                                 Action_ToggleCraftingPanel);
+    ui.crafting.crafting_button = CreateButton(Anchor{UPPER_RIGHT, 1, 11.5},
+                                               defaultButton,
+                                               Action_CraftTower,
+                                               2);
 
     //-----------
     //  TODO: TMP
-    ui.tmp_2 = CreateButton(Anchor{UPPER_MIDDLE, 0.5, 0.5},
+    ui.tmp_2 = CreateButton(Anchor{UPPER_LEFT, 0.5, 12},
                             defaultButton,
                             Action_SpawnEnemy);
 
     CreateCraftingItems();
+    // TODO: DEBUG - should be done dynamically
+    ShowTowerButtons();
 }
 
 /**

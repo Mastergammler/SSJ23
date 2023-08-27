@@ -79,6 +79,9 @@ struct Tower
     int storage_id;
 
     int radius;
+    // TODO: new values
+    //  - state, is broken etc
+    //  - sprite for is broken (change entity sprite?)
 };
 
 struct TowerStore
@@ -144,6 +147,8 @@ struct CannonType
 
     int bullet_item_id;
     int post_item_id;
+
+    // TODO: calc values?
 };
 
 struct CannonTypeStore

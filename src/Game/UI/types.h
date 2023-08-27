@@ -160,11 +160,15 @@ struct CraftingElements
     bool visible;
 
     int show_hide_button;
+    int crafting_button;
     int tower_panel;
     int items_panel;
 
     IntArray item_slots;
     IntArray tower_slots;
+
+    int tower_slot_bullet;
+    int tower_slot_pillar;
 
     /**
      * count of available items
@@ -177,11 +181,18 @@ struct CraftingElements
 
 struct PlacementElements
 {
+    /**
+     * Control for the ui placement preview
+     */
     bool active;
     int tower_selection_panel;
 
     // tmp
     bool tower_a_selected;
+    IntArray item_slots;
+
+    int item_count;
+    EntitySlotMap* slot_map;
 };
 
 struct UiState

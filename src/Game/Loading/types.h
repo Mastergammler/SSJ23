@@ -51,6 +51,8 @@ struct SoundCache
     WaveBuffer click_lo;
     WaveBuffer pop_lo;
     WaveBuffer pop_hi;
+    WaveBuffer craft_error;
+    WaveBuffer craft_success;
 
     WaveBuffer music;
 };

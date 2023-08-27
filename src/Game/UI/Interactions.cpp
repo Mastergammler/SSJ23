@@ -43,8 +43,9 @@ void UpdateMouseState()
 void ProcessMouseActions()
 {
     UiElement* hovered = FindHighestLayerCollision(mouseState.x, mouseState.y);
+
     hovered->hovered = true;
-    ui.ui_focus = hovered->id != -1;
+    ui.ui_focus = hovered->id != NullElement.id;
     ui.ui_focus_element = hovered;
 
     if (mouseState.left_clicked)
@@ -155,8 +156,10 @@ void Action_ToggleCraftingPanel()
     ui.crafting.visible = !ui.crafting.visible;
     UiElement* panel = &uiElements.elements[ui.crafting.tower_panel];
     UiElement* items = &uiElements.elements[ui.crafting.items_panel];
+    UiElement* craftBtn = &uiElements.elements[ui.crafting.crafting_button];
     panel->visible = ui.crafting.visible;
     items->visible = ui.crafting.visible;
+    craftBtn->visible = ui.crafting.visible;
 
     // show/hide child elements
     for (int i = 0; i < uiElements.count; ++i)
@@ -198,7 +201,7 @@ void Action_StartGame()
     // TODO: trigger transition animation
     if (Res.audio.music.loaded)
     {
-        // PlayAudioFile(&res.audio.music, true, 80);
+        // PlayAudioFile(&Res.audio.music, true, 80);
     }
 }
 
@@ -249,15 +252,64 @@ void Action_DoDragging()
     }
 }
 
-// TODO: nodo need to cleanup the ui
-//  need a better tracking system
-//  some way to distinguish between drop and non drops
-//
-// TODO: Refactor UI state system
-// -> its driving me crazy right now, i don't find stuff anymore
-// -> introduce flags for ui items -> then i can add drop_source and drop_target
-// -> And do interactions based on that -> and can remove onclick?
-// -> Or set onClick differently for the build buttons
+void ResetSlotAndEntity(EntitySlotMap* slotMap)
+{
+    if (slotMap)
+    {
+        Entity* e = &entities.units[slotMap->entity_id];
+        Position slotCenter = ItemSlotCenter(slotMap->initial_slot_id);
+        e->x = slotCenter.x;
+        e->y = slotCenter.y;
+
+        slotMap->current_slot_id = slotMap->initial_slot_id;
+    }
+}
+
+EntitySlotMap* FindNextAvailablePlacementSlot()
+{
+    for (int i = 0; i < ui.placement.item_count; i++)
+    {
+        EntitySlotMap* slotMap = &ui.placement.slot_map[i];
+
+        // not all items are usable as slots
+        if (slotMap->initial_slot_id != NullElement.id &&
+            slotMap->entity_id == EntityZero.id)
+        {
+            return slotMap;
+        }
+    }
+
+    return NULL;
+}
+
+void Action_CraftTower()
+{
+    EntitySlotMap* bulletSlot = FindBySlotId(ui.crafting.tower_slot_bullet);
+    EntitySlotMap* pillarSlot = FindBySlotId(ui.crafting.tower_slot_pillar);
+
+    if (bulletSlot && pillarSlot)
+    {
+        EntitySlotMap* availableSlot = FindNextAvailablePlacementSlot();
+        // TODO: order right?
+        ResetSlotAndEntity(bulletSlot);
+        ResetSlotAndEntity(pillarSlot);
+
+        if (availableSlot)
+        {
+
+            Position slotCenter = ItemSlotCenter(availableSlot->current_slot_id);
+            int entityId = CreatCannonTypeEntity(slotCenter.x,
+                                                 slotCenter.y,
+                                                 bulletSlot->entity_id,
+                                                 pillarSlot->entity_id);
+            availableSlot->entity_id = entityId;
+            PlayAudioFile(&Res.audio.craft_success, false, 100);
+            return;
+        }
+    }
+
+    PlayAudioFile(&Res.audio.craft_error, false, 100);
+}
 
 void Action_ResetItemToStartPosition()
 {
@@ -268,14 +320,7 @@ void Action_ResetItemToStartPosition()
     if (hoveredElement->flags & DROP_TARGET)
     {
         EntitySlotMap* map = FindBySlotId(hoveredElement->id);
-        if (!map) return;
-
-        Entity* e = &entities.units[map->entity_id];
-        Position slotCenter = ItemSlotCenter(map->initial_slot_id);
-        e->x = slotCenter.x;
-        e->y = slotCenter.y;
-
-        map->current_slot_id = map->initial_slot_id;
+        ResetSlotAndEntity(map);
     }
 }
 
@@ -286,10 +331,6 @@ void Action_Drop()
 
     EntitySlotMap* entitySlot = FindByEntityId(e->id);
     assert(entitySlot);
-
-    // TODO: is this the way?, i mean i'm not really using it anyway?
-    ui.dragged_entity_id = EntityZero.id;
-    ui.is_dragging = false;
 
     if (hoveredElement->flags & DROP_TARGET)
     {
@@ -307,13 +348,12 @@ void Action_Drop()
     }
     else
     {
-        // reset to initial position
-        Position slotCenter = ItemSlotCenter(entitySlot->initial_slot_id);
-        e->x = slotCenter.x;
-        e->y = slotCenter.y;
-
-        return;
+        EntitySlotMap* draggedEntity = FindByEntityId(ui.dragged_entity_id);
+        ResetSlotAndEntity(draggedEntity);
     }
+
+    ui.dragged_entity_id = EntityZero.id;
+    ui.is_dragging = false;
 }
 
 void Action_Exit()
