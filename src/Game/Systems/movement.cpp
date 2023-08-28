@@ -129,6 +129,37 @@ void MoveEnemies()
     }
 }
 
+struct Vector2
+{
+    float x, y;
+};
+
+Vector2 normalize(int originX, int originY, int destX, int destY)
+{
+    int xDir = destX - originX;
+    int yDir = destY - originY;
+
+    if (xDir == 0 && yDir == 0) return Vector2{0, 0};
+    if (xDir == 0)
+    {
+        float dir = yDir > 0 ? 1 : -1;
+        return Vector2{0, dir};
+    }
+    if (yDir == 0)
+    {
+        float dir = xDir > 0 ? 1 : -1;
+        return Vector2{dir, 0};
+    }
+
+    float xRatio = (float)xDir / yDir;
+    float magnitude = sqrt(pow(xDir, 2) + pow(yDir, 2));
+
+    float normalizedX = xDir / magnitude;
+    float normalizedY = yDir / magnitude;
+
+    return Vector2{normalizedX, normalizedY};
+}
+
 void MoveProjectiles()
 {
     for (int i = 0; i < projectiles.unit_count; i++)
@@ -144,16 +175,20 @@ void MoveProjectiles()
 
         // time in seconds * speed per tile + pixels per tile
         float increase = Time.sim_time * p.speed * Game.tile_size.height;
+        Vector2 normalized = normalize(e->x, e->y, p.target_x, p.target_y);
 
-        if (e->x < p.target_x)
-            e->move_x += increase;
-        else if (e->x > p.target_x)
-            e->move_x -= increase;
+        e->move_x += increase * normalized.x;
+        e->move_y += increase * normalized.y;
 
-        if (e->y < p.target_y)
-            e->move_y += increase;
-        else if (e->y > p.target_y)
-            e->move_y -= increase;
+        // if (e->x < p.target_x)
+        //     e->move_x += increase * normalized.x;
+        // else if (e->x > p.target_x)
+        //     e->move_x -= increase * normalized.x;
+
+        // if (e->y < p.target_y)
+        //     e->move_y += increase * normalized.y;
+        // else if (e->y > p.target_y)
+        //     e->move_y -= increase * normalized.y;
 
         e->x = e->move_x;
         e->y = e->move_y;

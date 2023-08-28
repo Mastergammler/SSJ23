@@ -53,7 +53,7 @@ void StartGame()
     Res.animations.enemy_anim = SpriteAnimation{4, 0.1, enemyWalkAnim};
 
     // TODO: remove
-    // Action_StartGame();
+    Action_StartGame();
 }
 
 /**
@@ -109,6 +109,7 @@ void ShowLogoScreen(ScreenBuffer buffer)
 
     if (timeInLogoScreen > SHOW_LOGO_TIME)
     {
+        // TODO: refactor - quite a ugly shader animator
         timeSinceLastSample += Time.delta_time_real;
         shader.type = COLOR_REPLACE;
         switch (samplePosition)

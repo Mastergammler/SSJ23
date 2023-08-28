@@ -207,6 +207,7 @@ void Action_StartGame()
     tmp2->visible = true;
 
     navigation.in_menu = false;
+    navigation.in_start_screen = false;
     navigation.in_game = true;
 
     // TODO: trigger transition animation
