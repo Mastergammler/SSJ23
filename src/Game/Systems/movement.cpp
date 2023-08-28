@@ -86,7 +86,7 @@ void MoveEnemies()
     for (int i = 0; i < Game.tile_map.tile_count; ++i)
     {
         Tile tile = Game.tile_map.tiles[i];
-        tile.entities->entity_count = 0;
+        tile.tracker->entity_count = 0;
     }
 
     for (int i = 0; i < entities.unit_count; i++)
@@ -108,7 +108,7 @@ void MoveEnemies()
             }
 
             Direction moveDir = GetNextMovementDirection(*e);
-            float increase = measure.frame_delta_time * enemy.speed;
+            float increase = Time.sim_time * enemy.speed;
             switch (moveDir)
             {
                 case NORTH: e->move_y += increase; break;
@@ -123,8 +123,39 @@ void MoveEnemies()
             e->direction = moveDir;
 
             Tile* newEnemyTile = Game.tile_map.tileAt(e->x, e->y);
-            newEnemyTile->entities->entity_ids[newEnemyTile->entities->entity_count++] =
+            newEnemyTile->tracker->entity_ids[newEnemyTile->tracker->entity_count++] =
                                                     e->id;
         }
+    }
+}
+
+void MoveProjectiles()
+{
+    for (int i = 0; i < projectiles.unit_count; i++)
+    {
+        Projectile p = projectiles.units[i];
+
+        if (p.state != ACTIVE) continue;
+
+        Entity* e = &entities.units[p.entity_id];
+
+        // FIXME: this is not how you calculate vector positions
+        // -> you gotta use the actual angle etc -> and normalize!!
+
+        // time in seconds * speed per tile + pixels per tile
+        float increase = Time.sim_time * p.speed * Game.tile_size.height;
+
+        if (e->x < p.target_x)
+            e->move_x += increase;
+        else if (e->x > p.target_x)
+            e->move_x -= increase;
+
+        if (e->y < p.target_y)
+            e->move_y += increase;
+        else if (e->y > p.target_y)
+            e->move_y -= increase;
+
+        e->x = e->move_x;
+        e->y = e->move_y;
     }
 }

@@ -40,6 +40,7 @@ struct BitmapCache
 {
     BitmapBuffer cursor_sprite = {};
     BitmapBuffer tile_highlight = {};
+    BitmapBuffer logo;
 
     SpriteSheet ground = {};
     SpriteSheet ui = {};
@@ -61,6 +62,7 @@ struct SoundCache
 
 struct SpriteCache
 {
+    Sprite placeholder;
     Sprite tower_a;
     Sprite tower_b;
     Sprite enemy_a;
@@ -122,7 +124,7 @@ struct Tile
     /**
      * tracking for the entities that occupie this field atm
      */
-    EntityTracker* entities;
+    EntityTracker* tracker;
     int is_start;
     int is_end;
 

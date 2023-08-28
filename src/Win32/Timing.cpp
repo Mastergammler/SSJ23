@@ -1,6 +1,6 @@
 #include "../imports.h"
 
-struct FpsCounter
+struct Clock
 {
     int warmup_iterations = 60;
     int current_iteration;
@@ -13,8 +13,19 @@ struct FpsCounter
      * Time since the last update call
      * When update is called every frame = frame time
      * Delta time is in seconds?
+     * This is the actual passed time, so all IO system based things
+     * should use this time
      */
-    float frame_delta_time;
+    float delta_time_real;
+
+    float time_scale = 1;
+
+    /**
+     * this is the scaled delta time (simulation time)
+     * it depends on time scale
+     * So all entities and game systems should use this time
+     */
+    float sim_time;
 
     float delta_min = 10000;
     float delta_max = 0;
@@ -27,7 +38,7 @@ struct FpsCounter
     LARGE_INTEGER frequency;
     LARGE_INTEGER last_time;
 
-    FpsCounter()
+    Clock()
     {
         // get the initial frequency (which stays constant)
         QueryPerformanceFrequency(&frequency);
@@ -35,28 +46,34 @@ struct FpsCounter
         QueryPerformanceCounter(&last_time);
 
         // initial value / can't be 0
-        frame_delta_time = 0.0166666666f;
-        time_counter = frame_delta_time;
+        delta_time_real = 0.0166666666f;
+        time_counter = delta_time_real;
     }
 
     void Update()
     {
         LARGE_INTEGER current_time;
         QueryPerformanceCounter(&current_time);
-        frame_delta_time = (float)(current_time.QuadPart - last_time.QuadPart) /
-                     frequency.QuadPart;
+        delta_time_real = (float)(current_time.QuadPart - last_time.QuadPart) /
+                          frequency.QuadPart;
         last_time = current_time;
-        fps = 1 / frame_delta_time;
-        time_counter += frame_delta_time;
+        fps = 1 / delta_time_real;
+        time_counter += delta_time_real;
+        sim_time = time_scale * delta_time_real;
 
         if (current_iteration > warmup_iterations)
         {
             fps_max = fps > fps_max ? fps : fps_max;
             fps_min = fps < fps_min ? fps : fps_min;
-            delta_max = frame_delta_time > delta_max ? frame_delta_time : delta_max;
-            delta_min = frame_delta_time < delta_min ? frame_delta_time : delta_min;
+            delta_max = delta_time_real > delta_max ? delta_time_real
+                                                    : delta_max;
+            delta_min = delta_time_real < delta_min ? delta_time_real
+                                                    : delta_min;
         }
-        else { current_iteration++; }
+        else
+        {
+            current_iteration++;
+        }
     }
 
     float CheckDeltaTimeMs()

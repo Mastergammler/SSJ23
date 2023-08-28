@@ -139,6 +139,15 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
                                        Game.tile_size.height);
     }
 
+    BitmapBuffer logo = LoadSprite(ABSOLUTE_RES_PATH + "Sprites/Logo.bmp",
+                                   hInstance,
+                                   hdc);
+
+    if (logo.loaded)
+    {
+        cache.logo = logo;
+    }
+
     return cache;
 }
 
@@ -251,8 +260,8 @@ TileMap LoadMaps()
         for (int col = 0; col < rawMap.columns; col++)
         {
             Tile tile = Tile{};
-            tile.entities = new EntityTracker{};
-            tile.entities->entity_ids = new int[tile.entities->MAX_COUNT];
+            tile.tracker = new EntityTracker{};
+            tile.tracker->entity_ids = new int[tile.tracker->MAX_COUNT];
 
             char val = *values++;
 

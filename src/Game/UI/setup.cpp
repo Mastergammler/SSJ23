@@ -233,6 +233,8 @@ void CreateGameElements()
 {
     UiSprite defaultButton = UiSprite{2, 1, 8, 10, &Res.bitmaps.ui};
     UiSprite grayButton = UiSprite{1, 1, 5, 6, &Res.bitmaps.ui};
+    UiSprite craftButton = UiSprite{2, 1, 40, 42, &Res.bitmaps.ui};
+    UiSprite confirmButton = UiSprite{2, 1, 44, 46, &Res.bitmaps.ui};
     UiSprite panel3x3 = UiSprite{3, 3, 16, 16, &Res.bitmaps.ui};
     UiSprite panel3x10 = UiSprite{3, 10, 16, 16, &Res.bitmaps.ui};
     UiSprite panel15x10 = UiSprite{8, 10, 16, 16, &Res.bitmaps.ui};
@@ -274,10 +276,10 @@ void CreateGameElements()
                                             0);
 
     ui.crafting.show_hide_button = CreateButton(Anchor{UPPER_RIGHT, 0.5, 0.5},
-                                                defaultButton,
+                                                craftButton,
                                                 Action_ToggleCraftingPanel);
     ui.crafting.crafting_button = CreateButton(Anchor{UPPER_RIGHT, 1, 11.5},
-                                               defaultButton,
+                                               confirmButton,
                                                Action_CraftTower,
                                                2);
 

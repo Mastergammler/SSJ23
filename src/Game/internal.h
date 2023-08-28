@@ -3,6 +3,7 @@
 #include "Components/types.h"
 #include "Entities/types.h"
 #include "Loading/types.h"
+#include "Rendering/colors.h"
 #include "UI/types.h"
 #include "module.h"
 
@@ -40,6 +41,7 @@ extern TowerStore towers;
 extern EnemyStore enemies;
 extern ItemStore items;
 extern CannonTypeStore cannons;
+extern ProjectileStore projectiles;
 
 // Zeros
 const Entity EntityZero = Entity{.initialized = false,
@@ -65,6 +67,12 @@ void DrawGroundLayer(ScreenBuffer buffer);
 void DrawEntityLayer(ScreenBuffer buffer);
 void DrawUiLayer(ScreenBuffer buffer);
 
+// UTILS
+Position TileToDrawPosition(Tile tile);
+Position TileCenterPosition(Tile tile);
+
+// TODO: i don't think these should live here
+int CreateProjectileEntity();
 int CreatCannonTypeEntity(int x, int y, int bulletItemId, int postItemId);
 int CreateTowerEntity(int x, int y, Sprite bullet, Sprite pillar);
 int CreateItemEntity(int x, int y, ItemData data);

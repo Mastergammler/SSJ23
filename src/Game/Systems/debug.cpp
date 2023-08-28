@@ -5,7 +5,7 @@ const float PRINT_THRESHOLD_MS = 500. / 1000;
 
 void Debug_PrintEnemyTilePositions()
 {
-    lastPrintTime += measure.frame_delta_time;
+    lastPrintTime += Time.delta_time_real;
     if (lastPrintTime < PRINT_THRESHOLD_MS) return;
     lastPrintTime -= PRINT_THRESHOLD_MS;
 
@@ -13,16 +13,16 @@ void Debug_PrintEnemyTilePositions()
     {
         Tile tile = Game.tile_map.tiles[i];
 
-        if (tile.entities->entity_count > 0)
+        if (tile.tracker->entity_count > 0)
         {
             Logf("Tile %d (%d,%d) contains the following enemies",
                  i,
                  tile.x,
                  tile.y);
 
-            for (int e = 0; e < tile.entities->entity_count; e++)
+            for (int e = 0; e < tile.tracker->entity_count; e++)
             {
-                Logf("  id: %d", tile.entities->entity_ids[e]);
+                Logf("  id: %d", tile.tracker->entity_ids[e]);
             }
         }
     }
@@ -64,7 +64,6 @@ Sprite target = Sprite{1, 1, 58, &Res.bitmaps.ui};
 
 void Debug_DrawTowerRangeAndDetection(ScreenBuffer buffer)
 {
-    // TODO: first hav to set the tiles on the
     for (int i = 0; i < towers.unit_count; ++i)
     {
         Tower tower = towers.units[i];
@@ -73,19 +72,20 @@ void Debug_DrawTowerRangeAndDetection(ScreenBuffer buffer)
         {
             Tile tile = *tower.relevant_tiles[t];
 
-            int drawX = tile.x * Game.tile_size.width;
-            // +1 because idx 0 would not be the max position to draw
-            int drawY = MirrorY((tile.y + 1) * Game.tile_size.height,
-                                scale.draw_height);
+            Position pos = TileToDrawPosition(tile);
+            Sprite drawSprite = aim;
+            if (tile.tracker->entity_count > 0)
+            {
+                drawSprite = target;
+            }
 
-            // TODO: draw if enemy found
             DrawTiles(buffer,
-                      drawX,
-                      drawY,
-                      *aim.sheet,
-                      aim.sheet_start_index,
-                      aim.x_tiles,
-                      aim.y_tiles);
+                      pos.x,
+                      pos.y,
+                      *drawSprite.sheet,
+                      drawSprite.sheet_start_index,
+                      drawSprite.x_tiles,
+                      drawSprite.y_tiles);
         }
     }
 }

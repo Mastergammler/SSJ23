@@ -1,4 +1,5 @@
 #include "../internal.h"
+#include <shellapi.h>
 
 ComponentStore components;
 EntityStore entities;
@@ -6,6 +7,19 @@ TowerStore towers;
 EnemyStore enemies;
 ItemStore items;
 CannonTypeStore cannons;
+ProjectileStore projectiles;
+
+void InitializeProjectileStore(int storeCount, int poolSize)
+{
+    assert(poolSize <= storeCount);
+    // TODO: does this make sense to have a different pool size than general
+    // allocated memory?
+    projectiles.size = storeCount;
+    projectiles.units = new Projectile[storeCount];
+    projectiles.pool_index = 0;
+    projectiles.pool_size = poolSize;
+    memset(projectiles.units, 0, sizeof(Projectile) * storeCount);
+}
 
 void InitializeItemStorage(int storeCount)
 {
@@ -63,6 +77,7 @@ void InitializeEntities(int storeCount)
     InitializeEnemyStorage(storeCount);
     InitializeItemStorage(storeCount);
     InitializeCannonTypeStorage(storeCount);
+    InitializeProjectileStore(storeCount, storeCount);
 }
 
 Entity* InitNextEntity()
@@ -76,6 +91,31 @@ Entity* InitNextEntity()
     e->initialized = true;
 
     return e;
+}
+
+// TODO: handle pooling if necessary
+int CreateNewProjectile(int entityId)
+{
+    assert(projectiles.unit_count < projectiles.size);
+
+    int id = projectiles.unit_count++;
+    Projectile* p = &projectiles.units[id];
+
+    p->entity_id = entityId;
+    p->storage_id = id;
+    p->state = DESTROYED;
+
+    return p->storage_id;
+}
+
+int CreateProjectileEntity()
+{
+    Entity* e = InitNextEntity();
+    e->storage_id = CreateNewProjectile(e->id);
+
+    e->type = PROJECTILE;
+
+    return e->id;
 }
 
 int CreateEnemy(int entityId, int speed)
@@ -126,6 +166,94 @@ int CreateEnemyEntity(int x,
     return e->id;
 }
 
+/**
+ * Modified version of the fibonnaci sequence
+ * x = 4 + SIG[(x-1) * 8]
+ */
+int calculateTileCountFoRange(int range)
+{
+    if (range <= 0) return 0;
+
+    int acc = 4;
+
+    for (int r = 1; r <= range; r++)
+    {
+        acc += (r - 1) * 8;
+    }
+
+    return acc;
+}
+
+struct TileArray
+{
+    Tile** tiles;
+    int count;
+};
+
+TileArray determineRelevantTiles(int x, int y, int radius)
+{
+    Tile* towerTile = Game.tile_map.tileAt(x, y);
+
+    int maxNumTiles = calculateTileCountFoRange(radius);
+    // for adding center tile, simpler to iterate through
+    Tile** tmp = new Tile*[maxNumTiles + 1];
+
+    int pathTileCount = 0;
+
+    // -1 because we ignore the first cross one
+    int tilesPerRow = (radius - 1) * 2 + 1;
+    int rows = (radius - 1) * 2 + 1;
+
+    // TODO: include boundaries
+    Tile* ulStart = towerTile - (radius - 1) * Game.tile_map.columns -
+                    (radius - 1);
+
+    for (int r = 0; r < rows; r++)
+    {
+        Tile* currentRowTile = ulStart + r * Game.tile_map.columns;
+        for (int x = 0; x < tilesPerRow; x++)
+        {
+            Tile* cpy = currentRowTile++;
+            if (cpy->tile_id == PATH_TILE)
+            {
+                // don't forget to copy, because we move the other pointer
+                tmp[pathTileCount++] = cpy;
+            }
+        }
+    }
+
+    // Add extra cross
+    Tile* crossLeft = towerTile - radius;
+    if (crossLeft->tile_id == PATH_TILE)
+    {
+        tmp[pathTileCount++] = crossLeft;
+    }
+
+    Tile* crossRight = towerTile + radius;
+    if (crossRight->tile_id == PATH_TILE)
+    {
+        tmp[pathTileCount++] = crossRight;
+    }
+
+    Tile* crossTop = towerTile - radius * Game.tile_map.columns;
+    if (crossTop->tile_id == PATH_TILE)
+    {
+        tmp[pathTileCount++] = crossTop;
+    }
+
+    Tile* crossBot = towerTile + radius * Game.tile_map.columns;
+    if (crossBot->tile_id == PATH_TILE)
+    {
+        tmp[pathTileCount++] = crossBot;
+    }
+
+    Tile** relevantTilesActual = new Tile*[pathTileCount];
+    copy(tmp, tmp + pathTileCount, relevantTilesActual);
+    delete[] tmp;
+
+    return TileArray{relevantTilesActual, pathTileCount};
+}
+
 int CreateTower(int entityId, int x, int y, Sprite bullet, Sprite pillar)
 {
     assert(towers.unit_count < towers.size);
@@ -136,30 +264,17 @@ int CreateTower(int entityId, int x, int y, Sprite bullet, Sprite pillar)
     t->storage_id = id;
     t->entity_id = entityId;
 
-    // TODO: define tiles
-
-    Tile* towerTile = Game.tile_map.tileAt(x, y);
-
-    // TODO: initialize properly
-    // FIXME: !!!! boundary check!
-    Tile* left = towerTile - 1;
-    Tile* right = towerTile + 1;
-    Tile* top = towerTile - Game.tile_map.columns;
-    Tile* bottom = towerTile + Game.tile_map.columns;
-
-    t->relevant_tiles = new Tile*[4];
-    t->tile_count = 4;
-
-    t->relevant_tiles[0] = left;
-    t->relevant_tiles[1] = right;
-    t->relevant_tiles[2] = top;
-    t->relevant_tiles[3] = bottom;
-
-    // TODO:
+    // TODO: use values from the type
     t->radius = 3;
+    t->fire_rate = 1;
+    t->bullet_speed = 3;
     t->initialized = true;
     t->pillar_sprite = pillar;
     t->bullet_sprite = bullet;
+
+    TileArray relevantTiles = determineRelevantTiles(x, y, t->radius);
+    t->relevant_tiles = relevantTiles.tiles;
+    t->tile_count = relevantTiles.count;
 
     return t->storage_id;
 }

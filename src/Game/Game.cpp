@@ -20,43 +20,40 @@ void StartGame()
     InitializeEntities(Game.tile_map.rows * Game.tile_map.columns * 8);
     InitializeUi(64, 3);
 
-    navigation.in_menu = true;
-    UiElement* startBtn = &uiElements.elements[ui.menu.start_game_button];
-    UiElement* mapsPanel = &uiElements.elements[ui.menu.map_selection_panel];
-    UiElement* exitBtn = &uiElements.elements[ui.menu.exit_game_button];
-
-    startBtn->visible = true;
-    mapsPanel->visible = true;
-    exitBtn->visible = true;
+    navigation.in_start_screen = true;
 
     // TODO: TMP
+    Res.sprites.placeholder = Sprite{1, 1, 63, &Res.bitmaps.characters};
     Res.sprites.tower_a = Sprite{1, 2, 0, &Res.bitmaps.characters};
     Res.sprites.tower_b = Sprite{1, 2, 2, &Res.bitmaps.characters};
     Res.sprites.enemy_a = Sprite{1, 1, 24, &Res.bitmaps.characters};
 
+    // TODO: simple anim format -> just describe indices of the anim
+    // -> the rest only once
+    int offset = 8;
     Sprite* enemyWalkAnim = new Sprite[4]{
                                             Sprite{1,
                                                    1,
-                                                   25,
+                                                   25 + offset,
                                                    &Res.bitmaps.characters},
                                             Sprite{1,
                                                    1,
-                                                   26,
+                                                   26 + offset,
                                                    &Res.bitmaps.characters},
                                             Sprite{1,
                                                    1,
-                                                   27,
+                                                   27 + offset,
                                                    &Res.bitmaps.characters},
                                             Sprite{1,
                                                    1,
-                                                   28,
+                                                   28 + offset,
                                                    &Res.bitmaps.characters},
     };
 
     Res.animations.enemy_anim = SpriteAnimation{4, 0.1, enemyWalkAnim};
 
     // TODO: remove
-    Action_StartGame();
+    // Action_StartGame();
 }
 
 /**
@@ -69,10 +66,10 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     Game.tile_size = TileSize{.width = 16, .height = 16};
     InitStaticResources();
 
-    FpsCounter individualCounter = {};
+    Clock individualCounter = {};
     Log("Start Loading Resources");
 
-    measure.Update();
+    Time.Update();
     individualCounter.Update();
     Res.bitmaps = LoadSprites(hInstance, hdc);
     Logf("  Sprites loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
@@ -89,9 +86,67 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     LoadItems();
     Logf("  Items loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
 
-    Logf("Resources loaded in %.2f ms", measure.CheckDeltaTimeMs());
+    Logf("Resources loaded in %.2f ms", Time.CheckDeltaTimeMs());
 
     StartGame();
+}
+
+const float SHOW_LOGO_TIME = 2;
+float timeInLogoScreen = 0;
+int samplePosition = 0;
+float timeSinceLastSample = 0;
+float timePerSample = 0.15;
+
+Animator anim = {};
+
+void ShowLogoScreen(ScreenBuffer buffer)
+{
+    int centerX = scale.draw_width / 2 - Res.bitmaps.logo.width / 2;
+    int centerY = scale.draw_height / 2 - Res.bitmaps.logo.height / 2;
+    timeInLogoScreen += Time.delta_time_real;
+
+    Shader shader = {};
+
+    if (timeInLogoScreen > SHOW_LOGO_TIME)
+    {
+        timeSinceLastSample += Time.delta_time_real;
+        shader.type = COLOR_REPLACE;
+        switch (samplePosition)
+        {
+            case 1:
+            {
+                shader.shader_color = PALETTE_GRAY;
+            }
+            break;
+            case 2:
+            {
+                shader.shader_color = PALETTE_DARK_GRAY;
+            }
+            break;
+            case 3:
+            {
+                shader.shader_color = PALETTE_DARK_BROWN;
+            }
+            break;
+            case 4:
+            {
+                shader.shader_color = BG_COLOR;
+            }
+            break;
+            case 5:
+            case 6:
+            case 7:
+            case 8: break;
+            case 9: Action_GoToMenu(); break;
+            default: shader.type = NONE; break;
+        }
+        if (timeSinceLastSample > timePerSample)
+        {
+            timeSinceLastSample -= timePerSample;
+            samplePosition++;
+        }
+    }
+    DrawBitmap(buffer, Res.bitmaps.logo, centerX, centerY, shader);
 }
 
 // NOTE: idea for fade animations
@@ -105,6 +160,13 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
  */
 void UpdateFrame(ScreenBuffer& buffer)
 {
+    // special handling
+    if (navigation.in_start_screen)
+    {
+        ShowLogoScreen(buffer);
+        return;
+    }
+
     UpdateMouseState();
     ProcessMouseActions();
 
@@ -115,6 +177,8 @@ void UpdateFrame(ScreenBuffer& buffer)
     else if (navigation.in_game)
     {
         MoveEnemies();
+        SimulateTower();
+        MoveProjectiles();
         // Debug_PrintEnemyTilePositions();
         AnimateEntities();
 

@@ -5,7 +5,7 @@
 #include "utils.h"
 
 bool running = true;
-FpsCounter measure = {};
+Clock Time = {};
 
 /**
  * Entry point for working with the window api
@@ -33,7 +33,7 @@ int WinMain(HINSTANCE hInstance,
         HandleMessages(window);
         UpdateFrame(buffer);
         RenderFrame(hdc, buffer, drawableScreen);
-        WaitTillNextFrame(window, measure);
+        WaitTillNextFrame(window);
     }
 
     timeEndPeriod(1);

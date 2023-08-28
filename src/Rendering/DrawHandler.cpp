@@ -7,8 +7,10 @@ function void ClearScreen(ScreenBuffer& buffer);
  */
 void InitBuffer(ScreenBuffer& buffer)
 {
-    buffer.memory =
-        VirtualAlloc(0, buffer.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    buffer.memory = VirtualAlloc(0,
+                                 buffer.size,
+                                 MEM_COMMIT | MEM_RESERVE,
+                                 PAGE_READWRITE);
     ClearScreen(buffer);
 }
 
@@ -43,10 +45,10 @@ void DrawRect(ScreenBuffer& buffer,
     int tileBoundX = targetX + size;
     int tileBoundY = targetY + size;
 
-    int clipX =
-        tileBoundX > buffer.width ? size - (tileBoundX - buffer.width) : size;
-    int clipY =
-        tileBoundY > buffer.height ? size - (tileBoundY - buffer.height) : size;
+    int clipX = tileBoundX > buffer.width ? size - (tileBoundX - buffer.width)
+                                          : size;
+    int clipY = tileBoundY > buffer.height ? size - (tileBoundY - buffer.height)
+                                           : size;
 
     int pointerOffset = targetY * buffer.width + targetX;
     u32* pointerStart = pixel + pointerOffset;
@@ -222,17 +224,31 @@ void DrawPanel(ScreenBuffer& buffer,
     }
 }
 
+u32 ApplyShader(Shader shader, u32 inputColor)
+{
+    switch (shader.type)
+    {
+        case COLOR_REPLACE: return shader.shader_color;
+        default: return inputColor;
+    };
+}
+
 /**
- * Draws the tile from the LL (left lower) corner to the RU (right upper) corner
- * X and Y specify the start position LL for the buffer
+ * Draws the tile from the LL (left
+ * lower) corner to the RU (right upper)
+ * corner X and Y specify the start
+ * position LL for the buffer
  *
- * Also has the option to draw the bitmap from top to bottom
- * (means starting pos in UL instead of LL / does not flip the bitmap)
+ * Also has the option to draw the
+ * bitmap from top to bottom (means
+ * starting pos in UL instead of LL /
+ * does not flip the bitmap)
  */
 void DrawBitmap(ScreenBuffer& buffer,
                 BitmapBuffer& bitmap,
                 int bufferX,
                 int bufferY,
+                Shader shader,
                 bool topDown)
 {
     if (topDown)
@@ -259,13 +275,13 @@ void DrawBitmap(ScreenBuffer& buffer,
     int tileXExc = bufferX + bitmap.width;
     int tileYExc = bufferY + bitmap.height;
 
-    int clipXExc = tileXExc > buffer.width
-                       ? bitmap.width - (tileXExc - buffer.width)
-                       : bitmap.width;
+    int clipXExc = tileXExc > buffer.width ? bitmap.width - (tileXExc -
+                                                             buffer.width)
+                                           : bitmap.width;
 
-    int clipYExc = tileYExc > buffer.height
-                       ? bitmap.height - (tileYExc - buffer.height)
-                       : bitmap.height;
+    int clipYExc = tileYExc > buffer.height ? bitmap.height - (tileYExc -
+                                                               buffer.height)
+                                            : bitmap.height;
 
     for (int y = 0; y < clipYExc; y++)
     {
@@ -273,7 +289,10 @@ void DrawBitmap(ScreenBuffer& buffer,
         bitmapPixel = bitmapStart + y * bitmap.width;
         for (int x = 0; x < clipXExc; x++)
         {
-            if (*bitmapPixel != TRANS_VALUE) *bufferPixel = *bitmapPixel;
+            if (*bitmapPixel != TRANS_VALUE)
+            {
+                *bufferPixel = ApplyShader(shader, *bitmapPixel);
+            }
             bufferPixel++;
             bitmapPixel++;
         }

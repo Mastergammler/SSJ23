@@ -155,5 +155,6 @@ void DrawUiLayer(ScreenBuffer buffer)
                Res.bitmaps.cursor_sprite,
                mouseState.x,
                mouseState.y,
+               {},
                true);
 }

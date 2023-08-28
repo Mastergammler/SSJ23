@@ -22,6 +22,7 @@ void Action_SelectTowerType();
 
 void Action_StartGame();
 void Action_Exit();
+void Action_GoToMenu();
 
 void Action_StartDrag();
 void Action_ResetItemToStartPosition();

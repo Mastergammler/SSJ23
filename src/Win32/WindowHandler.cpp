@@ -17,23 +17,23 @@ void HandleMessages(HWND window)
     }
 }
 
-void WaitTillNextFrame(HWND window, FpsCounter& timer)
+void WaitTillNextFrame(HWND window)
 {
-    timer.Update();
+    Time.Update();
 
-    float frameTimeMs = timer.frame_delta_time * 1000;
-    float maxTimeMs = timer.delta_max * 1000;
-    float minTimeMs = timer.delta_min * 1000;
+    float frameTimeMs = Time.delta_time_real * 1000;
+    float maxTimeMs = Time.delta_max * 1000;
+    float minTimeMs = Time.delta_min * 1000;
 
-    if (timer.ShowValue())
+    if (Time.ShowValue())
     {
         std::stringstream ss;
-        ss << setprecision(3) << timer.fps << " FPS - " << frameTimeMs
+        ss << setprecision(3) << Time.fps << " FPS - " << frameTimeMs
            << " ms/f";
 
         // NOTE: this dosn't work correctly, because if you touch the window
         //  then the min gets to 0 so it is not repsective of the actual value
-        //<< " | (" << timer.fps_min << " | " << timer.fps_max << " ) Fps - ("
+        //<< " | (" << Time.fps_min << " | " << timer.fps_max << " ) Fps - ("
         //<< minTimeMs << " | " << maxTimeMs << ") ms/f";
         std::string title = ss.str();
         SetWindowText(window, title.c_str());
@@ -50,7 +50,7 @@ void WaitTillNextFrame(HWND window, FpsCounter& timer)
 
     // further waiting if still not there
     // this seems to lead to alot more consistent frame times
-    while (timer.CheckDeltaTimeMs() < TARGET_FRAME_TIME)
+    while (Time.CheckDeltaTimeMs() < TARGET_FRAME_TIME)
     {
         Sleep(0);
     }

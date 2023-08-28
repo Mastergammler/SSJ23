@@ -139,6 +139,21 @@ void Action_PlaceTower()
     }
 }
 
+void Action_GoToMenu()
+{
+    navigation.in_start_screen = false;
+    navigation.in_game = false;
+    navigation.in_menu = true;
+
+    UiElement* startBtn = &uiElements.elements[ui.menu.start_game_button];
+    UiElement* mapsPanel = &uiElements.elements[ui.menu.map_selection_panel];
+    UiElement* exitBtn = &uiElements.elements[ui.menu.exit_game_button];
+
+    startBtn->visible = true;
+    mapsPanel->visible = true;
+    exitBtn->visible = true;
+}
+
 void Action_ToggleTowerPreview()
 {
     ui.placement.active = !ui.placement.active;
@@ -173,6 +188,7 @@ void Action_ToggleCraftingPanel()
 
 void Action_StartGame()
 {
+    // TODO: hide menu buttons
     PlayAudioFile(&Res.audio.click_lo, false, 90);
     UiElement* startBtn = &uiElements.elements[ui.menu.start_game_button];
     UiElement* mapsPanel = &uiElements.elements[ui.menu.map_selection_panel];

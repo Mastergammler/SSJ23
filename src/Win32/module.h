@@ -23,6 +23,6 @@ struct Mouse
 extern Mouse mouse;
 
 void HandleMessages(HWND window);
-void WaitTillNextFrame(HWND window, FpsCounter& timer);
+void WaitTillNextFrame(HWND window);
 HWND RegisterWindow(WindowScale scale, HINSTANCE hInstance);
 Dimension AdjustWindowScale(HWND window);

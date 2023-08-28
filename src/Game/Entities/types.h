@@ -79,7 +79,27 @@ struct Tower
     int entity_id;
     int storage_id;
 
+    /**
+     * in tiles
+     */
     int radius;
+
+    /**
+     * how many times to fire per second
+     */
+    float fire_rate;
+
+    /**
+     * time in ms?
+     */
+    float time_since_last_shot;
+
+    /**
+     * How fast the bullet is supposed to travel
+     * in tiles/s?
+     */
+    float bullet_speed;
+
     // TODO: new values
     //  - state, is broken etc
     //  - sprite for is broken (change entity sprite?)
@@ -151,16 +171,43 @@ struct ItemStore
     int size;
 };
 
+enum ProjectileState
+{
+    DESTROYED = 0x0,
+    ACTIVE = 0x1,
+};
+
 // TODO: everything i need
 struct Projectile
 {
+    int entity_id;
+    int storage_id;
+
+    int target_x;
+    int target_y;
+
     int effect_mask;
     float speed;
-    // alive or destroyed etc
-    int state;
+
+    ProjectileState state;
 
     // hit sound here?
     int sound_idx;
+};
+
+struct ProjectileStore
+{
+
+    Projectile* units;
+    int unit_count;
+    int size;
+
+    /**
+     * Index for the position of the pool
+     * This resets after the end of the and tries to reuse the first units
+     */
+    int pool_index;
+    int pool_size;
 };
 
 struct CannonType

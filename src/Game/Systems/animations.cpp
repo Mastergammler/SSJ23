@@ -9,7 +9,7 @@ void AnimateEntities()
         {
             Animator* anim = &components.memory[i].animator;
 
-            anim->time_since_last_sample += measure.frame_delta_time;
+            anim->time_since_last_sample += Time.sim_time;
             if (anim->time_since_last_sample > anim->time_per_sample)
             {
                 // play next frame

@@ -4,8 +4,27 @@
 #include "../imports.h"
 #include "../types.h"
 
-global_var const u32 BG_COLOR = 0x365a91;
+global_var const u32 BG_BULE = 0x365a91;
+global_var const u32 BG_COLOR = 0x0;
+global_var const u32 WHITE = 0xFFFFFF;
 global_var const u32 TRANS_VALUE = 0x0;
+
+enum ShaderType
+{
+    NONE,
+    COLOR_REPLACE,
+};
+
+struct Shader
+{
+    ShaderType type = NONE;
+
+    /**
+     * Color information for the shader
+     * In case he uses it
+     */
+    u32 shader_color = BG_COLOR;
+};
 
 struct SpriteSheet
 {
@@ -36,6 +55,7 @@ void DrawBitmap(ScreenBuffer& buffer,
                 BitmapBuffer& bitmap,
                 int bufferX,
                 int bufferY,
+                Shader shader = {},
                 bool topDown = false);
 
 /**

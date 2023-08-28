@@ -5,10 +5,15 @@
 //----------------
 //  Movement
 void MoveEnemies();
+void MoveProjectiles();
 
 //----------------
 //  Collisions
 UiElement* FindHighestLayerCollision(int x, int y);
+
+//---------------
+//  Simulation
+void SimulateTower();
 
 //---------------
 //  Animations
