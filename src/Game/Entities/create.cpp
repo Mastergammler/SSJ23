@@ -81,7 +81,7 @@ void InitializeEntities(int storeCount)
 
 Entity* InitNextEntity()
 {
-    if (entities.unit_count % 500 == 0)
+    if (entities.unit_count % 256 == 0)
     {
         Logf("Entity count reached: %d - Fps Sample: %d",
              entities.unit_count,

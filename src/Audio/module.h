@@ -8,3 +8,4 @@
 
 WaveBuffer LoadWaveFile(string path);
 void PlayAudioFile(WaveBuffer* wave, bool loop, int volume);
+void PlaySoundEffect(WaveBuffer* wave);

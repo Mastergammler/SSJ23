@@ -91,7 +91,7 @@ void Action_SpawnEnemy()
 {
     // if (ui.crafting.visible) return;
 
-    PlayAudioFile(&Res.audio.pop_hi, false, 90);
+    PlaySoundEffect(&Res.audio.pop_hi);
     Tile startTile = *Game.tile_map.spawns[0];
 
     int invertedY = Game.tile_map.rows - startTile.y - 1;
@@ -134,7 +134,7 @@ void Action_PlaceTower()
                               ui.placement.selected_tower_type,
                               ui.placement.preview_bullet_sprite,
                               ui.placement.preview_pillar_sprite);
-            PlayAudioFile(&Res.audio.pop_lo, false, 90);
+            PlaySoundEffect(&Res.audio.pop_lo);
 
             tile->is_occupied = true;
         }
@@ -163,7 +163,7 @@ void Action_ToggleTowerPreview()
 
 void Action_ToggleCraftingPanel()
 {
-    PlayAudioFile(&Res.audio.click_hi, false, 90);
+    PlaySoundEffect(&Res.audio.click_hi);
 
     ui.crafting.visible = !ui.crafting.visible;
     UiElement* panel = &uiElements.elements[ui.crafting.tower_panel];
@@ -191,7 +191,7 @@ void Action_ToggleCraftingPanel()
 void Action_StartGame()
 {
     // TODO: hide menu buttons
-    PlayAudioFile(&Res.audio.click_lo, false, 90);
+    PlaySoundEffect(&Res.audio.click_lo);
     UiElement* startBtn = &uiElements.elements[ui.menu.start_game_button];
     UiElement* mapsPanel = &uiElements.elements[ui.menu.map_selection_panel];
     UiElement* exitBtn = &uiElements.elements[ui.menu.exit_game_button];
@@ -325,12 +325,12 @@ void Action_CraftTower()
                                                  bulletSlot->entity_id,
                                                  pillarSlot->entity_id);
             availableSlot->entity_id = entityId;
-            PlayAudioFile(&Res.audio.craft_success, false, 100);
+            PlaySoundEffect(&Res.audio.craft_success);
             return;
         }
     }
 
-    PlayAudioFile(&Res.audio.craft_error, false, 100);
+    PlaySoundEffect(&Res.audio.craft_error);
 }
 
 void Action_ResetItemToStartPosition()

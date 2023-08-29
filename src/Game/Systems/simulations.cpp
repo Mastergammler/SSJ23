@@ -52,7 +52,7 @@ void SimulateTower()
 }
 
 float timeToFirstWave = 15;
-int timePerWave = 25;
+int timePerWave = 5;
 float timeSinceLastWave = timePerWave - timeToFirstWave;
 float timeSinceLastEnemy = 0;
 float enemyDelay = 0.75;

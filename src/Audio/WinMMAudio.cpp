@@ -1,4 +1,6 @@
 #include "module.h"
+#include "types.h"
+#include <mmeapi.h>
 
 #define SAMPLING_RATE 44100
 #define CHUNK_SIZE 1024 * 8
@@ -28,6 +30,7 @@ struct AudioPlayback
     WAVEHDR header[2] = {0};
     bool buffer_flip = false;
     short flipBuffer[2][CHUNK_SIZE];
+    u16* dynamicBuffer;
     WaveBuffer* wave;
     bool looping;
     int bpm;
@@ -38,6 +41,16 @@ struct AudioPlayback
 
     AudioPlayback()
     {
+    }
+
+    AudioPlayback(WaveBuffer* wave)
+    {
+        this->wave = wave;
+        this->looping = false;
+        this->current_sample_position = 0;
+        // TODO: this might be slow, because of allocation on every play?
+        // - i probably should pre load for sound effects
+        dynamicBuffer = new u16[wave->sample_count];
     }
 
     AudioPlayback(WaveBuffer* wave, bool looping, int bpm, int loop_point_bars)
@@ -156,6 +169,72 @@ void PlayAudioFile(WaveBuffer* wave, bool loop, int volume)
     }
 }
 
+void PlaySoundEffect(WaveBuffer* wave)
+{
+    HWAVEOUT playbackDevice;
+    {
+        WAVEFORMATEX format = {.wFormatTag = WAVE_FORMAT_PCM,
+                               .nChannels = CHANNELS,
+                               .nSamplesPerSec = SAMPLING_RATE,
+                               .wBitsPerSample = BIT_DEPTH,
+                               .cbSize = 0
+
+        };
+
+        // how many bytes each sample requires
+        format.nBlockAlign = format.nChannels * format.wBitsPerSample / 8;
+        format.nAvgBytesPerSec = format.nSamplesPerSec * format.nBlockAlign;
+        if (waveOutOpen(&playbackDevice,
+                        WAVE_MAPPER,
+                        &format,
+                        (DWORD_PTR)WaveOutProc,
+                        NULL,
+                        CALLBACK_FUNCTION) != MMSYSERR_NOERROR)
+        {
+            Log("Unable to open audio device");
+            return;
+        }
+    }
+
+    // INFO: !!! If the same header (instance) is reused,
+    //  then the sound can only play once, till it finishes. You can't restart
+    //  that sound with the same header. It probably keeps track of this somehow
+    //  -> This might be relevant for restricting too much simultaneous
+    //  playback? -> that's the reason we're creating the header here
+    //  Because we want multiple playbacks as fast as possible, as soon as they
+    //  appear!
+
+    // NOTE: It seems using the data directly has at least prevent the hard fps
+    // drops on sound play
+    //  -> makes sense, because now we don't copy the whole sample data every
+    //  time, but the memory leak, is not caused by this, because using the
+    //  original buffer would have fixed it. It's probably something in the
+    //  audio interface
+    //  -> It's also not the wavehdr, becaues i tried reusing the same one
+    //  -> And the leak still occurred, it's probably overloading something in
+    //  the audio device
+    // => You're probably not supposed to play multiple sources at the same
+    // device?
+    // => It's not correctly supported?
+    WAVEHDR* header = new WAVEHDR;
+    header->lpData = (CHAR*)wave->data;
+    header->dwBufferLength = wave->sample_count;
+
+    if (waveOutPrepareHeader(playbackDevice, header, sizeof(*header)) !=
+        MMSYSERR_NOERROR)
+    {
+        Logf("Preparing the sound effect header failed");
+        return;
+    }
+
+    if (waveOutWrite(playbackDevice, header, sizeof(*header)) !=
+        MMSYSERR_NOERROR)
+    {
+        Logf("Unable to write to the audio device");
+        return;
+    }
+}
+
 void FillNextBuffer(HWAVEOUT device, AudioPlayback& playback, bool writeWave)
 {
     for (int i = 0; i < CHUNK_SIZE; i++)
@@ -189,11 +268,17 @@ void CALLBACK WaveOutProc(HWAVEOUT playbackDevice,
         case WOM_CLOSE: Debug("WOM_CLOSE"); break;
         case WOM_OPEN:
         {
-            // Debug("WOM_OPEN");
+            // Log("WOM_OPEN");
         }
         break;
         case WOM_DONE:
         {
+            if (!playback)
+            {
+                // Log("Sound ended sucessfully");
+                return;
+            }
+
             // Log( "WOM is done");
             if (playback->playback_finished)
             {

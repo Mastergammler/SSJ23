@@ -127,6 +127,13 @@ struct Sample24
 
 struct WaveBuffer
 {
+    /**
+     * Header for playback
+     * To prevent memory leak
+     */
+    WAVEHDR header;
+    int header_size;
+
     u32 sample_count;
     u16* data;
     bool loaded;
