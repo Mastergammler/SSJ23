@@ -1,9 +1,9 @@
 # item properties
-weight=3
-aero=2
+weight=2.5
+aero=0.5
 power=1
-stability=0.5
-sturdieness=0.1
+stability=3
+sturdieness=3
 
 # effects encoding
 effects=101011
