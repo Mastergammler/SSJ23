@@ -1,7 +1,12 @@
 #include "../internal.h"
 
 Resources Res;
+
+#if DEBUG
 global_var const string ABSOLUTE_RES_PATH = "I:/02 Areas/Dev/Cpp/SSJ23/res/";
+#else
+global_var const string ABSOLUTE_RES_PATH = "";
+#endif
 
 const int SHEET_ROWS = 8;
 const int SHEET_COLUMNS = 8;
@@ -86,13 +91,6 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
     if (bmp1.loaded)
     {
         cache.cursor_sprite = bmp1;
-    }
-    BitmapBuffer bmp2 = LoadSprite(ABSOLUTE_RES_PATH + "Test/TileHighlight.bmp",
-                                   hInstance,
-                                   hdc);
-    if (bmp2.loaded)
-    {
-        cache.tile_highlight = bmp2;
     }
 
     BitmapBuffer tilesSheet = LoadSprite(ABSOLUTE_RES_PATH + "Sprites/"
@@ -246,7 +244,7 @@ TileType fromNumber(int num)
 TileMap LoadMaps()
 {
     TileMapRaw rawMap = LoadMap(ABSOLUTE_RES_PATH +
-                                "Test/Tilemap_15_20_singlePath.map");
+                                "Maps/Tilemap_15_20_singlePath.map");
 
     Tile* tiles = new Tile[rawMap.rows * rawMap.columns];
     Tile* tmp = tiles;

@@ -23,6 +23,12 @@ void RenderEntities(ScreenBuffer buffer)
         // of the ui
         if (e.type == CRAFT_ITEM || e.type == TOWER_PROTO) continue;
 
+        if (e.type == PROJECTILE)
+        {
+            Projectile p = projectiles.units[e.storage_id];
+            if (p.state == DESTROYED) continue;
+        }
+
         int drawStartX = e.x - (Game.tile_size.width / 2 - 1);
         int drawStartY = e.y - (Game.tile_size.height / 2 - 1);
 

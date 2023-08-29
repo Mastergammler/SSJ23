@@ -164,31 +164,26 @@ void MoveProjectiles()
 {
     for (int i = 0; i < projectiles.unit_count; i++)
     {
-        Projectile p = projectiles.units[i];
+        Projectile* p = &projectiles.units[i];
 
-        if (p.state != ACTIVE) continue;
+        if (p->state != ACTIVE) continue;
 
-        Entity* e = &entities.units[p.entity_id];
+        Entity* e = &entities.units[p->entity_id];
 
         // FIXME: this is not how you calculate vector positions
         // -> you gotta use the actual angle etc -> and normalize!!
 
         // time in seconds * speed per tile + pixels per tile
-        float increase = Time.sim_time * p.speed * Game.tile_size.height;
-        Vector2 normalized = normalize(e->x, e->y, p.target_x, p.target_y);
+        float increase = Time.sim_time * p->speed * Game.tile_size.height;
+        Vector2 normalized = normalize(e->x, e->y, p->target_x, p->target_y);
+
+        if (normalized.x == 0 && normalized.y == 0)
+        {
+            p->state = DESTROYED;
+        }
 
         e->move_x += increase * normalized.x;
         e->move_y += increase * normalized.y;
-
-        // if (e->x < p.target_x)
-        //     e->move_x += increase * normalized.x;
-        // else if (e->x > p.target_x)
-        //     e->move_x -= increase * normalized.x;
-
-        // if (e->y < p.target_y)
-        //     e->move_y += increase * normalized.y;
-        // else if (e->y > p.target_y)
-        //     e->move_y -= increase * normalized.y;
 
         e->x = e->move_x;
         e->y = e->move_y;

@@ -20,7 +20,7 @@ int playbackDeviceIdx = 0;
 
 // TODO: read bpm from file?
 int bpm = 128;
-const int GLOBAL_VOLUME = 15;
+const int GLOBAL_VOLUME = 90;
 
 struct AudioPlayback
 {

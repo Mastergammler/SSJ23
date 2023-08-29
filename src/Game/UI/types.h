@@ -186,7 +186,10 @@ struct PlacementElements
      */
     bool active;
     int tower_selection_panel;
-
+    /**
+     * storage id
+     */
+    int selected_tower_type;
     Sprite preview_bullet_sprite;
     Sprite preview_pillar_sprite;
 

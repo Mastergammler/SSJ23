@@ -24,6 +24,8 @@ model {
                 cppCompiler.args '-Wall'
                 cppCompiler.args '-Wpedantic'
                 cppCompiler.args '-o DefenceIY.exe'
+                cppCompiler.args '-DDEBUG'
+
                 linker.args '-luser32'
                 linker.args '-lgdi32'
                 linker.args '-lwinmm'

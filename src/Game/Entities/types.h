@@ -22,6 +22,13 @@ enum Direction
     WEST = 0b0100 << 4
 };
 
+enum EntityState
+{
+    WALKING,
+    IS_HIT,
+    TARGET_LOCATION
+};
+
 /**
  * Entity information.
  * Information that other entities most likely would want to know
@@ -130,6 +137,8 @@ struct Enemy
 
     int entity_id;
     int storage_id;
+
+    int state;
 
     int speed;
 };

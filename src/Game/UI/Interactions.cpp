@@ -128,8 +128,10 @@ void Action_PlaceTower()
 
         if (tile->tile_id == GRASS_TILE && !tile->is_occupied)
         {
+            // ui.placement.
             CreateTowerEntity(centerX,
                               centerY,
+                              ui.placement.selected_tower_type,
                               ui.placement.preview_bullet_sprite,
                               ui.placement.preview_pillar_sprite);
             PlayAudioFile(&Res.audio.pop_lo, false, 90);
@@ -213,7 +215,7 @@ void Action_StartGame()
     // TODO: trigger transition animation
     if (Res.audio.music.loaded)
     {
-        // PlayAudioFile(&Res.audio.music, true, 80);
+        PlayAudioFile(&Res.audio.music, true, 80);
     }
 }
 
@@ -408,6 +410,7 @@ void Action_SelectTowerType()
     Item bullet = items.units[c.bullet_item_id];
     Item post = items.units[c.pillar_item_id];
 
+    ui.placement.selected_tower_type = c.storage_id;
     ui.placement.preview_bullet_sprite = Sprite{1,
                                                 1,
                                                 bullet.bullet_sprite_idx,

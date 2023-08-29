@@ -6,6 +6,18 @@ enum Components
     COLLIDER = 0x1 << 1,
 };
 
+struct Collider
+{
+    /**
+     * LR BT
+     */
+
+    int x_offset;
+    int y_offset;
+    int height;
+    int width;
+};
+
 struct Animator
 {
     bool looping;
@@ -29,6 +41,7 @@ struct Animator
 struct EntityComponents
 {
     Animator animator;
+    Collider collider;
 };
 
 /**

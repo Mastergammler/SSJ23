@@ -105,6 +105,18 @@ struct Rect
     }
 };
 
+struct CenterRect
+{
+    int x1, x2, y1, y2;
+    CenterRect(int x, int y, int width, int height)
+    {
+        this->x1 = x - width / 2;
+        this->x2 = x + width / 2 - 1;
+        this->y1 = y - height / 2;
+        this->y2 = y + height / 2 - 1;
+    }
+};
+
 // TODO: not sure if thats the way to go, but lets see
 #pragma pack(push, 1)
 struct Sample24

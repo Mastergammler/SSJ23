@@ -1,5 +1,4 @@
 #include "../internal.h"
-#include <shellapi.h>
 
 ComponentStore components;
 EntityStore entities;
@@ -77,11 +76,17 @@ void InitializeEntities(int storeCount)
     InitializeEnemyStorage(storeCount);
     InitializeItemStorage(storeCount);
     InitializeCannonTypeStorage(storeCount);
-    InitializeProjectileStore(storeCount, storeCount);
+    InitializeProjectileStore(storeCount, 512);
 }
 
 Entity* InitNextEntity()
 {
+    if (entities.unit_count % 500 == 0)
+    {
+        Logf("Entity count reached: %d - Fps Sample: %d",
+             entities.unit_count,
+             Time.fps);
+    }
     assert(entities.unit_count < entities.size);
 
     int id = entities.unit_count++;
@@ -110,10 +115,40 @@ int CreateNewProjectile(int entityId)
 
 int CreateProjectileEntity()
 {
+    if (projectiles.pool_size <= projectiles.unit_count)
+    {
+        // use pooling - if nothing found after 10, create new
+        for (int i = 0; i < 10; i++)
+        {
+            Projectile p = projectiles.units[projectiles.pool_index++];
+            if (projectiles.pool_index >= projectiles.pool_size)
+            {
+                projectiles.pool_index = 0;
+            }
+
+            if (p.state == DESTROYED)
+            {
+                Collider* coll = &components.memory[p.entity_id].collider;
+                coll->x_offset = 0;
+                coll->y_offset = 0;
+                coll->height = 8;
+                coll->width = 8;
+
+                return p.entity_id;
+            }
+        }
+    }
     Entity* e = InitNextEntity();
     e->storage_id = CreateNewProjectile(e->id);
 
     e->type = PROJECTILE;
+    e->component_mask = (COLLIDER);
+
+    Collider* coll = &components.memory[e->id].collider;
+    coll->x_offset = 0;
+    coll->y_offset = 0;
+    coll->height = 8;
+    coll->width = 8;
 
     return e->id;
 }
@@ -129,6 +164,7 @@ int CreateEnemy(int entityId, int speed)
     e->entity_id = entityId;
 
     e->speed = speed;
+    e->state = WALKING;
 
     e->initialized = true;
 
@@ -154,7 +190,7 @@ int CreateEnemyEntity(int x,
     e->direction = direction;
     e->sprite = sprite;
 
-    e->component_mask = (ANIMATOR);
+    e->component_mask = (ANIMATOR | COLLIDER);
     Animator* anim = &components.memory[e->id].animator;
     anim->initialized = true;
     anim->looping = true;
@@ -162,6 +198,12 @@ int CreateEnemyEntity(int x,
     anim->sample_count = animation.sprite_count;
     anim->time_per_sample = animation.time_per_sprite;
     anim->samples = animation.sprites;
+
+    Collider* coll = &components.memory[e->id].collider;
+    coll->x_offset = 0;
+    coll->y_offset = 0;
+    coll->height = 12;
+    coll->width = 12;
 
     return e->id;
 }
@@ -254,20 +296,27 @@ TileArray determineRelevantTiles(int x, int y, int radius)
     return TileArray{relevantTilesActual, pathTileCount};
 }
 
-int CreateTower(int entityId, int x, int y, Sprite bullet, Sprite pillar)
+// TODO: based on value
+int CreateTower(int entityId,
+                int x,
+                int y,
+                int cannonTypeId,
+                Sprite bullet,
+                Sprite pillar)
 {
     assert(towers.unit_count < towers.size);
 
     int id = towers.unit_count++;
     Tower* t = &towers.units[id];
+    CannonType cannon = cannons.units[cannonTypeId];
 
     t->storage_id = id;
     t->entity_id = entityId;
 
-    // TODO: use values from the type
-    t->radius = 3;
-    t->fire_rate = 1;
-    t->bullet_speed = 3;
+    t->radius = cannon.range;
+    t->fire_rate = cannon.fire_rate;
+    t->bullet_speed = cannon.bullet_speed;
+
     t->initialized = true;
     t->pillar_sprite = pillar;
     t->bullet_sprite = bullet;
@@ -279,10 +328,19 @@ int CreateTower(int entityId, int x, int y, Sprite bullet, Sprite pillar)
     return t->storage_id;
 }
 
-int CreateTowerEntity(int x, int y, Sprite bulletSprite, Sprite pillarSprite)
+int CreateTowerEntity(int x,
+                      int y,
+                      int cannonTypeId,
+                      Sprite bulletSprite,
+                      Sprite pillarSprite)
 {
     Entity* e = InitNextEntity();
-    e->storage_id = CreateTower(e->id, x, y, bulletSprite, pillarSprite);
+    e->storage_id = CreateTower(e->id,
+                                x,
+                                y,
+                                cannonTypeId,
+                                bulletSprite,
+                                pillarSprite);
 
     e->x = x;
     e->y = y;
@@ -345,6 +403,15 @@ int CreateCannonType(int entityId, int bulletId, int postId)
     assert(cannons.unit_count < cannons.size);
     int id = cannons.unit_count++;
     CannonType* t = &cannons.units[id];
+
+    Item bullet = items.units[bulletId];
+    Item pillar = items.units[postId];
+
+    float avPower = (bullet.power + pillar.power) / 2;
+    t->range = 2 * bullet.aero + avPower - bullet.weight;
+    t->fire_rate = 2 * pillar.stability * pillar.sturdieness / 3 + avPower / 3 +
+                   0.8;
+    t->bullet_speed = 3 * avPower * 1 / bullet.weight + 1;
 
     t->storage_id = id;
     t->entity_id = entityId;

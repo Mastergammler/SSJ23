@@ -39,7 +39,6 @@ enum TileEnv
 struct BitmapCache
 {
     BitmapBuffer cursor_sprite = {};
-    BitmapBuffer tile_highlight = {};
     BitmapBuffer logo;
 
     SpriteSheet ground = {};
@@ -63,8 +62,6 @@ struct SoundCache
 struct SpriteCache
 {
     Sprite placeholder;
-    Sprite tower_a;
-    Sprite tower_b;
     Sprite enemy_a;
 };
 

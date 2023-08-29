@@ -10,6 +10,7 @@ void MoveProjectiles();
 //----------------
 //  Collisions
 UiElement* FindHighestLayerCollision(int x, int y);
+void HandleProjectileCollisions();
 
 //---------------
 //  Simulation

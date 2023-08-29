@@ -74,7 +74,11 @@ Position TileCenterPosition(Tile tile);
 // TODO: i don't think these should live here
 int CreateProjectileEntity();
 int CreatCannonTypeEntity(int x, int y, int bulletItemId, int postItemId);
-int CreateTowerEntity(int x, int y, Sprite bullet, Sprite pillar);
+int CreateTowerEntity(int x,
+                      int y,
+                      int cannonTypeId,
+                      Sprite bulletSprite,
+                      Sprite pillarSprite);
 int CreateItemEntity(int x, int y, ItemData data);
 int CreateEnemyEntity(int x,
                       int y,

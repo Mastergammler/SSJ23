@@ -24,8 +24,6 @@ void StartGame()
 
     // TODO: TMP
     Res.sprites.placeholder = Sprite{1, 1, 63, &Res.bitmaps.characters};
-    Res.sprites.tower_a = Sprite{1, 2, 0, &Res.bitmaps.characters};
-    Res.sprites.tower_b = Sprite{1, 2, 2, &Res.bitmaps.characters};
     Res.sprites.enemy_a = Sprite{1, 1, 24, &Res.bitmaps.characters};
 
     // TODO: simple anim format -> just describe indices of the anim
@@ -52,8 +50,9 @@ void StartGame()
 
     Res.animations.enemy_anim = SpriteAnimation{4, 0.1, enemyWalkAnim};
 
-    // TODO: remove
+#if DEBUG
     Action_StartGame();
+#endif
 }
 
 /**
@@ -180,11 +179,14 @@ void UpdateFrame(ScreenBuffer& buffer)
         MoveEnemies();
         SimulateTower();
         MoveProjectiles();
+        HandleProjectileCollisions();
         // Debug_PrintEnemyTilePositions();
         AnimateEntities();
 
         DrawGroundLayer(buffer);
+#if DEBUG
         Debug_DrawTowerRangeAndDetection(buffer);
+#endif
         DrawEntityLayer(buffer);
 
         // Debug_DrawEntityMovementPossibilities(buffer);
