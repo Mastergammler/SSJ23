@@ -15,6 +15,7 @@ void HandleProjectileCollisions();
 //---------------
 //  Simulation
 void SimulateTower();
+void SpawningSystem();
 
 //---------------
 //  Animations

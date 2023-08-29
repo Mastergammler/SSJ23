@@ -1,4 +1,5 @@
 #include "../internal.h"
+#include "../ui.h"
 
 void SimulateTower()
 {
@@ -46,6 +47,38 @@ void SimulateTower()
 
                 // TODO: animations and sounds etc;
             }
+        }
+    }
+}
+
+float timeToFirstWave = 15;
+int timePerWave = 25;
+float timeSinceLastWave = timePerWave - timeToFirstWave;
+float timeSinceLastEnemy = 0;
+float enemyDelay = 0.75;
+float enemyAmount = 1;
+int enemiesSpawnedThisWave = 0;
+
+void SpawningSystem()
+{
+    timeSinceLastWave += Time.sim_time;
+
+    if (timeSinceLastWave > timePerWave)
+    {
+        timeSinceLastEnemy += Time.sim_time;
+        if (timeSinceLastEnemy > enemyDelay)
+        {
+            timeSinceLastEnemy -= enemyDelay;
+            Action_SpawnEnemy();
+            enemiesSpawnedThisWave++;
+        }
+        // all have spawned
+        if (enemiesSpawnedThisWave >= enemyAmount)
+        {
+            timeSinceLastEnemy = 0;
+            timeSinceLastWave = 0;
+            enemiesSpawnedThisWave = 0;
+            enemyAmount *= 1.5;
         }
     }
 }

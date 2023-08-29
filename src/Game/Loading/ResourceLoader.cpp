@@ -243,8 +243,7 @@ TileType fromNumber(int num)
 //  - also great for ppl trying it out?!
 TileMap LoadMaps()
 {
-    TileMapRaw rawMap = LoadMap(ABSOLUTE_RES_PATH +
-                                "Maps/Tilemap_15_20_singlePath.map");
+    TileMapRaw rawMap = LoadMap(ABSOLUTE_RES_PATH + "Maps/Map_15_20.map");
 
     Tile* tiles = new Tile[rawMap.rows * rawMap.columns];
     Tile* tmp = tiles;

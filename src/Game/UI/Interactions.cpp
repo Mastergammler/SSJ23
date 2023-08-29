@@ -89,7 +89,7 @@ void ProcessMouseActions()
 
 void Action_SpawnEnemy()
 {
-    if (ui.crafting.visible) return;
+    // if (ui.crafting.visible) return;
 
     PlayAudioFile(&Res.audio.pop_hi, false, 90);
     Tile startTile = *Game.tile_map.spawns[0];
@@ -206,7 +206,7 @@ void Action_StartGame()
 
     towerSelection->visible = false;
     openCrafting->visible = true;
-    tmp2->visible = true;
+    tmp2->visible = false;
 
     navigation.in_menu = false;
     navigation.in_start_screen = false;

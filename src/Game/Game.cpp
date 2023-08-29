@@ -176,6 +176,7 @@ void UpdateFrame(ScreenBuffer& buffer)
     }
     else if (navigation.in_game)
     {
+        SpawningSystem();
         MoveEnemies();
         SimulateTower();
         MoveProjectiles();

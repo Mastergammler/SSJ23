@@ -3,6 +3,7 @@
 #include "modules.h"
 #include "types.h"
 #include "utils.h"
+#include <winuser.h>
 
 bool running = true;
 Clock Time = {};
@@ -18,6 +19,8 @@ int WinMain(HINSTANCE hInstance,
     ScreenBuffer buffer = {scale.draw_width, scale.draw_height};
     HWND window = RegisterWindow(scale, hInstance);
     HDC hdc = GetDC(window);
+    // Doesn't click the mouse - also i have no exit button yet
+    // SetCapture(window);
     Dimension drawableScreen = AdjustWindowScale(window);
 
     InitLogger(logger, "log.txt");
