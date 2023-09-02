@@ -1,6 +1,5 @@
 #include "module.h"
 #include "types.h"
-#include <mmeapi.h>
 
 #define SAMPLING_RATE 44100
 #define CHUNK_SIZE 1024 * 8
@@ -132,8 +131,6 @@ void PlayAudioFile(WaveBuffer* wave, bool loop, int volume)
         }
     }
 
-    // cout << "Started playback on device: " << playbackDevice << endl;
-
     int percentage = GLOBAL_VOLUME * VOLUME_MAX / 100;
     long twoChannelVolume = (percentage << 16) | (percentage << 0);
 
@@ -216,7 +213,7 @@ void PlaySoundEffect(WaveBuffer* wave)
     // => You're probably not supposed to play multiple sources at the same
     // device?
     // => It's not correctly supported?
-    WAVEHDR* header = new WAVEHDR;
+    WAVEHDR* header = new WAVEHDR{};
     header->lpData = (CHAR*)wave->data;
     header->dwBufferLength = wave->sample_count;
 

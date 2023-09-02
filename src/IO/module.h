@@ -23,6 +23,15 @@ struct ItemData
     int pillar_sprite_idx;
 };
 
+struct Settings
+{
+    const string SCALE_KEY = "scale";
+    const string FRAMERATE_KEY = "framerate";
+
+    int scale = 3;
+    int frame_rate = 120;
+};
+
 struct ItemArray
 {
     ItemData* items;
@@ -99,6 +108,7 @@ struct TileMapRaw
     char* data;
 };
 
+Settings LoadSettings(string filePath);
 ItemArray LoadItems(string filePath);
 TileMapRaw LoadMap(string filePath);
 BitmapBuffer LoadSprite(string path, HINSTANCE hInstance, HDC hdc);

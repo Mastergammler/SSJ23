@@ -1,9 +1,9 @@
+#include "Win32/module.h"
 #include "globals.h"
 #include "imports.h"
 #include "modules.h"
 #include "types.h"
 #include "utils.h"
-#include <winuser.h>
 
 bool running = true;
 Clock Time = {};
@@ -16,8 +16,10 @@ int WinMain(HINSTANCE hInstance,
             LPSTR lpCmdLine,
             int nShowCmd)
 {
-    ScreenBuffer buffer = {scale.draw_width, scale.draw_height};
-    HWND window = RegisterWindow(scale, hInstance);
+    ApplySettings();
+
+    ScreenBuffer buffer = {Scale.draw_width, Scale.draw_height};
+    HWND window = RegisterWindow(Scale, hInstance);
     HDC hdc = GetDC(window);
     // Doesn't click the mouse - also i have no exit button yet
     // SetCapture(window);

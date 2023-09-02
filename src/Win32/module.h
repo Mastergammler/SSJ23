@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../IO/module.h"
 #include "../Logging/module.h"
 #include "../globals.h"
 #include "../imports.h"
@@ -24,5 +25,6 @@ extern Mouse mouse;
 
 void HandleMessages(HWND window);
 void WaitTillNextFrame(HWND window);
+void ApplySettings();
 HWND RegisterWindow(WindowScale scale, HINSTANCE hInstance);
 Dimension AdjustWindowScale(HWND window);

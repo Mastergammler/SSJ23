@@ -161,6 +161,18 @@ void Action_ToggleTowerPreview()
     ui.placement.active = !ui.placement.active;
 }
 
+void UpdateChildVisibility(int parentPanelId, bool newVisibility)
+{
+    for (int i = 0; i < uiElements.count; ++i)
+    {
+        UiElement* el = &uiElements.elements[i];
+        if (el->parent_id == parentPanelId)
+        {
+            el->visible = newVisibility;
+        }
+    }
+}
+
 void Action_ToggleCraftingPanel()
 {
     PlaySoundEffect(&Res.audio.click_hi);
@@ -174,18 +186,8 @@ void Action_ToggleCraftingPanel()
     craftBtn->visible = ui.crafting.visible;
 
     // show/hide child elements
-    for (int i = 0; i < uiElements.count; ++i)
-    {
-        UiElement* el = &uiElements.elements[i];
-        if (el->parent_id == items->id)
-        {
-            el->visible = items->visible;
-        }
-        else if (el->parent_id == panel->id)
-        {
-            el->visible = panel->visible;
-        }
-    }
+    UpdateChildVisibility(items->id, items->visible);
+    UpdateChildVisibility(panel->id, panel->visible);
 }
 
 void Action_StartGame()
@@ -198,7 +200,6 @@ void Action_StartGame()
 
     UiElement* towerSelection = &uiElements.elements[ui.placement.tower_selection_panel];
     UiElement* openCrafting = &uiElements.elements[ui.crafting.show_hide_button];
-    UiElement* tmp2 = &uiElements.elements[ui.tmp_2];
 
     startBtn->visible = false;
     mapsPanel->visible = false;
@@ -206,7 +207,8 @@ void Action_StartGame()
 
     towerSelection->visible = false;
     openCrafting->visible = true;
-    tmp2->visible = false;
+
+    UpdateChildVisibility(towerSelection->id, true);
 
     navigation.in_menu = false;
     navigation.in_start_screen = false;

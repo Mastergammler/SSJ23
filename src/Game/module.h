@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Audio/module.h"
+#include "../IO/Paths.cpp"
 #include "../Logging/module.h"
 #include "../Rendering/module.h"
 #include "../globals.h"

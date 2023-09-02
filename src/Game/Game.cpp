@@ -51,7 +51,8 @@ void StartGame()
     Res.animations.enemy_anim = SpriteAnimation{4, 0.1, enemyWalkAnim};
 
 #if DEBUG
-    Action_StartGame();
+    Action_GoToMenu();
+    // Action_StartGame();
 #endif
 }
 
@@ -100,8 +101,8 @@ Animator anim = {};
 
 void ShowLogoScreen(ScreenBuffer buffer)
 {
-    int centerX = scale.draw_width / 2 - Res.bitmaps.logo.width / 2;
-    int centerY = scale.draw_height / 2 - Res.bitmaps.logo.height / 2;
+    int centerX = Scale.draw_width / 2 - Res.bitmaps.logo.width / 2;
+    int centerY = Scale.draw_height / 2 - Res.bitmaps.logo.height / 2;
     timeInLogoScreen += Time.delta_time_real;
 
     Shader shader = {};

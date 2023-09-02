@@ -1,0 +1,5 @@
+# Integer values, how big elements are displayed on screen
+scale=3
+# At which point to restrict the framerate
+framerate=250
+

@@ -1,5 +1,5 @@
+#pragma once
 #include "module.h"
-#include <sstream>
 
 struct PlayerData
 {
@@ -64,6 +64,80 @@ TileMapRaw LoadMap(string filePath)
     }
 
     return TileMapRaw{true, rows, columns, values};
+}
+
+// TODO: trim whitespace before and after the =
+map<string, string> ReadKeyValuePairs(ifstream& file)
+{
+    map<string, string> fileMap;
+
+    string line;
+    while (getline(file, line))
+    {
+        if (line.empty() || line[0] == '#') continue;
+
+        istringstream streamLine(line);
+        string key;
+        string value;
+
+        if (getline(streamLine, key, '='))
+        {
+            if (getline(streamLine, value))
+            {
+                fileMap[key] = value;
+            }
+        }
+    };
+    file.close();
+
+    return fileMap;
+}
+
+Settings LoadSettings(string filePath)
+{
+    ifstream settingsFile(filePath);
+    CheckFile(settingsFile, filePath);
+
+    if (!settingsFile.is_open())
+        Logf("Unable to open settings file %s", filePath.c_str());
+
+    map<string, string> kvps = ReadKeyValuePairs(settingsFile);
+
+    Settings s = {};
+
+    if (kvps.count(s.SCALE_KEY) < 1)
+    {
+        Logf("Settings don't contain value for '%s'. Default will be used.",
+             s.SCALE_KEY.c_str());
+    }
+    else
+    {
+        string scaleStr = kvps[s.SCALE_KEY];
+        int scale = atoi(scaleStr.c_str());
+        if (scale < 1)
+            Logf("%s can't be smaller than 1. Default will be used.",
+                 s.SCALE_KEY.c_str());
+        else
+            s.scale = scale;
+    }
+
+    if (kvps.count(s.FRAMERATE_KEY) < 1)
+    {
+        Logf("Settings don't contain value for '%s'. Default will be used.",
+             s.FRAMERATE_KEY.c_str());
+    }
+    else
+    {
+        string framerateStr = kvps[s.FRAMERATE_KEY];
+        int framerate = atoi(framerateStr.c_str());
+        if (framerate < 1)
+            Logf("%s can't be smaller than 1. Default will be used.",
+                 s.FRAMERATE_KEY.c_str());
+        else
+            s.frame_rate = framerate;
+    }
+
+    return s;
 }
 
 ItemData LoadItem(string filePath)

@@ -144,7 +144,10 @@ void DrawUiLayer(ScreenBuffer buffer)
     RenderUiElements(buffer, Res.bitmaps.ui);
 
     // needs to be on top of the rest of the ui stuff
-    RenderEntitiesOfType(buffer, TOWER_PROTO);
+    if (navigation.in_game)
+    {
+        RenderEntitiesOfType(buffer, TOWER_PROTO);
+    }
     if (ui.crafting.visible)
     {
         RenderEntitiesOfType(buffer, CRAFT_ITEM);

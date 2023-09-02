@@ -59,9 +59,9 @@ struct WindowScale
 {
   private:
     int window_height;
+    int scale;
 
   public:
-    int scale;
     int draw_width;
     int draw_height;
     int screen_width;
@@ -69,12 +69,17 @@ struct WindowScale
 
     WindowScale(int drawWidth, int drawHeight, int scale)
     {
-        this->scale = scale;
         this->draw_width = drawWidth;
         this->draw_height = drawHeight;
+        SetScale(scale);
+    }
 
-        this->screen_width = drawWidth * scale;
-        this->screen_height = drawHeight * scale;
+    void SetScale(int scale)
+    {
+        this->scale = scale;
+
+        screen_width = draw_width * scale;
+        screen_height = draw_height * scale;
     }
 
     int GetWindowHeight()

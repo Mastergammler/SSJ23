@@ -93,6 +93,7 @@ struct UiElement
     bool hovered;
 
     int id;
+
     /**
      * Id of the parent UI element, or -1 if none
      */
@@ -109,6 +110,7 @@ struct UiElement
     int y_tiles;
 
     int layer;
+
     // FIXME: this is not pretty how to do this better?
     int sprite_index;
     int hover_sprite_index;

@@ -3,6 +3,8 @@
 
 function LRESULT CALLBACK WindowCallback(HWND, UINT, WPARAM, LPARAM);
 
+WindowScale Scale = WindowScale(320, 240, 3);
+
 /**
  * Without the default message handling the window will not respond
  * And you will not be able to close it
@@ -39,9 +41,9 @@ void WaitTillNextFrame(HWND window)
         SetWindowText(window, title.c_str());
     }
 
-    if (frameTimeMs < TARGET_FRAME_TIME)
+    if (frameTimeMs < TargetFrameTime)
     {
-        DWORD timeToRest = (DWORD)(TARGET_FRAME_TIME - frameTimeMs);
+        DWORD timeToRest = (DWORD)(TargetFrameTime - frameTimeMs);
         if (timeToRest > 0)
         {
             Sleep(timeToRest);
@@ -50,7 +52,7 @@ void WaitTillNextFrame(HWND window)
 
     // further waiting if still not there
     // this seems to lead to alot more consistent frame times
-    while (Time.CheckDeltaTimeMs() < TARGET_FRAME_TIME)
+    while (Time.CheckDeltaTimeMs() < TargetFrameTime)
     {
         Sleep(0);
     }
@@ -101,13 +103,21 @@ HWND RegisterWindow(WindowScale scale, HINSTANCE hInstance)
 Dimension AdjustWindowScale(HWND window)
 {
     Dimension drawableDimension = GetWindowDimension(window);
-    scale.AdjustForTaskbarHeight(drawableDimension);
+    Scale.AdjustForTaskbarHeight(drawableDimension);
     SendMessage(window,
                 WM_SIZE,
                 SIZE_RESTORED,
-                MAKELPARAM(scale.screen_width, scale.GetWindowHeight()));
+                MAKELPARAM(Scale.screen_width, Scale.GetWindowHeight()));
 
     return drawableDimension;
+}
+
+void ApplySettings()
+{
+    Settings s = LoadSettings(ABSOLUTE_RES_PATH + "settings.txt");
+
+    TargetFrameTime = 1000. / s.frame_rate;
+    Scale.SetScale(s.scale);
 }
 
 LRESULT CALLBACK WindowCallback(HWND hwnd,
@@ -131,10 +141,10 @@ LRESULT CALLBACK WindowCallback(HWND hwnd,
         {
             // disable window size change
             LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
-            lpmmi->ptMinTrackSize.x = scale.screen_width;
-            lpmmi->ptMinTrackSize.y = scale.GetWindowHeight();
-            lpmmi->ptMaxTrackSize.x = scale.screen_width;
-            lpmmi->ptMaxTrackSize.y = scale.GetWindowHeight();
+            lpmmi->ptMinTrackSize.x = Scale.screen_width;
+            lpmmi->ptMinTrackSize.y = Scale.GetWindowHeight();
+            lpmmi->ptMaxTrackSize.x = Scale.screen_width;
+            lpmmi->ptMaxTrackSize.y = Scale.GetWindowHeight();
         }
         break;
         case WM_SETFOCUS:

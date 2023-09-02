@@ -145,9 +145,9 @@ void SetupNullElement()
     int id = uiElements.count++;
     UiElement* nullElement = &uiElements.elements[id];
     nullElement->visible = false;
-    nullElement->x_start = scale.draw_width / 2;
+    nullElement->x_start = Scale.draw_width / 2;
     nullElement->x_end = nullElement->x_start;
-    nullElement->y_start = scale.draw_height / 2;
+    nullElement->y_start = Scale.draw_height / 2;
     nullElement->y_end = nullElement->y_start;
     nullElement->on_click = [] {
         Log("Error: On click of null element was executed");
@@ -165,13 +165,19 @@ void CreateMenuElements()
     UiSprite startButton = UiSprite{2, 1, 12, 14, &Res.bitmaps.ui};
     UiSprite exitButton = UiSprite{2, 1, 20, 22, &Res.bitmaps.ui};
     UiSprite panel3x3 = UiSprite{3, 3, 16, 16, &Res.bitmaps.ui};
+    UiSprite button2x2 = UiSprite{2,
+                                  2,
+                                  6 * 8 + 3,
+                                  6 * 8 + 3 + 2,
+                                  &Res.bitmaps.ui};
 
-    ui.menu.map_selection_panel = CreatePanel(Anchor{UPPER_MIDDLE, 0, 6},
-                                              panel3x3);
+    ui.menu.map_selection_panel = CreateButton(Anchor{UPPER_MIDDLE, 0, 6},
+                                               button2x2,
+                                               [] {});
     ui.menu.start_game_button = CreateButton(Anchor{UPPER_MIDDLE, 0, 4},
                                              startButton,
                                              Action_StartGame);
-    ui.menu.exit_game_button = CreateButton(Anchor{UPPER_MIDDLE, 0, 10},
+    ui.menu.exit_game_button = CreateButton(Anchor{UPPER_MIDDLE, 0, 9},
                                             exitButton,
                                             Action_Exit);
 }
@@ -212,7 +218,7 @@ void ShowTowerButtons()
         int itemId = ui.placement.item_slots.data[i];
         UiElement* el = &uiElements.elements[itemId];
 
-        el->visible = true;
+        el->visible = false;
         el->on_click = Action_SelectTowerType;
         ui.placement.slot_map[i] = EntitySlotMap{el->id, EntityZero.id, el->id};
 

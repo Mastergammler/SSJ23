@@ -3,7 +3,7 @@
 Position TileToDrawPosition(Tile tile)
 {
     int x = tile.x * Game.tile_size.width;
-    int y = MirrorY((tile.y + 1) * Game.tile_size.height, scale.draw_height);
+    int y = MirrorY((tile.y + 1) * Game.tile_size.height, Scale.draw_height);
 
     return Position{x, y};
 }
