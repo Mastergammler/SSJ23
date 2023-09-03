@@ -30,6 +30,7 @@ model {
                 linker.args '-luser32'
                 linker.args '-lgdi32'
                 linker.args '-lwinmm'
+                linker.args '-lcomdlg32'
             }
             binaries { executable { baseName = 'DefenceIY' } }
             sources { cpp { source {

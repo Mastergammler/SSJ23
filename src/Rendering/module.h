@@ -50,7 +50,7 @@ struct Sprite
     SpriteSheet* sheet;
 };
 
-void InitBuffer(ScreenBuffer& buffer);
+void ClearScreen(ScreenBuffer& buffer);
 void DrawBitmap(ScreenBuffer& buffer,
                 BitmapBuffer& bitmap,
                 int bufferX,

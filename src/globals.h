@@ -9,3 +9,4 @@ extern bool running;
 extern Logger logger;
 extern Clock Time;
 extern WindowScale Scale;
+extern ScreenBuffer Buffer;

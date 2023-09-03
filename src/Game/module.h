@@ -4,6 +4,7 @@
 #include "../IO/Paths.cpp"
 #include "../Logging/module.h"
 #include "../Rendering/module.h"
+#include "../Win32/module.h"
 #include "../globals.h"
 #include "../imports.h"
 #include "../types.h"

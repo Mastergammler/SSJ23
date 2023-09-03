@@ -79,7 +79,9 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     Logf("  Audio loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
 
     individualCounter.Update();
-    Game.tile_map = LoadMaps();
+
+    // TODO: adjust size?
+    Game.tile_map = LoadTilemap(ABSOLUTE_RES_PATH + DEFAULT_MAP);
     Logf("  Tilemap loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
 
     individualCounter.Update();
@@ -87,6 +89,13 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     Logf("  Items loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
 
     Logf("Resources loaded in %.2f ms", Time.CheckDeltaTimeMs());
+
+    // Setting size
+    SetSizeBasedOnTiles(Scale,
+                        Game.tile_map.columns,
+                        Game.tile_map.rows,
+                        Game.tile_size.width,
+                        Game.tile_size.height);
 
     StartGame();
 }
@@ -101,8 +110,8 @@ Animator anim = {};
 
 void ShowLogoScreen(ScreenBuffer buffer)
 {
-    int centerX = Scale.draw_width / 2 - Res.bitmaps.logo.width / 2;
-    int centerY = Scale.draw_height / 2 - Res.bitmaps.logo.height / 2;
+    int centerX = Scale.render_dim.width / 2 - Res.bitmaps.logo.width / 2;
+    int centerY = Scale.render_dim.height / 2 - Res.bitmaps.logo.height / 2;
     timeInLogoScreen += Time.delta_time_real;
 
     Shader shader = {};

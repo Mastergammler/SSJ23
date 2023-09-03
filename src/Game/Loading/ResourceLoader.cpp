@@ -235,9 +235,9 @@ TileType fromNumber(int num)
 // maps
 //  - this would be super helpful
 //  - also great for ppl trying it out?!
-TileMap LoadMaps()
+TileMap LoadTilemap(string mapPath)
 {
-    TileMapRaw rawMap = LoadMap(ABSOLUTE_RES_PATH + "Maps/Map_15_20.map");
+    TileMapRaw rawMap = LoadMap(mapPath);
 
     Tile* tiles = new Tile[rawMap.rows * rawMap.columns];
     Tile* tmp = tiles;

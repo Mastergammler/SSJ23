@@ -1,9 +1,11 @@
 #include "internal.h"
 #include "module.h"
+#include <winnt.h>
 
 function LRESULT CALLBACK WindowCallback(HWND, UINT, WPARAM, LPARAM);
 
-WindowScale Scale = WindowScale(320, 240, 3);
+WindowScale Scale = {800, 600};
+HWND registeredWindow;
 
 /**
  * Without the default message handling the window will not respond
@@ -64,60 +66,103 @@ Dimension GetWindowDimension(HWND window)
 
     RECT clientRect;
     GetClientRect(window, &clientRect);
-
-    result.Width = clientRect.right - clientRect.left;
-    result.Height = clientRect.bottom - clientRect.top;
+    result.width = clientRect.right - clientRect.left;
+    result.height = clientRect.bottom - clientRect.top;
 
     return result;
 }
 
-HWND RegisterWindow(WindowScale scale, HINSTANCE hInstance)
+HWND RegisterWindow(HINSTANCE hInstance)
 {
     WNDCLASS winClass = {};
     winClass.style = CS_HREDRAW | CS_VREDRAW;
-    winClass.lpszClassName = "GameJam Project";
+    winClass.lpszClassName = "DefenceIY";
     winClass.lpfnWndProc = WindowCallback;
 
     RegisterClass(&winClass);
     HWND window = CreateWindow(winClass.lpszClassName,
-                               "SSJ 2023",
+                               "A window",
                                WS_OVERLAPPEDWINDOW | WS_VISIBLE,
                                CW_USEDEFAULT,
                                CW_USEDEFAULT,
-                               scale.screen_width,
-                               scale.GetWindowHeight(),
+                               // NOTE: this doesn't matter, because this is
+                               // just the value that invokes the change window
+                               // size event, and i have overritten this to use
+                               // the scaler size
+                               0,
+                               0,
                                0,
                                0,
                                hInstance,
                                0);
-    ShowCursor(false);
+    // TODO: how to handle this better?
+    registeredWindow = window;
 
     return window;
 }
 
 /**
- * Adjusting the window scale to take the task bar height into account.
- * If that is not done, the mouse coordinates will not be correct,
- * and the rendered image will be squashed (a small amount)
+ * creates the initial scale and calculates task bar height
  */
-Dimension AdjustWindowScale(HWND window)
+WindowScale CreateWindowScale(HWND& window, Settings settings)
 {
     Dimension drawableDimension = GetWindowDimension(window);
-    Scale.AdjustForTaskbarHeight(drawableDimension);
-    SendMessage(window,
-                WM_SIZE,
-                SIZE_RESTORED,
-                MAKELPARAM(Scale.screen_width, Scale.GetWindowHeight()));
+    assert(drawableDimension.width = Scale.screen_dim.width);
+    int taskbarHeight = Scale.window_height - drawableDimension.height;
+    Logf("Taskbar height %d", taskbarHeight);
 
-    return drawableDimension;
+    WindowScale scale = {};
+
+    scale.taskbar_height = taskbarHeight;
+    scale.scale = settings.scale;
+
+    return scale;
 }
 
-void ApplySettings()
+/**
+ * Allocates the memory for the buffer and fills it with the default color
+ */
+void InitBuffer(ScreenBuffer& buffer)
 {
-    Settings s = LoadSettings(ABSOLUTE_RES_PATH + "settings.txt");
+    buffer.memory = VirtualAlloc(0,
+                                 buffer.size,
+                                 MEM_COMMIT | MEM_RESERVE,
+                                 PAGE_READWRITE);
+    ClearScreen(buffer);
+}
 
-    TargetFrameTime = 1000. / s.frame_rate;
-    Scale.SetScale(s.scale);
+void SetSizeBasedOnTiles(WindowScale& scale,
+                         int xTiles,
+                         int yTiles,
+                         int tileWidth,
+                         int tileHeight)
+{
+    scale.render_dim.width = xTiles * tileWidth;
+    scale.render_dim.height = yTiles * tileHeight;
+    scale.screen_dim.width = scale.render_dim.width * scale.scale;
+    scale.screen_dim.height = scale.render_dim.height * scale.scale;
+    scale.window_height = scale.screen_dim.height + scale.taskbar_height;
+
+    VirtualFree(Buffer.memory, 0, MEM_RELEASE);
+    Buffer = {scale.render_dim.width, scale.render_dim.height};
+    InitBuffer(Buffer);
+
+    SetWindowPos(registeredWindow,
+                 NULL,
+                 0,
+                 0,
+                 Scale.screen_dim.width,
+                 Scale.screen_dim.height,
+                 SWP_NOMOVE | SWP_NOZORDER);
+}
+
+Settings LoadSettings()
+{
+    Settings settings = LoadSettings(ABSOLUTE_RES_PATH + "settings.txt");
+    // TODO: setting targets here is pretty ugly
+    TargetFrameTime = 1000. / settings.frame_rate;
+
+    return settings;
 }
 
 LRESULT CALLBACK WindowCallback(HWND hwnd,
@@ -132,19 +177,23 @@ LRESULT CALLBACK WindowCallback(HWND hwnd,
         case WM_DESTROY:
         {
             // TODO: that's not pretty -> refactor at some point
-            // stop main loop
+            // stop main loop -> want some general function probably
             stopLogger(logger);
             running = false;
         }
         break;
+        // NOTE: this event is called every time i touch the window
         case WM_GETMINMAXINFO:
         {
-            // disable window size change
+            // Disallow window change from user
+            // -> we always use our scalings
             LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
-            lpmmi->ptMinTrackSize.x = Scale.screen_width;
-            lpmmi->ptMinTrackSize.y = Scale.GetWindowHeight();
-            lpmmi->ptMaxTrackSize.x = Scale.screen_width;
-            lpmmi->ptMaxTrackSize.y = Scale.GetWindowHeight();
+            lpmmi->ptMinTrackSize.x = Scale.screen_dim.width;
+            // NOTE: need to use the actual window size -> means drawable screen
+            // + taskbar height = window-height
+            lpmmi->ptMinTrackSize.y = Scale.window_height;
+            lpmmi->ptMaxTrackSize.x = Scale.screen_dim.width;
+            lpmmi->ptMaxTrackSize.y = Scale.window_height;
         }
         break;
         case WM_SETFOCUS:

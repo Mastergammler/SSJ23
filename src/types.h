@@ -26,8 +26,8 @@ struct Logger
 
 struct Dimension
 {
-    int Width;
-    int Height;
+    int width;
+    int height;
 };
 
 struct ScreenBuffer
@@ -57,44 +57,19 @@ struct ScreenBuffer
 
 struct WindowScale
 {
-  private:
+    WindowScale(){};
+    WindowScale(int defaultWith, int defaultHeight)
+    {
+        screen_dim.width = defaultWith;
+        screen_dim.height = defaultHeight;
+        window_height = defaultHeight;
+    }
+
+    int taskbar_height;
     int window_height;
     int scale;
-
-  public:
-    int draw_width;
-    int draw_height;
-    int screen_width;
-    int screen_height;
-
-    WindowScale(int drawWidth, int drawHeight, int scale)
-    {
-        this->draw_width = drawWidth;
-        this->draw_height = drawHeight;
-        SetScale(scale);
-    }
-
-    void SetScale(int scale)
-    {
-        this->scale = scale;
-
-        screen_width = draw_width * scale;
-        screen_height = draw_height * scale;
-    }
-
-    int GetWindowHeight()
-    {
-        if (!window_height) return screen_height;
-        return window_height;
-    }
-
-    void AdjustForTaskbarHeight(Dimension& drawableScreen)
-    {
-        int taskbarHeight = this->screen_height - drawableScreen.Height;
-        cout << "Taskbarheight is " << taskbarHeight << endl;
-        drawableScreen.Height = this->screen_height;
-        this->window_height = this->screen_height + taskbarHeight;
-    }
+    Dimension render_dim;
+    Dimension screen_dim;
 };
 
 struct Rect

@@ -2,6 +2,7 @@
 
 #include "../IO/module.h"
 #include "../Logging/module.h"
+#include "../Rendering/module.h"
 #include "../globals.h"
 #include "../imports.h"
 #include "../types.h"
@@ -23,8 +24,17 @@ struct Mouse
 
 extern Mouse mouse;
 
+HWND RegisterWindow(HINSTANCE hInstance);
+Dimension GetWindowDimension(HWND window);
+WindowScale CreateWindowScale(HWND& window, Settings settings);
+void SetSizeBasedOnTiles(WindowScale& scale,
+                         int xTiles,
+                         int yTiles,
+                         int tileWidth,
+                         int tileHeight);
+
 void HandleMessages(HWND window);
+void InitBuffer(ScreenBuffer& buffer);
 void WaitTillNextFrame(HWND window);
-void ApplySettings();
-HWND RegisterWindow(WindowScale scale, HINSTANCE hInstance);
-Dimension AdjustWindowScale(HWND window);
+Settings LoadSettings();
+string SelectFilePath();

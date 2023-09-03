@@ -390,7 +390,22 @@ void Action_Drop()
 
 void Action_Exit()
 {
+    // without stopping the logger it will show a non 0 exit value
+    stopLogger(logger);
     running = false;
+}
+
+void Action_LoadUserSelectedMap()
+{
+    string filePath = SelectFilePath();
+    if (filePath.empty()) return;
+
+    Game.tile_map = LoadTilemap(filePath);
+    SetSizeBasedOnTiles(Scale,
+                        Game.tile_map.columns,
+                        Game.tile_map.rows,
+                        Game.tile_size.width,
+                        Game.tile_size.height);
 }
 
 void Action_SelectTowerType()

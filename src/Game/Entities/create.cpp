@@ -58,8 +58,8 @@ void InitializeComponentStorage(int storeCount)
 void InitEntityZero()
 {
     Entity* e = &entities.units[entities.unit_count++];
-    e->x = Scale.draw_width / 2;
-    e->y = Scale.draw_height / 2;
+    e->x = Scale.render_dim.width / 2;
+    e->y = Scale.render_dim.height / 2;
 }
 
 void InitializeEntities(int storeCount)

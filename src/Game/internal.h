@@ -60,7 +60,7 @@ void InitStaticResources();
 BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc);
 SoundCache LoadAudioFiles();
 void LoadItems();
-TileMap LoadMaps();
+TileMap LoadTilemap(string mapPath);
 SpriteSheet ConvertFromSheet(BitmapBuffer sheet, int tileWidth, int tileHeight);
 
 void DrawGroundLayer(ScreenBuffer buffer);

@@ -7,6 +7,7 @@
 
 bool running = true;
 Clock Time = {};
+ScreenBuffer Buffer = {0, 0};
 
 /**
  * Entry point for working with the window api
@@ -16,17 +17,20 @@ int WinMain(HINSTANCE hInstance,
             LPSTR lpCmdLine,
             int nShowCmd)
 {
-    ApplySettings();
-
-    ScreenBuffer buffer = {Scale.draw_width, Scale.draw_height};
-    HWND window = RegisterWindow(Scale, hInstance);
-    HDC hdc = GetDC(window);
-    // Doesn't click the mouse - also i have no exit button yet
-    // SetCapture(window);
-    Dimension drawableScreen = AdjustWindowScale(window);
-
     InitLogger(logger, "log.txt");
-    InitBuffer(buffer);
+
+    Settings settings = LoadSettings();
+    HWND window = RegisterWindow(hInstance);
+    HDC hdc = GetDC(window);
+
+    Dimension dim = GetWindowDimension(window);
+    Scale = CreateWindowScale(window, settings);
+    Logf("Dim: %d %d", dim.width, dim.height);
+
+    ShowCursor(false);
+
+    // Doesn't clip the mouse - also i have no exit button yet
+    // SetCapture(window);
     InitGame(hInstance, hdc);
 
     Log("Starting Game Loop ...");
@@ -36,8 +40,8 @@ int WinMain(HINSTANCE hInstance,
     while (running)
     {
         HandleMessages(window);
-        UpdateFrame(buffer);
-        RenderFrame(hdc, buffer, drawableScreen);
+        UpdateFrame(Buffer);
+        RenderFrame(hdc, Buffer, Scale.screen_dim);
         WaitTillNextFrame(window);
     }
 

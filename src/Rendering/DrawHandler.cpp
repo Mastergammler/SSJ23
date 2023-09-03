@@ -1,19 +1,5 @@
 #include "module.h"
 
-function void ClearScreen(ScreenBuffer& buffer);
-
-/**
- * Allocates the memory for the buffer and fills it with the default color
- */
-void InitBuffer(ScreenBuffer& buffer)
-{
-    buffer.memory = VirtualAlloc(0,
-                                 buffer.size,
-                                 MEM_COMMIT | MEM_RESERVE,
-                                 PAGE_READWRITE);
-    ClearScreen(buffer);
-}
-
 void ClearScreen(ScreenBuffer& buffer)
 {
     u32* pixel = (u32*)buffer.memory;
