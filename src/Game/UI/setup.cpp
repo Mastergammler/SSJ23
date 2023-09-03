@@ -242,15 +242,15 @@ void CreateGameElements()
     UiSprite craftButton = UiSprite{2, 1, 40, 42, &Res.bitmaps.ui};
     UiSprite confirmButton = UiSprite{2, 1, 44, 46, &Res.bitmaps.ui};
     UiSprite panel3x3 = UiSprite{3, 3, 16, 16, &Res.bitmaps.ui};
-    UiSprite panel3x10 = UiSprite{3, 10, 16, 16, &Res.bitmaps.ui};
-    UiSprite panel15x10 = UiSprite{8, 10, 16, 16, &Res.bitmaps.ui};
+    UiSprite panel3x10 = UiSprite{3, 8, 16, 16, &Res.bitmaps.ui};
+    UiSprite panel15x10 = UiSprite{8, 8, 16, 16, &Res.bitmaps.ui};
     UiSprite panel15x2 = UiSprite{15, 2, 16, 16, &Res.bitmaps.ui};
     UiSprite itemSlot = UiSprite{1, 1, 19, 0, &Res.bitmaps.ui};
     UiSprite bigItem = UiSprite{2, 2, 27, 29, &Res.bitmaps.ui};
 
-    ui.crafting.tower_panel = CreatePanel(Anchor{UPPER_RIGHT, 0.5, 3},
+    ui.crafting.tower_panel = CreatePanel(Anchor{UPPER_RIGHT, 0.5, 2},
                                           panel3x10);
-    ui.crafting.items_panel = CreatePanel(Anchor{UPPER_MIDDLE, 2, 3},
+    ui.crafting.items_panel = CreatePanel(Anchor{UPPER_MIDDLE, 2, 2},
                                           panel15x10);
     ui.placement.tower_selection_panel = CreatePanel(
                                             Anchor{UPPER_LEFT, -0.25, 0},
@@ -284,7 +284,7 @@ void CreateGameElements()
     ui.crafting.show_hide_button = CreateButton(Anchor{UPPER_RIGHT, 0.5, 0.5},
                                                 craftButton,
                                                 Action_ToggleCraftingPanel);
-    ui.crafting.crafting_button = CreateButton(Anchor{UPPER_RIGHT, 1, 11.5},
+    ui.crafting.crafting_button = CreateButton(Anchor{UPPER_RIGHT, 1, 8.5},
                                                confirmButton,
                                                Action_CraftTower,
                                                2);
@@ -316,4 +316,13 @@ void InitializeUi(int uiElementCount, int layers)
 
     CreateMenuElements();
     CreateGameElements();
+}
+
+// TODO: in a bigger project i should not just recreate everything
+void RecreateUiElements()
+{
+    delete uiElements.elements;
+    uiElements.count = 0;
+
+    InitializeUi(uiElements.size, uiElements.layer_count);
 }

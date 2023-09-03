@@ -217,7 +217,7 @@ void Action_StartGame()
     // TODO: trigger transition animation
     if (Res.audio.music.loaded)
     {
-        PlayAudioFile(&Res.audio.music, true, 80);
+        // PlayAudioFile(&Res.audio.music, true, 80);
     }
 }
 
@@ -401,11 +401,13 @@ void Action_LoadUserSelectedMap()
     if (filePath.empty()) return;
 
     Game.tile_map = LoadTilemap(filePath);
-    SetSizeBasedOnTiles(Scale,
-                        Game.tile_map.columns,
-                        Game.tile_map.rows,
-                        Game.tile_size.width,
-                        Game.tile_size.height);
+    SetWindowSizeBasedOnTiles(Scale,
+                              Game.tile_map.columns,
+                              Game.tile_map.rows,
+                              Game.tile_size.width,
+                              Game.tile_size.height);
+    RecreateUiElements();
+    Action_GoToMenu();
 }
 
 void Action_SelectTowerType()

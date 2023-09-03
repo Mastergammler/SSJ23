@@ -80,7 +80,6 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
 
     individualCounter.Update();
 
-    // TODO: adjust size?
     Game.tile_map = LoadTilemap(ABSOLUTE_RES_PATH + DEFAULT_MAP);
     Logf("  Tilemap loaded in %.2f ms", individualCounter.CheckDeltaTimeMs());
 
@@ -91,11 +90,11 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
     Logf("Resources loaded in %.2f ms", Time.CheckDeltaTimeMs());
 
     // Setting size
-    SetSizeBasedOnTiles(Scale,
-                        Game.tile_map.columns,
-                        Game.tile_map.rows,
-                        Game.tile_size.width,
-                        Game.tile_size.height);
+    SetWindowSizeBasedOnTiles(Scale,
+                              Game.tile_map.columns,
+                              Game.tile_map.rows,
+                              Game.tile_size.width,
+                              Game.tile_size.height);
 
     StartGame();
 }

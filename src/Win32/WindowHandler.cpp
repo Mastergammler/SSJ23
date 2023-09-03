@@ -1,6 +1,5 @@
 #include "internal.h"
 #include "module.h"
-#include <winnt.h>
 
 function LRESULT CALLBACK WindowCallback(HWND, UINT, WPARAM, LPARAM);
 
@@ -131,7 +130,7 @@ void InitBuffer(ScreenBuffer& buffer)
     ClearScreen(buffer);
 }
 
-void SetSizeBasedOnTiles(WindowScale& scale,
+void SetWindowSizeBasedOnTiles(WindowScale& scale,
                          int xTiles,
                          int yTiles,
                          int tileWidth,

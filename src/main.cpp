@@ -25,7 +25,6 @@ int WinMain(HINSTANCE hInstance,
 
     Dimension dim = GetWindowDimension(window);
     Scale = CreateWindowScale(window, settings);
-    Logf("Dim: %d %d", dim.width, dim.height);
 
     ShowCursor(false);
 

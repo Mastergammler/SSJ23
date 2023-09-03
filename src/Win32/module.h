@@ -27,11 +27,11 @@ extern Mouse mouse;
 HWND RegisterWindow(HINSTANCE hInstance);
 Dimension GetWindowDimension(HWND window);
 WindowScale CreateWindowScale(HWND& window, Settings settings);
-void SetSizeBasedOnTiles(WindowScale& scale,
-                         int xTiles,
-                         int yTiles,
-                         int tileWidth,
-                         int tileHeight);
+void SetWindowSizeBasedOnTiles(WindowScale& scale,
+                               int xTiles,
+                               int yTiles,
+                               int tileWidth,
+                               int tileHeight);
 
 void HandleMessages(HWND window);
 void InitBuffer(ScreenBuffer& buffer);

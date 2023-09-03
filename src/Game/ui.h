@@ -1,6 +1,7 @@
 #include "internal.h"
 
 void InitializeUi(int uiElementCount, int layers);
+void RecreateUiElements();
 
 Position ItemSlotCenter(int slotId);
 Position CalculateStartPixelPosition(Anchor anchor, Sprite sprite);
