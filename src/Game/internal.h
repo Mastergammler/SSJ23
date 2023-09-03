@@ -78,7 +78,8 @@ int CreateTowerEntity(int x,
                       int y,
                       int cannonTypeId,
                       Sprite bulletSprite,
-                      Sprite pillarSprite);
+                      Sprite pillarSprite,
+                      Sprite brokenSprite);
 int CreateItemEntity(int x, int y, ItemData data);
 int CreateEnemyEntity(int x,
                       int y,

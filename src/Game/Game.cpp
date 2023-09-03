@@ -17,6 +17,7 @@ void StartGame()
         PostQuitMessage(0);
     }
 
+    srand(time(0));
     InitializeEntities(Game.tile_map.rows * Game.tile_map.columns * 8);
     InitializeUi(64, 3);
 
@@ -25,6 +26,7 @@ void StartGame()
     // TODO: TMP
     Res.sprites.placeholder = Sprite{1, 1, 63, &Res.bitmaps.characters};
     Res.sprites.enemy_a = Sprite{1, 1, 24, &Res.bitmaps.characters};
+    Res.sprites.broken_tower = Sprite{1, 1, 11, &Res.bitmaps.characters};
 
     // TODO: simple anim format -> just describe indices of the anim
     // -> the rest only once

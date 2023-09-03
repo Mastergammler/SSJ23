@@ -2,7 +2,7 @@
 weight=1.5
 aero=0.25
 power=1
-stability=1.5
+stability=2
 sturdieness=3
 
 # effects encoding

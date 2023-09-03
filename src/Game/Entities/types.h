@@ -29,6 +29,12 @@ enum EntityState
     TARGET_LOCATION
 };
 
+enum TowerState
+{
+    TOWER_BROKEN = 0x0,
+    TOWER_ACTIVE = 0x1
+};
+
 /**
  * Entity information.
  * Information that other entities most likely would want to know
@@ -107,11 +113,19 @@ struct Tower
      */
     float bullet_speed;
 
+    /**
+     * Probability that after the next shot the tower still stands
+     * Inversed: 0 = breaks, 100 = never breaks
+     */
+    int breaking_probability;
+
     // TODO: new values
     //  - state, is broken etc
     //  - sprite for is broken (change entity sprite?)
     Sprite bullet_sprite;
     Sprite pillar_sprite;
+
+    TowerState state;
 
     /**
      * Tiles that the tower checks for attacking
@@ -229,15 +243,28 @@ struct CannonType
     int bullet_item_id;
     int pillar_item_id;
 
-    // TODO: calc values?
+    /**
+     * From 0-100
+     * 100 - instantly collapses on build
+     * 0 - never collapses
+     */
+    int breaking_probability;
 
-    float breaking_probability;
-    // in tiles
+    /**
+     * In tiles, cross first, rounded corners -1
+     */
     float range;
-    // shots per s?
+    /**
+     * Shot's per second
+     */
     float fire_rate;
+
+    // TODO: what to do about this?
     float accuracy;
-    // in what unit? -> tiles/s ?
+
+    /**
+     * Tiles per s (diagonal is slower / normalized)
+     */
     float bullet_speed;
 };
 

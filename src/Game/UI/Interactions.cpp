@@ -133,7 +133,8 @@ void Action_PlaceTower()
                               centerY,
                               ui.placement.selected_tower_type,
                               ui.placement.preview_bullet_sprite,
-                              ui.placement.preview_pillar_sprite);
+                              ui.placement.preview_pillar_sprite,
+                              Res.sprites.broken_tower);
             PlaySoundEffect(&Res.audio.pop_lo);
 
             tile->is_occupied = true;

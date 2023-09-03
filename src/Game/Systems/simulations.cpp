@@ -6,6 +6,7 @@ void SimulateTower()
     for (int i = 0; i < towers.unit_count; i++)
     {
         Tower* t = &towers.units[i];
+        if (t->state == TOWER_BROKEN) continue;
 
         // update shot timer
         t->time_since_last_shot += Time.sim_time;
@@ -46,6 +47,20 @@ void SimulateTower()
                 proj->speed = t->bullet_speed;
 
                 // TODO: animations and sounds etc;
+
+                // if rnd is smaller than the probability of breaking then we
+                // break breaking probability of 0 means rnd will never be lower
+                // than it breaking probability 10 = 1/10 chance of hitting that
+                // number etc
+                int rnd = rand() % 101;
+                if (rnd < t->breaking_probability)
+                {
+                    t->state = TOWER_BROKEN;
+                    // TODO: trigger animation event etc
+                    Logf("Tower breaking No %d, probablity %d",
+                         rnd,
+                         t->breaking_probability);
+                }
             }
         }
     }

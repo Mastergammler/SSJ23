@@ -1,5 +1,6 @@
 #include "../internal.h"
 
+// TODO: Refactor, this now get's really messy
 void RenderEntities(ScreenBuffer buffer)
 {
 
@@ -47,28 +48,42 @@ void RenderEntities(ScreenBuffer buffer)
         {
             Tower t = towers.units[e.storage_id];
 
-            // should not be draw on lower border
-            int yOffset = Game.tile_size.height / 2 - 2;
-            // pillar
-            DrawTiles(buffer,
-                      drawStartX,
-                      drawStartY + yOffset,
-                      *t.pillar_sprite.sheet,
-                      t.pillar_sprite.sheet_start_index,
-                      t.pillar_sprite.x_tiles,
-                      t.pillar_sprite.y_tiles);
+            if (t.state == TOWER_ACTIVE)
+            {
 
-            int onTopOffset = yOffset +
-                              Game.tile_size.height * t.pillar_sprite.y_tiles -
-                              Game.tile_size.height / 2 + 2;
-            // bullet
-            DrawTiles(buffer,
-                      drawStartX,
-                      drawStartY + onTopOffset,
-                      *t.bullet_sprite.sheet,
-                      t.bullet_sprite.sheet_start_index,
-                      t.bullet_sprite.x_tiles,
-                      t.bullet_sprite.y_tiles);
+                // should not be draw on lower border
+                int yOffset = Game.tile_size.height / 2 - 2;
+                // pillar
+                DrawTiles(buffer,
+                          drawStartX,
+                          drawStartY + yOffset,
+                          *t.pillar_sprite.sheet,
+                          t.pillar_sprite.sheet_start_index,
+                          t.pillar_sprite.x_tiles,
+                          t.pillar_sprite.y_tiles);
+
+                int onTopOffset = yOffset +
+                                  Game.tile_size.height * t.pillar_sprite.y_tiles -
+                                  Game.tile_size.height / 2 + 2;
+                // bullet
+                DrawTiles(buffer,
+                          drawStartX,
+                          drawStartY + onTopOffset,
+                          *t.bullet_sprite.sheet,
+                          t.bullet_sprite.sheet_start_index,
+                          t.bullet_sprite.x_tiles,
+                          t.bullet_sprite.y_tiles);
+            }
+            else if (t.state == TOWER_BROKEN)
+            {
+                DrawTiles(buffer,
+                          drawStartX,
+                          drawStartY,
+                          *e.sprite.sheet,
+                          e.sprite.sheet_start_index,
+                          e.sprite.x_tiles,
+                          e.sprite.y_tiles);
+            }
         }
         else
         {

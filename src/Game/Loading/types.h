@@ -62,6 +62,7 @@ struct SoundCache
 struct SpriteCache
 {
     Sprite placeholder;
+    Sprite broken_tower;
     Sprite enemy_a;
 };
 

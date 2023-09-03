@@ -316,6 +316,12 @@ int CreateTower(int entityId,
     t->radius = cannon.range;
     t->fire_rate = cannon.fire_rate;
     t->bullet_speed = cannon.bullet_speed;
+    t->breaking_probability = cannon.breaking_probability;
+
+    if (t->breaking_probability >= 100)
+        t->state = TOWER_BROKEN;
+    else
+        t->state = TOWER_ACTIVE;
 
     t->initialized = true;
     t->pillar_sprite = pillar;
@@ -332,7 +338,8 @@ int CreateTowerEntity(int x,
                       int y,
                       int cannonTypeId,
                       Sprite bulletSprite,
-                      Sprite pillarSprite)
+                      Sprite pillarSprite,
+                      Sprite brokenSprite)
 {
     Entity* e = InitNextEntity();
     e->storage_id = CreateTower(e->id,
@@ -349,7 +356,9 @@ int CreateTowerEntity(int x,
     e->move_y = 0;
     e->type = TOWER;
     e->direction = NORTH;
-    e->sprite = bulletSprite;
+
+    // to be shown, when the tower is broken
+    e->sprite = brokenSprite;
 
     return e->id;
 }
@@ -398,6 +407,39 @@ int CreateItemEntity(int x, int y, ItemData data)
     return e->id;
 }
 
+// NOTE: works quite good, maybe i can tweak it a bit to be even more extrem at
+// the end
+//  becaues often things that should almost never break, still break after ahile
+//  this is because if you have breaking probabilty 2, its still 1/50 shots
+//  this might still be too much, but it's ok for now
+//  - also i might need to work with float values
+//  - because else i don't get the desired accuracy at the end
+//  -> This might be one reason for it not working so well
+//  -> Because as of right now 1% is the lowest i can currently do
+int CalculateBreakingProbabilty(int sturdieness,
+                                int stability,
+                                int weight,
+                                int power)
+{
+    int stabiltyValue = sturdieness + stability - (weight * power) + 1;
+    int stabilityNormalized = (stabiltyValue + 3) * 15;
+
+    stabilityNormalized = stabilityNormalized < 0 ? 0 : stabilityNormalized;
+    stabilityNormalized = stabilityNormalized > 100 ? 100 : stabilityNormalized;
+
+    // 0 gives us 1, and 100 gives us 0
+    // using this non linear scale, becaues a probabilty of 90 breaking after 10
+    // shots feels wrong with that we have a probability of ca 5% breaking for
+    // 75, 50% for 10, 30 for 25, etc -> that looks way better
+    float trans = 1 - (log10(stabilityNormalized + 1) / log10(101));
+    int transDecimal = trans * 100;
+
+    if (transDecimal < 0) return 0;
+    if (transDecimal > 100) return 100;
+
+    return transDecimal;
+}
+
 int CreateCannonType(int entityId, int bulletId, int postId)
 {
     assert(cannons.unit_count < cannons.size);
@@ -413,6 +455,10 @@ int CreateCannonType(int entityId, int bulletId, int postId)
                    0.8;
     t->bullet_speed = 3 * avPower * 1 / bullet.weight + 1;
 
+    t->breaking_probability = CalculateBreakingProbabilty(pillar.sturdieness,
+                                                          pillar.stability,
+                                                          bullet.weight,
+                                                          bullet.power);
     t->storage_id = id;
     t->entity_id = entityId;
 
