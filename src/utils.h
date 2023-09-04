@@ -39,3 +39,27 @@ function int MirrorY(int y, int height)
 {
     return height - 1 - y;
 }
+
+/**
+ * Returns the value if it is bigger than the min, else the minimum
+ * Clamps to the minimum
+ */
+function int Lower(int value, int min)
+{
+    return value < min ? min : value;
+}
+
+/**
+ * Clamps to the maximum
+ */
+function int Upper(int value, int max)
+{
+    return value > max ? max : value;
+}
+
+function int Clamp(int value, int min, int max)
+{
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}

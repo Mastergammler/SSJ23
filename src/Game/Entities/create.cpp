@@ -11,6 +11,7 @@ ProjectileStore projectiles;
 void InitializeProjectileStore(int storeCount, int poolSize)
 {
     assert(poolSize <= storeCount);
+
     // TODO: does this make sense to have a different pool size than general
     // allocated memory?
     projectiles.size = storeCount;
@@ -232,28 +233,84 @@ struct TileArray
     int count;
 };
 
+/**
+ * Gets the tile of the cross based on the value, either horizontally or
+ * vertically
+ */
+Tile* crossTileByOffset(Tile* towerTile, int value, bool horizontal)
+{
+    if (horizontal)
+    {
+        // for x offset values
+        if (-value > towerTile->x || value > Game.tile_map.columns - 1)
+            return NULL;
+    }
+    else
+    {
+        // for y offset values
+        if (-value > towerTile->y || value > Game.tile_map.rows - 1)
+            return NULL;
+        value = value * Game.tile_map.columns;
+    }
+
+    Tile* cross = towerTile + value;
+    if (cross->tile_id == PATH_TILE)
+    {
+        return cross;
+    }
+    return NULL;
+};
+
 TileArray determineRelevantTiles(int x, int y, int radius)
 {
     Tile* towerTile = Game.tile_map.tileAt(x, y);
-
     int maxNumTiles = calculateTileCountFoRange(radius);
-    // for adding center tile, simpler to iterate through
+
+    // +1 for adding center tile, simpler to iterate through
     Tile** tmp = new Tile*[maxNumTiles + 1];
 
     int pathTileCount = 0;
 
-    // -1 because we ignore the first cross one
-    int tilesPerRow = (radius - 1) * 2 + 1;
-    int rows = (radius - 1) * 2 + 1;
+    // -1 because for 1 we only have the cross
+    // only after the cross we get a whole tile round on range
+    int tileCirclesRange = (radius - 1);
 
-    // TODO: include boundaries
-    Tile* ulStart = towerTile - (radius - 1) * Game.tile_map.columns -
-                    (radius - 1);
+    //  clamp UL start element
+    int xOffset = Upper(tileCirclesRange, towerTile->x);
+    int yOffset = Upper(tileCirclesRange, towerTile->y);
 
-    for (int r = 0; r < rows; r++)
+    int xClampDiff = tileCirclesRange - xOffset;
+    int yClampDiff = tileCirclesRange - yOffset;
+
+    // fixing left clamp
+    int columns = tileCirclesRange * 2 + 1 - xClampDiff;
+    int rows = tileCirclesRange * 2 + 1 - yClampDiff;
+
+    Logf("CDiff, rows cols: %d %d | %d %d",
+         xClampDiff,
+         yClampDiff,
+         rows,
+         columns);
+
+    int ulIndexOffset = yOffset * Game.tile_map.columns + xOffset;
+    Tile* ulStart = towerTile - ulIndexOffset;
+    Logf("UlStart tile %d %d", ulStart->x, ulStart->y);
+
+    int maxColumn = Upper(ulStart->x + columns, Game.tile_map.columns);
+    int maxRow = Upper(ulStart->y + rows, Game.tile_map.rows);
+
+    // TODO: almost working, just in one case a tile escapes
+    //  -> dunno quite why yet ...
+    //  maybe im doing it in a way to complicated way?
+    int colClamped = maxColumn - ulStart->x;
+    int rowClamped = maxRow - ulStart->y;
+
+    Logf("Final row col %d %d", rowClamped, colClamped);
+
+    for (int r = 0; r < rowClamped; r++)
     {
         Tile* currentRowTile = ulStart + r * Game.tile_map.columns;
-        for (int x = 0; x < tilesPerRow; x++)
+        for (int x = 0; x < colClamped; x++)
         {
             Tile* cpy = currentRowTile++;
             if (cpy->tile_id == PATH_TILE)
@@ -264,30 +321,18 @@ TileArray determineRelevantTiles(int x, int y, int radius)
         }
     }
 
-    // Add extra cross
-    Tile* crossLeft = towerTile - radius;
-    if (crossLeft->tile_id == PATH_TILE)
-    {
-        tmp[pathTileCount++] = crossLeft;
-    }
+    // Add the extra cross
+    Tile* leftCross = crossTileByOffset(towerTile, -radius, true);
+    if (leftCross) tmp[pathTileCount++] = leftCross;
 
-    Tile* crossRight = towerTile + radius;
-    if (crossRight->tile_id == PATH_TILE)
-    {
-        tmp[pathTileCount++] = crossRight;
-    }
+    Tile* crossTile = crossTileByOffset(towerTile, radius, true);
+    if (crossTile) tmp[pathTileCount++] = crossTile;
 
-    Tile* crossTop = towerTile - radius * Game.tile_map.columns;
-    if (crossTop->tile_id == PATH_TILE)
-    {
-        tmp[pathTileCount++] = crossTop;
-    }
+    Tile* topTile = crossTileByOffset(towerTile, -radius, false);
+    if (topTile) tmp[pathTileCount++] = topTile;
 
-    Tile* crossBot = towerTile + radius * Game.tile_map.columns;
-    if (crossBot->tile_id == PATH_TILE)
-    {
-        tmp[pathTileCount++] = crossBot;
-    }
+    Tile* botTile = crossTileByOffset(towerTile, radius, false);
+    if (botTile) tmp[pathTileCount++] = botTile;
 
     Tile** relevantTilesActual = new Tile*[pathTileCount];
     copy(tmp, tmp + pathTileCount, relevantTilesActual);
@@ -296,7 +341,6 @@ TileArray determineRelevantTiles(int x, int y, int radius)
     return TileArray{relevantTilesActual, pathTileCount};
 }
 
-// TODO: based on value
 int CreateTower(int entityId,
                 int x,
                 int y,
