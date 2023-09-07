@@ -1,3 +1,4 @@
+#include "../../operators.h"
 #include "../internal.h"
 
 ComponentStore components;
@@ -242,13 +243,13 @@ Tile* crossTileByOffset(Tile* towerTile, int value, bool horizontal)
     if (horizontal)
     {
         // for x offset values
-        if (-value > towerTile->x || value > Game.tile_map.columns - 1)
+        if (-value > towerTile->pos.x || value > Game.tile_map.columns - 1)
             return NULL;
     }
     else
     {
         // for y offset values
-        if (-value > towerTile->y || value > Game.tile_map.rows - 1)
+        if (-value > towerTile->pos.y || value > Game.tile_map.rows - 1)
             return NULL;
         value = value * Game.tile_map.columns;
     }
@@ -260,6 +261,11 @@ Tile* crossTileByOffset(Tile* towerTile, int value, bool horizontal)
     }
     return NULL;
 };
+
+Tile* tileAtPosition(int tileX, int tileY)
+{
+    return &Game.tile_map.tiles[tileX + tileY * Game.tile_map.columns];
+}
 
 TileArray determineRelevantTiles(int x, int y, int radius)
 {
@@ -275,53 +281,31 @@ TileArray determineRelevantTiles(int x, int y, int radius)
     // only after the cross we get a whole tile round on range
     int tileCirclesRange = (radius - 1);
 
-    //  clamp UL start element
-    int xOffset = Upper(tileCirclesRange, towerTile->x);
-    int yOffset = Upper(tileCirclesRange, towerTile->y);
+    v2 towardUL = v2{-1, 1} * LL_UL;
+    v2 towardLR = v2{1, -1} * LL_UL;
+    v2 unclampedUL = towerTile->pos + tileCirclesRange * towardUL;
+    v2 unclampedLR = towerTile->pos + tileCirclesRange * towardLR;
+    v2 rangeUL = Clamp(unclampedUL,
+                       Game.tile_map.min_pos,
+                       Game.tile_map.max_pos);
+    v2 rangeLR = Clamp(unclampedLR,
+                       Game.tile_map.min_pos,
+                       Game.tile_map.max_pos);
 
-    int xClampDiff = tileCirclesRange - xOffset;
-    int yClampDiff = tileCirclesRange - yOffset;
-
-    // fixing left clamp
-    int columns = tileCirclesRange * 2 + 1 - xClampDiff;
-    int rows = tileCirclesRange * 2 + 1 - yClampDiff;
-
-    Logf("CDiff, rows cols: %d %d | %d %d",
-         xClampDiff,
-         yClampDiff,
-         rows,
-         columns);
-
-    int ulIndexOffset = yOffset * Game.tile_map.columns + xOffset;
-    Tile* ulStart = towerTile - ulIndexOffset;
-    Logf("UlStart tile %d %d", ulStart->x, ulStart->y);
-
-    int maxColumn = Upper(ulStart->x + columns, Game.tile_map.columns);
-    int maxRow = Upper(ulStart->y + rows, Game.tile_map.rows);
-
-    // TODO: almost working, just in one case a tile escapes
-    //  -> dunno quite why yet ...
-    //  maybe im doing it in a way to complicated way?
-    int colClamped = maxColumn - ulStart->x;
-    int rowClamped = maxRow - ulStart->y;
-
-    Logf("Final row col %d %d", rowClamped, colClamped);
-
-    for (int r = 0; r < rowClamped; r++)
+    for (int y = rangeUL.y; y <= rangeLR.y; y++)
     {
-        Tile* currentRowTile = ulStart + r * Game.tile_map.columns;
-        for (int x = 0; x < colClamped; x++)
+        for (int x = rangeUL.x; x <= rangeLR.x; x++)
         {
-            Tile* cpy = currentRowTile++;
-            if (cpy->tile_id == PATH_TILE)
+            Tile* t = tileAtPosition(x, y);
+            if (t->tile_id == PATH_TILE)
             {
-                // don't forget to copy, because we move the other pointer
-                tmp[pathTileCount++] = cpy;
+                tmp[pathTileCount++] = t;
             }
         }
     }
 
     // Add the extra cross
+    // TODO: use vectors here too?!
     Tile* leftCross = crossTileByOffset(towerTile, -radius, true);
     if (leftCross) tmp[pathTileCount++] = leftCross;
 
@@ -334,6 +318,7 @@ TileArray determineRelevantTiles(int x, int y, int radius)
     Tile* botTile = crossTileByOffset(towerTile, radius, false);
     if (botTile) tmp[pathTileCount++] = botTile;
 
+    // TODO: do i have a 1 off here? Because the COUNT is bigger than the index?
     Tile** relevantTilesActual = new Tile*[pathTileCount];
     copy(tmp, tmp + pathTileCount, relevantTilesActual);
     delete[] tmp;

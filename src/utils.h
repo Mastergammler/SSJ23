@@ -63,3 +63,11 @@ function int Clamp(int value, int min, int max)
     if (value > max) return max;
     return value;
 }
+
+function v2 Clamp(v2 value, v2 min, v2 max)
+{
+    value.x = Clamp(value.x, min.x, max.x);
+    value.y = Clamp(value.y, min.y, max.y);
+
+    return value;
+}

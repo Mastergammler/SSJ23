@@ -94,9 +94,9 @@ void Action_SpawnEnemy()
     PlaySoundEffect(&Res.audio.pop_hi);
     Tile startTile = *Game.tile_map.spawns[0];
 
-    int invertedY = Game.tile_map.rows - startTile.y - 1;
-    int spawnX = startTile.x * Game.tile_size.width + Game.tile_size.width / 2 -
-                 1;
+    int invertedY = Game.tile_map.rows - startTile.pos.y - 1;
+    int spawnX = startTile.pos.x * Game.tile_size.width +
+                 Game.tile_size.width / 2 - 1;
     int spawnY = invertedY * Game.tile_size.height + Game.tile_size.height / 2 -
                  1;
 
@@ -120,9 +120,9 @@ void Action_PlaceTower()
 
         // offset a bit towards the top, because else it will be placed at the
         // bottom?
-        int centerX = tile->x * Game.tile_size.width +
+        int centerX = tile->pos.x * Game.tile_size.width +
                       (Game.tile_size.width / 2 - 1);
-        int centerY = MirrorY(tile->y,
+        int centerY = MirrorY(tile->pos.y,
                               Game.tile_map.rows) * Game.tile_size.height +
                       (Game.tile_size.height / 2 - 1);
 

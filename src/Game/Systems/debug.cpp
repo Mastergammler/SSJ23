@@ -17,8 +17,8 @@ void Debug_PrintEnemyTilePositions()
         {
             Logf("Tile %d (%d,%d) contains the following enemies",
                  i,
-                 tile.x,
-                 tile.y);
+                 tile.pos.x,
+                 tile.pos.y);
 
             for (int e = 0; e < tile.tracker->entity_count; e++)
             {

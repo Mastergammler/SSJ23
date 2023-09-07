@@ -57,9 +57,10 @@ void SimulateTower()
                 {
                     t->state = TOWER_BROKEN;
                     // TODO: trigger animation event etc
-                    Logf("Tower breaking No %d, probablity %d",
-                         rnd,
-                         t->breaking_probability);
+
+                    // Logf("Tower breaking No %d, probablity %d",
+                    //     rnd,
+                    //     t->breaking_probability);
                 }
             }
         }

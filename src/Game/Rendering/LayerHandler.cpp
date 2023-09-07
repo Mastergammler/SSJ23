@@ -76,10 +76,11 @@ void DrawTilemap(ScreenBuffer& buffer, SpriteSheet& sheet)
     {
         Tile cur = *tile++;
         int tileId = cur.tile_id;
-        int tileIdx = cur.y * Game.tile_map.columns + cur.x;
+        int tileIdx = cur.pos.y * Game.tile_map.columns + cur.pos.x;
 
-        int drawX = cur.x * Game.tile_size.width;
-        int drawY = (Game.tile_map.rows - 1 - cur.y) * Game.tile_size.height;
+        int drawX = cur.pos.x * Game.tile_size.width;
+        int drawY = (Game.tile_map.rows - 1 - cur.pos.y) *
+                    Game.tile_size.height;
 
         int sheetIdx;
 

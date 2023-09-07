@@ -18,8 +18,8 @@ bool ReachedOverCenterBound(Entity entity, Tile targetTile, float offset)
 {
     int tileWidth = Game.tile_map.tile_size.width;
     int tileHeight = Game.tile_map.tile_size.height;
-    int transformY = Game.tile_map.rows - targetTile.y - 1;
-    int targetPosX = targetTile.x * tileWidth + tileWidth * offset - 1;
+    int transformY = Game.tile_map.rows - targetTile.pos.y - 1;
+    int targetPosX = targetTile.pos.x * tileWidth + tileWidth * offset - 1;
     int targetPosY = transformY * tileHeight + tileHeight * offset - 1;
 
     // continue moving till center of tile
@@ -53,8 +53,8 @@ Direction GetNextMovementDirection(Entity entity)
 
     // entity is at (around) center of the tile, choose next direction
     u8 neighbours = enemyTile.adjacent;
-    Direction targetXDir = enemyTile.x < target.x ? EAST : WEST;
-    Direction targetYDir = enemyTile.y < target.y ? NORTH : EAST;
+    Direction targetXDir = enemyTile.pos.x < target.pos.x ? EAST : WEST;
+    Direction targetYDir = enemyTile.pos.y < target.pos.y ? NORTH : EAST;
 
     Direction backDir = oppositeDirection(entity.direction);
     u8 notBackDir = ~backDir;
@@ -102,7 +102,8 @@ void MoveEnemies()
             Tile target = *Game.tile_map.targets[0];
 
             if (enemyTile.tile_id != PATH_TILE) continue;
-            if (enemyTile.x == target.x && enemyTile.y == target.y)
+            if (enemyTile.pos.x == target.pos.x &&
+                enemyTile.pos.y == target.pos.y)
             {
                 if (ReachedOverCenterBound(*e, target, 1)) continue;
             }

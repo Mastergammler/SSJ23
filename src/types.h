@@ -129,3 +129,8 @@ struct v2
 {
     int x, y;
 };
+
+struct prox2
+{
+    float x, y;
+};

@@ -106,16 +106,11 @@ struct Tile
     bool is_occupied;
 
     /**
-     * Tilemap x pos
+     * Tilemap position,
+     * Anchor UL
      * NOT a pixel position
      */
-    int x;
-
-    /**
-     * TileMap y pos - anchor TOP
-     * NOT a pixel position
-     */
-    int y;
+    v2 pos;
 
     TileType tile_id;
 
@@ -142,6 +137,8 @@ struct TileMap
     int target_count;
 
     TileSize tile_size;
+    v2 min_pos;
+    v2 max_pos;
 
     /**
      * Tiles with starting position UL

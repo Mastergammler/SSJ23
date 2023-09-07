@@ -256,8 +256,8 @@ TileMap LoadTilemap(string mapPath)
 
             char val = *values++;
 
-            tile.x = col;
-            tile.y = row;
+            tile.pos.x = col;
+            tile.pos.y = row;
 
             // start and end are on the path as well
             if (val == SPAWN_VALUE ||
@@ -291,6 +291,8 @@ TileMap LoadTilemap(string mapPath)
     map.tile_size = Game.tile_size;
     map.tile_count = map.columns * map.rows;
     map.tiles = tiles;
+    map.min_pos = {0, 0};
+    map.max_pos = {map.columns - 1, map.rows - 1};
     map.spawn_count = startTileCount;
     map.target_count = endTileCount;
 
