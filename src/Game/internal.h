@@ -61,7 +61,7 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc);
 SoundCache LoadAudioFiles();
 void LoadItems();
 TileMap LoadTilemap(string mapPath);
-SpriteSheet ConvertFromSheet(BitmapBuffer sheet, int tileWidth, int tileHeight);
+SpriteSheet ConvertFromSheet(BitmapBuffer sheetBitmap, TileSize tileSize);
 
 void DrawGroundLayer(ScreenBuffer buffer);
 void DrawEntityLayer(ScreenBuffer buffer);

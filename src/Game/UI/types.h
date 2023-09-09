@@ -137,6 +137,7 @@ struct Navigation
     bool in_menu;
     bool in_start_screen;
     bool in_game;
+    bool in_transition;
 };
 
 struct EntitySlotMap

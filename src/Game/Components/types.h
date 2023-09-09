@@ -18,6 +18,47 @@ struct Collider
     int width;
 };
 
+struct Keyframe
+{
+    int index;
+    float time_per_frame;
+};
+
+/**
+ * A frame timer manages key frames
+ */
+struct FrameTimer
+{
+    bool looping;
+    bool finished = true;
+    Keyframe* frames;
+
+    float time_since_last_frame;
+
+    /**
+     * Only affects the animation speed, not the start and end times
+     */
+    float time_scale = 1.;
+
+    /**
+     * Time until the animator starts counting frame time
+     */
+    float time_to_start;
+
+    /**
+     * Time after the last frame, on which the animation is considered finished
+     */
+    float time_after_end;
+
+    int frame_count;
+    /*
+     * We start at frame -1, because of the wait till start functionality
+     * When it's -1, it means we don't have started yet
+     * TODO: this looks a bit akward, maybe change this?
+     */
+    int frame_index = -1;
+};
+
 struct Animator
 {
     bool looping;

@@ -147,6 +147,7 @@ void Action_GoToMenu()
     navigation.in_start_screen = false;
     navigation.in_game = false;
     navigation.in_menu = true;
+    navigation.in_transition = false;
 
     UiElement* startBtn = &uiElements.elements[ui.menu.start_game_button];
     UiElement* mapsPanel = &uiElements.elements[ui.menu.map_selection_panel];
@@ -191,6 +192,11 @@ void Action_ToggleCraftingPanel()
     UpdateChildVisibility(panel->id, panel->visible);
 }
 
+void Action_TransitionToGame()
+{
+    navigation.in_transition = true;
+}
+
 void Action_StartGame()
 {
     // TODO: hide menu buttons
@@ -212,10 +218,10 @@ void Action_StartGame()
     UpdateChildVisibility(towerSelection->id, true);
 
     navigation.in_menu = false;
+    navigation.in_transition = false;
     navigation.in_start_screen = false;
     navigation.in_game = true;
 
-    // TODO: trigger transition animation
     if (Res.audio.music.loaded)
     {
         // PlayAudioFile(&Res.audio.music, true, 80);

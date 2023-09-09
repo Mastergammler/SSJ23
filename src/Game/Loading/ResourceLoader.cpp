@@ -61,17 +61,6 @@ void LoadItems()
 {
     // TODO: do conversion with sounds etc
     ItemArray loaded = LoadItems(ABSOLUTE_RES_PATH + "Items");
-
-    for (int i = 0; i < loaded.count; i++)
-    {
-        ItemData item = loaded.items[i];
-        if (item.loaded)
-        {
-            // TODO: create entity & items to display
-            // and ui items etc etc
-        }
-    }
-
     Res.items = loaded;
 }
 
@@ -93,9 +82,7 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
                                          hdc);
     if (tilesSheet.loaded)
     {
-        cache.ground = ConvertFromSheet(tilesSheet,
-                                        Game.tile_size.width,
-                                        Game.tile_size.height);
+        cache.ground = ConvertFromSheet(tilesSheet, Game.tile_size);
     }
 
     BitmapBuffer uiSheet = LoadSprite(ABSOLUTE_RES_PATH + "Sprites/UI_8x8.bmp",
@@ -103,9 +90,7 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
                                       hdc);
     if (uiSheet.loaded)
     {
-        cache.ui = ConvertFromSheet(uiSheet,
-                                    Game.tile_size.width,
-                                    Game.tile_size.height);
+        cache.ui = ConvertFromSheet(uiSheet, Game.tile_size);
     }
 
     BitmapBuffer charactersSheet = LoadSprite(ABSOLUTE_RES_PATH + "Sprites/"
@@ -115,9 +100,7 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
                                               hdc);
     if (charactersSheet.loaded)
     {
-        cache.characters = ConvertFromSheet(charactersSheet,
-                                            Game.tile_size.width,
-                                            Game.tile_size.height);
+        cache.characters = ConvertFromSheet(charactersSheet, Game.tile_size);
     }
 
     BitmapBuffer itemsSheet = LoadSprite(ABSOLUTE_RES_PATH + "Sprites/"
@@ -126,9 +109,17 @@ BitmapCache LoadSprites(HINSTANCE hInstance, HDC hdc)
                                          hdc);
     if (itemsSheet.loaded)
     {
-        cache.items = ConvertFromSheet(itemsSheet,
-                                       Game.tile_size.width,
-                                       Game.tile_size.height);
+        cache.items = ConvertFromSheet(itemsSheet, Game.tile_size);
+    }
+
+    BitmapBuffer effectsSheet = LoadSprite(ABSOLUTE_RES_PATH + "Sprites/"
+                                                               "Effects_8x8."
+                                                               "bmp",
+                                           hInstance,
+                                           hdc);
+    if (effectsSheet.loaded)
+    {
+        cache.effects = ConvertFromSheet(effectsSheet, Game.tile_size);
     }
 
     BitmapBuffer logo = LoadSprite(ABSOLUTE_RES_PATH + "Sprites/Logo.bmp",
@@ -321,17 +312,15 @@ TileMap LoadTilemap(string mapPath)
     return map;
 }
 
-SpriteSheet ConvertFromSheet(BitmapBuffer sheetBitmap,
-                             int tileWidth,
-                             int tileHeight)
+SpriteSheet ConvertFromSheet(BitmapBuffer sheetBitmap, TileSize tileSize)
 {
     u32* bitmapPixels = (u32*)sheetBitmap.buffer;
 
     // ignore clipping, uneven counts are ignored
-    int tilesPerRow = sheetBitmap.width / tileWidth;
-    int tilesPerColumn = sheetBitmap.height / tileHeight;
+    int tilesPerRow = sheetBitmap.width / tileSize.width;
+    int tilesPerColumn = sheetBitmap.height / tileSize.height;
     int tileCount = tilesPerRow * tilesPerColumn;
-    int pixelsPerTile = tileWidth * tileHeight;
+    int pixelsPerTile = tileSize.width * tileSize.height;
 
     BitmapBuffer* bitmaps = new BitmapBuffer[tileCount];
 
@@ -340,8 +329,8 @@ SpriteSheet ConvertFromSheet(BitmapBuffer sheetBitmap,
         int tileRow = tileIdx / tilesPerRow;
         int tileCol = tileIdx % tilesPerRow;
 
-        int tilePixelIndex = (sheetBitmap.width * tileHeight) * tileRow +
-                             tileCol * tileWidth;
+        int tilePixelIndex = (sheetBitmap.width * tileSize.height) * tileRow +
+                             tileCol * tileSize.width;
         u32* tileStartPixel = (u32*)sheetBitmap.buffer;
         tileStartPixel += tilePixelIndex;
 
@@ -350,12 +339,14 @@ SpriteSheet ConvertFromSheet(BitmapBuffer sheetBitmap,
 
         // Inverse saving because i want to specify numbers from the UL
         int mirrorIdx = MirrorIndex(tileIdx, tilesPerRow, tilesPerColumn);
-        bitmaps[mirrorIdx] = BitmapBuffer{tileWidth, tileHeight, tilePointer};
+        bitmaps[mirrorIdx] = BitmapBuffer{tileSize.width,
+                                          tileSize.height,
+                                          tilePointer};
 
-        for (int y = 0; y < tileHeight; y++)
+        for (int y = 0; y < tileSize.height; y++)
         {
             u32* pixelRow = tileStartPixel + (y * sheetBitmap.width);
-            for (int x = 0; x < tileWidth; x++)
+            for (int x = 0; x < tileSize.width; x++)
             {
                 *tilePixels++ = *pixelRow++;
             }
@@ -370,8 +361,8 @@ SpriteSheet ConvertFromSheet(BitmapBuffer sheetBitmap,
     sheet.image_width = sheetBitmap.width;
     sheet.image_height = sheetBitmap.height;
     sheet.tile_count = tileCount;
-    sheet.tile_width = tileWidth;
-    sheet.tile_height = tileHeight;
+    sheet.tile_width = tileSize.width;
+    sheet.tile_height = tileSize.height;
 
     return sheet;
 }

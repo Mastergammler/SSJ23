@@ -1,5 +1,7 @@
+#include "components.h"
 #include "internal.h"
 #include "module.h"
+#include "scenes.h"
 #include "systems.h"
 #include "ui.h"
 
@@ -54,7 +56,7 @@ void StartGame()
 
 #if DEBUG
     Action_GoToMenu();
-    // Action_StartGame();
+    //  Action_StartGame();
 #endif
 }
 
@@ -98,79 +100,17 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
                               Game.tile_size.width,
                               Game.tile_size.height);
 
+    InitScenes();
     StartGame();
 }
-
-const float SHOW_LOGO_TIME = 2;
-float timeInLogoScreen = 0;
-int samplePosition = 0;
-float timeSinceLastSample = 0;
-float timePerSample = 0.15;
-
-Animator anim = {};
-
-void ShowLogoScreen(ScreenBuffer buffer)
-{
-    int centerX = Scale.render_dim.width / 2 - Res.bitmaps.logo.width / 2;
-    int centerY = Scale.render_dim.height / 2 - Res.bitmaps.logo.height / 2;
-    timeInLogoScreen += Time.delta_time_real;
-
-    Shader shader = {};
-
-    if (timeInLogoScreen > SHOW_LOGO_TIME)
-    {
-        // TODO: refactor - quite a ugly shader animator
-        timeSinceLastSample += Time.delta_time_real;
-        shader.type = COLOR_REPLACE;
-        switch (samplePosition)
-        {
-            case 1:
-            {
-                shader.shader_color = PALETTE_GRAY;
-            }
-            break;
-            case 2:
-            {
-                shader.shader_color = PALETTE_DARK_GRAY;
-            }
-            break;
-            case 3:
-            {
-                shader.shader_color = PALETTE_DARK_BROWN;
-            }
-            break;
-            case 4:
-            {
-                shader.shader_color = BG_COLOR;
-            }
-            break;
-            case 5:
-            case 6:
-            case 7:
-            case 8: break;
-            case 9: Action_GoToMenu(); break;
-            default: shader.type = NONE; break;
-        }
-        if (timeSinceLastSample > timePerSample)
-        {
-            timeSinceLastSample -= timePerSample;
-            samplePosition++;
-        }
-    }
-    DrawBitmap(buffer, Res.bitmaps.logo, centerX, centerY, shader);
-}
-
-// NOTE: idea for fade animations
-//  i could also just use the different colors
-//  - from white to gray, to dark gray to dark brown to black screen
-//  -> Could work similarly well
-//  => I need a animation component!!!!
 
 /**
  * Called to update the information and buffer for the next frame
  */
+// TODO: REFACTOR - with all the transition stuff this gets too messy
 void UpdateFrame(ScreenBuffer& buffer)
 {
+
     // special handling
     if (navigation.in_start_screen)
     {
@@ -178,15 +118,26 @@ void UpdateFrame(ScreenBuffer& buffer)
         return;
     }
 
-    UpdateMouseState();
-    ProcessMouseActions();
+    if (!navigation.in_transition)
+    {
+        UpdateMouseState();
+        ProcessMouseActions();
+    }
 
     if (navigation.in_menu)
     {
-        FillWithTiles(buffer, Res.bitmaps.ui.tiles[56]);
+        if (navigation.in_transition)
+        {
+            DrawToGameTransition(buffer);
+        }
+        else
+        {
+            FillWithTiles(buffer, Res.bitmaps.ui.tiles[56]);
+        }
     }
     else if (navigation.in_game)
     {
+
         SpawningSystem();
         MoveEnemies();
         SimulateTower();
@@ -203,5 +154,9 @@ void UpdateFrame(ScreenBuffer& buffer)
 
         // Debug_DrawEntityMovementPossibilities(buffer);
     }
-    DrawUiLayer(buffer);
+
+    if (!navigation.in_transition)
+    {
+        DrawUiLayer(buffer);
+    }
 }

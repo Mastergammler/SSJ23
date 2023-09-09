@@ -71,6 +71,7 @@ void DrawTiles(ScreenBuffer& buffer,
                int startTileIdx,
                int xTiles,
                int yTiles);
+void DrawSprite(ScreenBuffer& buffer, v2 drawPos, Sprite sprite);
 // difference is it assumes a 3x3 Tile template
 // and is able to fill the screen if it is wider
 // by reusing tiles from the 3x3 tile template

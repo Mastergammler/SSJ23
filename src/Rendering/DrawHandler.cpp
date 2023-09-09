@@ -172,6 +172,26 @@ void DrawTiles(ScreenBuffer& buffer,
     }
 }
 
+void DrawSprite(ScreenBuffer& buffer, v2 drawPos, Sprite sprite)
+{
+    int startY = drawPos.y + sprite.sheet->tile_height * (sprite.y_tiles - 1);
+    for (int y = 0; y < sprite.y_tiles; y++)
+    {
+        int yPos = startY - (y * sprite.sheet->tile_height);
+        for (int x = 0; x < sprite.x_tiles; x++)
+        {
+
+            int bitmapIdx = sprite.sheet_start_index +
+                            y * sprite.sheet->columns + x;
+            int xPos = x * sprite.sheet->tile_width + drawPos.x;
+            DrawBitmap(buffer,
+                       sprite.sheet->tiles[sprite.sheet_start_index],
+                       xPos,
+                       yPos);
+        }
+    }
+}
+
 void DrawPanel(ScreenBuffer& buffer,
                int bufferStartX,
                int bufferStartY,

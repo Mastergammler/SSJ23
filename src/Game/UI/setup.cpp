@@ -176,7 +176,7 @@ void CreateMenuElements()
                                                Action_LoadUserSelectedMap);
     ui.menu.start_game_button = CreateButton(Anchor{UPPER_MIDDLE, 0, 4},
                                              startButton,
-                                             Action_StartGame);
+                                             Action_TransitionToGame);
     ui.menu.exit_game_button = CreateButton(Anchor{UPPER_MIDDLE, 0, 9},
                                             exitButton,
                                             Action_Exit);
