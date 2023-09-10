@@ -1,5 +1,7 @@
 #include "../internal.h"
 
+// TODO: don't return the index, makes no sense
+//- change values on the animator
 int NextKeyframeIndex(FrameTimer& anim)
 {
     anim.time_since_last_frame += Time.sim_time;
@@ -31,6 +33,7 @@ int NextKeyframeIndex(FrameTimer& anim)
     {
         Keyframe displayedFrame = anim.frames[anim.frame_index];
         float scaledFrameTime = displayedFrame.time_per_frame / anim.time_scale;
+
         if (anim.time_since_last_frame > scaledFrameTime)
         {
             anim.time_since_last_frame -= scaledFrameTime;

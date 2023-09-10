@@ -1,4 +1,6 @@
+#include "Loading/types.h"
 #include "components.h"
+#include "entities.h"
 #include "internal.h"
 #include "module.h"
 #include "scenes.h"
@@ -33,30 +35,37 @@ void StartGame()
     // TODO: simple anim format -> just describe indices of the anim
     // -> the rest only once
     int offset = 8;
-    Sprite* enemyWalkAnim = new Sprite[4]{
-                                            Sprite{1,
-                                                   1,
-                                                   25 + offset,
-                                                   &Res.bitmaps.characters},
-                                            Sprite{1,
-                                                   1,
-                                                   26 + offset,
-                                                   &Res.bitmaps.characters},
-                                            Sprite{1,
-                                                   1,
-                                                   27 + offset,
-                                                   &Res.bitmaps.characters},
-                                            Sprite{1,
-                                                   1,
-                                                   28 + offset,
-                                                   &Res.bitmaps.characters},
-    };
+    Sprite* enemyWalkAnim = new Sprite[4]{Sprite{1,
+                                                 1,
+                                                 25 + offset,
+                                                 &Res.bitmaps.characters},
+                                          Sprite{1,
+                                                 1,
+                                                 26 + offset,
+                                                 &Res.bitmaps.characters},
+                                          Sprite{1,
+                                                 1,
+                                                 27 + offset,
+                                                 &Res.bitmaps.characters},
+                                          Sprite{1,
+                                                 1,
+                                                 28 + offset,
+                                                 &Res.bitmaps.characters}};
 
     Res.animations.enemy_anim = SpriteAnimation{4, 0.1, enemyWalkAnim};
 
+    Shader* shaders = new Shader[3]{Shader{COLOR_REPLACE, PALETTE_WHITE},
+                                    Shader{COLOR_REPLACE, PALETTE_GRAY},
+                                    Shader{COLOR_REPLACE, PALETTE_DARK_GRAY}};
+    Keyframe* keyframes = new Keyframe[3]{Keyframe{0, 0.22},
+                                          Keyframe{1, 0.08},
+                                          Keyframe{2, 0.08}};
+
+    Res.animations.enemy_hit = ShaderAnimation{3, keyframes, shaders};
+
 #if DEBUG
     Action_GoToMenu();
-    //  Action_StartGame();
+    //   Action_StartGame();
 #endif
 }
 
@@ -144,6 +153,7 @@ void UpdateFrame(ScreenBuffer& buffer)
         MoveProjectiles();
         HandleProjectileCollisions();
         // Debug_PrintEnemyTilePositions();
+
         AnimateEntities();
 
         DrawGroundLayer(buffer);

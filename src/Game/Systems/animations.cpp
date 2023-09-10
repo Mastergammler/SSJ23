@@ -1,3 +1,4 @@
+#include "../components.h"
 #include "../internal.h"
 
 void AnimateEntities()
@@ -35,6 +36,15 @@ void AnimateEntities()
                     // set to last frame
                     anim->sample_index = anim->sample_count - 1;
                 }
+            }
+        }
+        if (component_mask & SHADER_ANIM)
+        {
+            FrameTimer* timer = &components.memory[i].shader_anim;
+            if (!timer->finished)
+            {
+                // TODO: do i need to handle the keyframe?
+                int keyframe = NextKeyframeIndex(*timer);
             }
         }
     }

@@ -1,9 +1,12 @@
+#pragma once
+
 #include "../module.h"
 
 enum Components
 {
     ANIMATOR = 0x1 << 0,
     COLLIDER = 0x1 << 1,
+    SHADER_ANIM = 0x1 << 2
 };
 
 struct Collider
@@ -83,6 +86,7 @@ struct EntityComponents
 {
     Animator animator;
     Collider collider;
+    FrameTimer shader_anim;
 };
 
 /**

@@ -1,3 +1,4 @@
+#include "../entities.h"
 #include "../internal.h"
 #include "../ui.h"
 

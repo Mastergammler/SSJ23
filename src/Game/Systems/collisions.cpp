@@ -46,7 +46,20 @@ void ExecuteEnemyAction(int entityId)
     if (en->state != IS_HIT)
     {
         en->state = IS_HIT;
-        en->speed /= 2;
+    }
+
+    // TODO: this is kind of ok, problem is some towers have single focus now
+    en->speed *= 0.9;
+    if (e.component_mask & SHADER_ANIM)
+    {
+        // reset shader anim / or start it
+        FrameTimer* anim = &components.memory[e.id].shader_anim;
+        if (anim->finished)
+        {
+            anim->finished = false;
+            anim->frame_index = 0;
+            anim->time_since_last_frame = 0;
+        }
     }
 }
 

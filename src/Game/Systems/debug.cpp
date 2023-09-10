@@ -67,6 +67,7 @@ void Debug_DrawTowerRangeAndDetection(ScreenBuffer buffer)
     for (int i = 0; i < towers.unit_count; ++i)
     {
         Tower tower = towers.units[i];
+        if (tower.state == TOWER_BROKEN) continue;
 
         for (int t = 0; t < tower.tile_count; t++)
         {

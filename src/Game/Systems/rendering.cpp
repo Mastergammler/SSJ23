@@ -1,9 +1,33 @@
 #include "../internal.h"
 
+void RenderTowers(ScreenBuffer buffer, v2 drawPos, Entity e)
+{
+    Tower t = towers.units[e.storage_id];
+
+    if (t.state == TOWER_ACTIVE)
+    {
+        // should not be draw on lower border
+        int yOffset = Game.tile_size.height / 2 - 2;
+
+        // pillar
+        DrawSprite(buffer, v2{drawPos.x, drawPos.y + yOffset}, t.pillar_sprite);
+        int onTopOffset = yOffset +
+                          Game.tile_size.height * t.pillar_sprite.y_tiles -
+                          Game.tile_size.height / 2 + 2;
+        // bullet
+        DrawSprite(buffer,
+                   v2{drawPos.x, drawPos.y + onTopOffset},
+                   t.bullet_sprite);
+    }
+    else if (t.state == TOWER_BROKEN)
+    {
+        DrawSprite(buffer, drawPos, e.sprite);
+    }
+}
+
 // TODO: Refactor, this now get's really messy
 void RenderEntities(ScreenBuffer buffer)
 {
-
     // determine render order / TODO: is this performant enough? -> seems so
     vector<int> renderOrder(entities.unit_count);
     for (int i = 0; i < entities.unit_count; ++i)
@@ -20,8 +44,8 @@ void RenderEntities(ScreenBuffer buffer)
         int renderOrderIndex = renderOrder[i];
         Entity e = entities.units[renderOrderIndex];
 
-        // craft items are rendered separately, because they need to be on top
-        // of the ui
+        // craft items are rendered separately, because they need to
+        // be on top of the ui
         if (e.type == CRAFT_ITEM || e.type == TOWER_PROTO) continue;
 
         if (e.type == PROJECTILE)
@@ -32,6 +56,7 @@ void RenderEntities(ScreenBuffer buffer)
 
         int drawStartX = e.x - (Game.tile_size.width / 2 - 1);
         int drawStartY = e.y - (Game.tile_size.height / 2 - 1);
+        v2 drawPos = {drawStartX, drawStartY};
 
         Sprite sprite;
         if (e.component_mask & ANIMATOR)
@@ -44,56 +69,29 @@ void RenderEntities(ScreenBuffer buffer)
             sprite = e.sprite;
         }
 
+        Shader shader = {};
+        if (e.component_mask & SHADER_ANIM)
+        {
+            FrameTimer anim = components.memory[e.id].shader_anim;
+            // TODO: i don't think it's good that i have to check as
+            // much stuff here
+            //  this should be simpler!
+            if (!anim.finished && anim.frame_index >= 0)
+            {
+                // TODO: still impacted by the issue with the index
+                // for end time but i have to fix this in the
+                // animation
+                shader = Res.animations.enemy_hit.shaders[anim.frame_index];
+            }
+        }
+
         if (e.type == TOWER)
         {
-            Tower t = towers.units[e.storage_id];
-
-            if (t.state == TOWER_ACTIVE)
-            {
-
-                // should not be draw on lower border
-                int yOffset = Game.tile_size.height / 2 - 2;
-                // pillar
-                DrawTiles(buffer,
-                          drawStartX,
-                          drawStartY + yOffset,
-                          *t.pillar_sprite.sheet,
-                          t.pillar_sprite.sheet_start_index,
-                          t.pillar_sprite.x_tiles,
-                          t.pillar_sprite.y_tiles);
-
-                int onTopOffset = yOffset +
-                                  Game.tile_size.height * t.pillar_sprite.y_tiles -
-                                  Game.tile_size.height / 2 + 2;
-                // bullet
-                DrawTiles(buffer,
-                          drawStartX,
-                          drawStartY + onTopOffset,
-                          *t.bullet_sprite.sheet,
-                          t.bullet_sprite.sheet_start_index,
-                          t.bullet_sprite.x_tiles,
-                          t.bullet_sprite.y_tiles);
-            }
-            else if (t.state == TOWER_BROKEN)
-            {
-                DrawTiles(buffer,
-                          drawStartX,
-                          drawStartY,
-                          *e.sprite.sheet,
-                          e.sprite.sheet_start_index,
-                          e.sprite.x_tiles,
-                          e.sprite.y_tiles);
-            }
+            RenderTowers(buffer, drawPos, e);
         }
         else
         {
-            DrawTiles(buffer,
-                      drawStartX,
-                      drawStartY,
-                      *sprite.sheet,
-                      sprite.sheet_start_index,
-                      sprite.x_tiles,
-                      sprite.y_tiles);
+            DrawSprite(buffer, drawPos, sprite, shader);
         }
     }
 }
@@ -109,6 +107,7 @@ void RenderEntitiesOfType(ScreenBuffer buffer, EntityType type)
 
         int drawStartX = e.x - (Game.tile_size.width / 2 - 1);
         int drawStartY = e.y - (Game.tile_size.height / 2 - 1);
+        v2 drawPos = {drawStartX, drawStartY};
 
         Sprite sprite;
         if (e.component_mask & ANIMATOR)
@@ -121,13 +120,7 @@ void RenderEntitiesOfType(ScreenBuffer buffer, EntityType type)
             sprite = e.sprite;
         }
 
-        DrawTiles(buffer,
-                  drawStartX,
-                  drawStartY,
-                  *sprite.sheet,
-                  sprite.sheet_start_index,
-                  sprite.x_tiles,
-                  sprite.y_tiles);
+        DrawSprite(buffer, drawPos, sprite);
     }
 }
 
@@ -161,7 +154,8 @@ void RenderUiElements(ScreenBuffer& buffer, SpriteSheet& sheet)
                           spriteIdx,
                           cur->x_tiles,
                           cur->y_tiles);
-                // TODO: kind of a workaround, dunno how to do this better atm
+                // TODO: kind of a workaround, dunno how to do this
+                // better atm
                 cur->hovered = false;
             }
         }

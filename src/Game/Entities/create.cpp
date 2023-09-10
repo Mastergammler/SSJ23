@@ -54,7 +54,15 @@ void InitializeComponentStorage(int storeCount)
 {
     components.size = storeCount;
     components.memory = new EntityComponents[storeCount];
-    memset(components.memory, 0, sizeof(EntityComponents) * storeCount);
+
+    EntityComponents defaultValue = {};
+
+    // initialize everything with a default value
+    // else the defaults in the animators are overwritten!
+    for (int i = 0; i < storeCount; i++)
+    {
+        memcpy(&components.memory[i], &defaultValue, sizeof(EntityComponents));
+    }
 }
 
 void InitEntityZero()
@@ -151,61 +159,6 @@ int CreateProjectileEntity()
     coll->y_offset = 0;
     coll->height = 8;
     coll->width = 8;
-
-    return e->id;
-}
-
-int CreateEnemy(int entityId, int speed)
-{
-    assert(enemies.unit_count < enemies.size);
-
-    int id = enemies.unit_count++;
-    Enemy* e = &enemies.units[id];
-
-    e->storage_id = id;
-    e->entity_id = entityId;
-
-    e->speed = speed;
-    e->state = WALKING;
-
-    e->initialized = true;
-
-    return e->storage_id;
-}
-
-// TODO: how to put the animation data in there?
-int CreateEnemyEntity(int x,
-                      int y,
-                      Sprite sprite,
-                      Direction direction,
-                      int speed,
-                      SpriteAnimation animation)
-{
-    Entity* e = InitNextEntity();
-    e->storage_id = CreateEnemy(e->id, speed);
-
-    e->x = x;
-    e->y = y;
-    e->move_x = x;
-    e->move_y = y;
-    e->type = ENEMY;
-    e->direction = direction;
-    e->sprite = sprite;
-
-    e->component_mask = (ANIMATOR | COLLIDER);
-    Animator* anim = &components.memory[e->id].animator;
-    anim->initialized = true;
-    anim->looping = true;
-    anim->sample_index = 0;
-    anim->sample_count = animation.sprite_count;
-    anim->time_per_sample = animation.time_per_sprite;
-    anim->samples = animation.sprites;
-
-    Collider* coll = &components.memory[e->id].collider;
-    coll->x_offset = 0;
-    coll->y_offset = 0;
-    coll->height = 12;
-    coll->width = 12;
 
     return e->id;
 }

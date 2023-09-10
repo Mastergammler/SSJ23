@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../Components/types.h"
 #include "../module.h"
 
 struct TileSize
@@ -74,9 +75,20 @@ struct SpriteAnimation
     Sprite* sprites;
 };
 
+struct ShaderAnimation
+{
+    /**
+     * count of keyframes and shaders
+     */
+    int frame_count;
+    Keyframe* keyframes;
+    Shader* shaders;
+};
+
 struct AnimationCache
 {
     SpriteAnimation enemy_anim;
+    ShaderAnimation enemy_hit;
 };
 
 /**

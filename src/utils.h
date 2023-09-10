@@ -41,20 +41,21 @@ function int MirrorY(int y, int height)
 }
 
 /**
- * Returns the value if it is bigger than the min, else the minimum
- * Clamps to the minimum
+ * Clamps to the floor of a certain value
+ * -> Means no value can be lower than the floor
  */
-function int Lower(int value, int min)
+function int Floor(int value, int floor)
 {
-    return value < min ? min : value;
+    return value < floor ? floor : value;
 }
 
 /**
- * Clamps to the maximum
+ * Clamps to a certain ceiling of a value
+ * Means no value can be higher than the ceiling
  */
-function int Upper(int value, int max)
+function int Ceiling(int value, int ceiling)
 {
-    return value > max ? max : value;
+    return value > ceiling ? ceiling : value;
 }
 
 function int Clamp(int value, int min, int max)

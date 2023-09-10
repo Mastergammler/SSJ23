@@ -1,4 +1,5 @@
 #include "../../Win32/module.h"
+#include "../entities.h"
 #include "../internal.h"
 #include "../systems.h"
 #include "../ui.h"
@@ -107,7 +108,8 @@ void Action_SpawnEnemy()
                       Res.sprites.enemy_a,
                       SOUTH,
                       20,
-                      Res.animations.enemy_anim);
+                      Res.animations.enemy_anim,
+                      Res.animations.enemy_hit);
 }
 
 void Action_PlaceTower()

@@ -70,21 +70,3 @@ void DrawUiLayer(ScreenBuffer buffer);
 // UTILS
 Position TileToDrawPosition(Tile tile);
 Position TileCenterPosition(Tile tile);
-
-// TODO: i don't think these should live here
-int CreateProjectileEntity();
-int CreatCannonTypeEntity(int x, int y, int bulletItemId, int postItemId);
-int CreateTowerEntity(int x,
-                      int y,
-                      int cannonTypeId,
-                      Sprite bulletSprite,
-                      Sprite pillarSprite,
-                      Sprite brokenSprite);
-int CreateItemEntity(int x, int y, ItemData data);
-int CreateEnemyEntity(int x,
-                      int y,
-                      Sprite sprite,
-                      Direction direction,
-                      int speed,
-                      SpriteAnimation animation);
-void InitializeEntities(int storeCount);

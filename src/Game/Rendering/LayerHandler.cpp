@@ -16,54 +16,41 @@ void DrawTowerPreview(ScreenBuffer buffer,
 
     int tileXStart = tileIdxX * Game.tile_size.width;
     int tileYStart = tileIdxY * Game.tile_size.height;
+    v2 drawPos = {tileXStart, tileYStart};
 
     Tile* tile = Game.tile_map.tileAt(mouseState.x, mouseState.y);
 
-    int uiIdx;
-    int shadowIdx;
-
-    // tile based impact
-    if (tile->tile_id == GRASS_TILE)
-    {
-        uiIdx = 0;
-        shadowIdx = 17;
-    }
-    else if (tile->tile_id == PATH_TILE)
-    {
-        uiIdx = 2;
-        shadowIdx = 16;
-    }
+    // TODO for animation
+    //  - 1. get the target pos from the keyframe
+    //  - 2. move towards that keyframe
+    //  -> Both pillar + bullet
+    //
+    //  - sprite animate the shadow according to the keyframes
+    //  -> Position stays the same, just sprite changes
 
     if (tile->tile_id == PATH_TILE || tile->is_occupied)
     {
-        DrawBitmap(buffer, uiSheet.tiles[2], tileXStart, tileYStart);
+        DrawBitmap(buffer, uiSheet.tiles[2], drawPos.x, drawPos.y);
     }
     else
     {
         // shadow
-        DrawBitmap(buffer,
-                   characterSheet.tiles[shadowIdx],
-                   tileXStart,
-                   tileYStart);
+        DrawBitmap(buffer, characterSheet.tiles[18], drawPos.x, drawPos.y);
+
         // ui overlay
-        DrawBitmap(buffer, uiSheet.tiles[uiIdx], tileXStart, tileYStart);
+        DrawBitmap(buffer, uiSheet.tiles[0], drawPos.x, drawPos.y);
+
         // tower pillar
-        DrawTiles(buffer,
-                  tileXStart,
-                  tileYStart + Game.tile_size.height,
-                  *pillarSprite.sheet,
-                  pillarSprite.sheet_start_index,
-                  pillarSprite.x_tiles,
-                  pillarSprite.y_tiles);
+        DrawSprite(buffer,
+                   v2{drawPos.x, drawPos.y + Game.tile_size.height},
+                   pillarSprite);
+        //
         // tower bullet type
         int tileYOffset = pillarSprite.y_tiles * Game.tile_size.height - 4;
-        DrawTiles(buffer,
-                  tileXStart,
-                  tileYStart + Game.tile_size.height + tileYOffset,
-                  *bulletSprite.sheet,
-                  bulletSprite.sheet_start_index,
-                  bulletSprite.x_tiles,
-                  bulletSprite.y_tiles);
+        DrawSprite(buffer,
+                   v2{drawPos.x,
+                      drawPos.y + Game.tile_size.height + tileYOffset},
+                   bulletSprite);
     }
 }
 

@@ -38,25 +38,14 @@ void InitTransition_ToGame()
 {
     float frameTime = 0.1;
 
-    Sprite slideFrames[] = {
-                                            Sprite{1,
-                                                   1,
-                                                   1,
-                                                   &Res.bitmaps.effects},
-                                            Sprite{1,
-                                                   1,
-                                                   2,
-                                                   &Res.bitmaps.effects},
-                                            Sprite{1,
-                                                   1,
-                                                   0,
-                                                   &Res.bitmaps.effects},
-    };
+    Sprite slideFrames[] = {Sprite{1, 1, 1, &Res.bitmaps.effects},
+                            Sprite{1, 1, 2, &Res.bitmaps.effects},
+                            Sprite{1, 1, 0, &Res.bitmaps.effects}};
 
     toGameAnim.frame_count = Game.tile_map.columns * 3;
     toGameAnim.finished = false;
     toGameAnim.frames = new Keyframe[toGameAnim.frame_count];
-    toGameAnim.time_scale = 2;
+    toGameAnim.time_scale = 3;
 
     slideSprites = new Sprite[toGameAnim.frame_count];
 

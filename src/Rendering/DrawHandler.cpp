@@ -157,7 +157,8 @@ void DrawTiles(ScreenBuffer& buffer,
                SpriteSheet& sheet,
                int startTileIdx,
                int xTiles,
-               int yTiles)
+               int yTiles,
+               Shader shader)
 {
     int startY = bufferStartY + sheet.tile_height * (yTiles - 1);
     for (int y = 0; y < yTiles; y++)
@@ -167,12 +168,12 @@ void DrawTiles(ScreenBuffer& buffer,
         {
             int bitmapIdx = startTileIdx + y * sheet.columns + x;
             int xPos = x * sheet.tile_width + bufferStartX;
-            DrawBitmap(buffer, sheet.tiles[bitmapIdx], xPos, yPos);
+            DrawBitmap(buffer, sheet.tiles[bitmapIdx], xPos, yPos, shader);
         }
     }
 }
 
-void DrawSprite(ScreenBuffer& buffer, v2 drawPos, Sprite sprite)
+void DrawSprite(ScreenBuffer& buffer, v2 drawPos, Sprite sprite, Shader shader)
 {
     int startY = drawPos.y + sprite.sheet->tile_height * (sprite.y_tiles - 1);
     for (int y = 0; y < sprite.y_tiles; y++)
@@ -187,7 +188,8 @@ void DrawSprite(ScreenBuffer& buffer, v2 drawPos, Sprite sprite)
             DrawBitmap(buffer,
                        sprite.sheet->tiles[sprite.sheet_start_index],
                        xPos,
-                       yPos);
+                       yPos,
+                       shader);
         }
     }
 }
