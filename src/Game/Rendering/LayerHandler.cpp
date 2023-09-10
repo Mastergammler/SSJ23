@@ -1,5 +1,20 @@
+// #include "../../operators.h"
+#include "../components.h"
 #include "../internal.h"
 #include "../systems.h"
+
+// TODO: this should probably not be here but somewhere else?
+// not sure if the whole draw tower preview should be here?
+FrameTimer hoverAnimation;
+void ResetHoverAnimation()
+{
+    hoverAnimation.frames = Res.animations.tower_hover.keyframes;
+    hoverAnimation.finished = false;
+    hoverAnimation.frame_count = Res.animations.tower_hover.frame_count;
+    hoverAnimation.looping = true;
+    hoverAnimation.frame_index = 0;
+    hoverAnimation.time_since_last_frame = 0;
+}
 
 // TODO: Refactor, this into a proper form
 //  - layer drawing
@@ -11,6 +26,9 @@ void DrawTowerPreview(ScreenBuffer buffer,
                       Sprite bulletSprite,
                       Sprite pillarSprite)
 {
+    // TODO: should this be in the draw function? probably not!
+    int ret = NextKeyframeIndex(hoverAnimation);
+
     int tileIdxX = mouseState.x / Game.tile_size.width;
     int tileIdxY = mouseState.y / Game.tile_size.height;
 
@@ -34,23 +52,50 @@ void DrawTowerPreview(ScreenBuffer buffer,
     }
     else
     {
+        Keyframe currentFrame = Res.animations.tower_hover.keyframes[hoverAnimation.frame_index];
+        Sprite shadowSprite = Res.animations.tower_hover.sprites[currentFrame.index];
+        v2 nextTargetPosition = Res.animations.tower_hover.movements[currentFrame.index];
+        v2 movementDiff = nextTargetPosition;
+        v2 previous = {0, 0};
+
+        // NOTE: in order to calculate the movement correctly, we need to take
+        // the previous position into account because we draw absolute
+        // positions! For that we need how much we moved for the current frame +
+        // the start position from the previous one
+        if (currentFrame.index > 0)
+        {
+            previous = Res.animations.tower_hover.movements[currentFrame.index -
+                                                            1];
+            movementDiff = nextTargetPosition - previous;
+        }
+
+        float percentage = hoverAnimation.time_since_last_frame /
+                           currentFrame.time_per_frame;
+        prox2 currentMovementPos = percentage * movementDiff;
+
+        v2 tileOffset = {0, Game.tile_size.height};
+        v2 bulletOffset = v2{0,
+                             pillarSprite.y_tiles * Game.tile_size.height - 4} +
+                          tileOffset;
+
+        v2 animOffset = v2{(int)currentMovementPos.x,
+                           (int)currentMovementPos.y} +
+                        previous;
+
         // shadow
-        DrawBitmap(buffer, characterSheet.tiles[18], drawPos.x, drawPos.y);
+        DrawBitmap(buffer,
+                   shadowSprite.sheet->tiles[shadowSprite.sheet_start_index],
+                   drawPos.x,
+                   drawPos.y);
 
         // ui overlay
         DrawBitmap(buffer, uiSheet.tiles[0], drawPos.x, drawPos.y);
 
         // tower pillar
-        DrawSprite(buffer,
-                   v2{drawPos.x, drawPos.y + Game.tile_size.height},
-                   pillarSprite);
-        //
+        DrawSprite(buffer, drawPos + tileOffset + animOffset, pillarSprite);
+
         // tower bullet type
-        int tileYOffset = pillarSprite.y_tiles * Game.tile_size.height - 4;
-        DrawSprite(buffer,
-                   v2{drawPos.x,
-                      drawPos.y + Game.tile_size.height + tileYOffset},
-                   bulletSprite);
+        DrawSprite(buffer, drawPos + bulletOffset + animOffset, bulletSprite);
     }
 }
 

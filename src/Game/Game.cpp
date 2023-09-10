@@ -63,6 +63,53 @@ void StartGame()
 
     Res.animations.enemy_hit = ShaderAnimation{3, keyframes, shaders};
 
+    const int frameCount = 6;
+    Keyframe* movementFrames = new Keyframe[frameCount]{Keyframe{0, 0.25},
+                                                        Keyframe{1, 0.15},
+                                                        Keyframe{2, 0.25},
+                                                        Keyframe{3, 0.25},
+                                                        Keyframe{4, 0.15},
+                                                        Keyframe{5, 0.25}};
+    Sprite* shadowSprites = new Sprite[frameCount]{
+                                            Sprite{1,
+                                                   1,
+                                                   18,
+                                                   &Res.bitmaps.characters},
+                                            Sprite{1,
+                                                   1,
+                                                   19,
+                                                   &Res.bitmaps.characters},
+                                            Sprite{1,
+                                                   1,
+                                                   19,
+                                                   &Res.bitmaps.characters},
+                                            Sprite{1,
+                                                   1,
+                                                   18,
+                                                   &Res.bitmaps.characters},
+                                            Sprite{1,
+                                                   1,
+                                                   17,
+                                                   &Res.bitmaps.characters},
+                                            Sprite{1,
+                                                   1,
+                                                   17,
+                                                   &Res.bitmaps.characters}
+
+    };
+
+    v2* offsets = new v2[frameCount]{v2{0, -2},
+                                     v2{0, -2},
+                                     v2{0, 0},
+                                     v2{0, 2},
+                                     v2{0, 2},
+                                     v2{0, 0}};
+
+    Res.animations.tower_hover = MovementAnimation{frameCount,
+                                                   movementFrames,
+                                                   offsets,
+                                                   shadowSprites};
+
 #if DEBUG
     Action_GoToMenu();
     //   Action_StartGame();

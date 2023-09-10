@@ -163,6 +163,10 @@ void Action_GoToMenu()
 void Action_ToggleTowerPreview()
 {
     ui.placement.active = !ui.placement.active;
+    if (ui.placement.active)
+    {
+        ResetHoverAnimation();
+    }
 }
 
 void UpdateChildVisibility(int parentPanelId, bool newVisibility)

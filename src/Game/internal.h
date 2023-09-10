@@ -67,6 +67,8 @@ void DrawGroundLayer(ScreenBuffer buffer);
 void DrawEntityLayer(ScreenBuffer buffer);
 void DrawUiLayer(ScreenBuffer buffer);
 
+void ResetHoverAnimation();
+
 // UTILS
 Position TileToDrawPosition(Tile tile);
 Position TileCenterPosition(Tile tile);

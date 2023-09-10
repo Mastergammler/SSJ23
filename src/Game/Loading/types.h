@@ -85,10 +85,19 @@ struct ShaderAnimation
     Shader* shaders;
 };
 
+struct MovementAnimation
+{
+    int frame_count;
+    Keyframe* keyframes;
+    v2* movements;
+    Sprite* sprites;
+};
+
 struct AnimationCache
 {
     SpriteAnimation enemy_anim;
     ShaderAnimation enemy_hit;
+    MovementAnimation tower_hover;
 };
 
 /**

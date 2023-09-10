@@ -4,6 +4,8 @@
 //- change values on the animator
 int NextKeyframeIndex(FrameTimer& anim)
 {
+    assert(anim.frames);
+
     anim.time_since_last_frame += Time.sim_time;
 
     // case not started yet
