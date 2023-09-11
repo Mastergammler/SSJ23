@@ -14,6 +14,10 @@ int CreateEnemy(int entityId, int speed)
     e->speed = speed;
     e->state = WALKING;
 
+    // TODO: does this need more validation?
+    int targetIndex = RndInt(Game.tile_map.target_count - 1);
+    e->target = Game.tile_map.targets[targetIndex];
+
     e->initialized = true;
 
     return e->storage_id;

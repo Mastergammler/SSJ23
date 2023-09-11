@@ -88,30 +88,6 @@ void ProcessMouseActions()
     }
 }
 
-void Action_SpawnEnemy()
-{
-    // if (ui.crafting.visible) return;
-
-    PlaySoundEffect(&Res.audio.pop_hi);
-    Tile startTile = *Game.tile_map.spawns[0];
-
-    int invertedY = Game.tile_map.rows - startTile.pos.y - 1;
-    int spawnX = startTile.pos.x * Game.tile_size.width +
-                 Game.tile_size.width / 2 - 1;
-    int spawnY = invertedY * Game.tile_size.height + Game.tile_size.height / 2 -
-                 1;
-
-    // TODO: get direction for real
-    //  where to get the real speed from?
-    CreateEnemyEntity(spawnX,
-                      spawnY,
-                      Res.sprites.enemy_a,
-                      SOUTH,
-                      20,
-                      Res.animations.enemy_anim,
-                      Res.animations.enemy_hit);
-}
-
 void Action_PlaceTower()
 {
     if (ui.ui_focus) return;

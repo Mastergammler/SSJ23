@@ -25,7 +25,7 @@ void RenderTowers(ScreenBuffer buffer, v2 drawPos, Entity e)
     }
 }
 
-// TODO: Refactor, this now get's really messy
+// TODO: REFACTOR - this get's too messy
 void RenderEntities(ScreenBuffer buffer)
 {
     // determine render order / TODO: is this performant enough? -> seems so
@@ -52,6 +52,12 @@ void RenderEntities(ScreenBuffer buffer)
         {
             Projectile p = projectiles.units[e.storage_id];
             if (p.state == DESTROYED) continue;
+        }
+
+        if (e.type == ENEMY)
+        {
+            Enemy enemy = enemies.units[e.storage_id];
+            if (enemy.state == TARGET_LOCATION) continue;
         }
 
         int drawStartX = e.x - (Game.tile_size.width / 2 - 1);

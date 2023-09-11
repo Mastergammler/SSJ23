@@ -290,12 +290,6 @@ void CreateGameElements()
                                                Action_CraftTower,
                                                2);
 
-    //-----------
-    //  TODO: TMP
-    ui.tmp_2 = CreateButton(Anchor{UPPER_LEFT, 0.5, 12},
-                            defaultButton,
-                            Action_SpawnEnemy);
-
     CreateCraftingItems();
     // TODO: DEBUG - should be done dynamically
     ShowTowerButtons();

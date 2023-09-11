@@ -2,6 +2,16 @@
 
 #include "types.h"
 
+/**
+ * Returns a random between  0 and the max value
+ * (both inclusive)
+ */
+function int RndInt(int max)
+{
+    assert(max > 0);
+    return rand() % (max + 1);
+}
+
 function void Debug(string msg)
 {
     cout << "[Debug] " << msg << endl;

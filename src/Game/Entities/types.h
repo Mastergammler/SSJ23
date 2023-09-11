@@ -153,8 +153,9 @@ struct Enemy
     int storage_id;
 
     int state;
-
     int speed;
+
+    Tile* target;
 };
 
 struct EnemyStore

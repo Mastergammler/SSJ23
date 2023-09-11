@@ -14,11 +14,12 @@ Direction oppositeDirection(Direction dir)
     }
 };
 
-bool ReachedOverCenterBound(Entity entity, Tile targetTile, float offset)
+bool NotOverTileCenterYet(Entity entity, Tile targetTile, float offset)
 {
     int tileWidth = Game.tile_map.tile_size.width;
     int tileHeight = Game.tile_map.tile_size.height;
     int transformY = Game.tile_map.rows - targetTile.pos.y - 1;
+    // TODO: is my x pos wrong? because they don't go right till the end
     int targetPosX = targetTile.pos.x * tileWidth + tileWidth * offset - 1;
     int targetPosY = transformY * tileHeight + tileHeight * offset - 1;
 
@@ -41,18 +42,20 @@ bool ReachedOverCenterBound(Entity entity, Tile targetTile, float offset)
     return false;
 }
 
-Direction GetNextMovementDirection(Entity entity)
+Direction GetNextMovementDirection(Entity entity, Enemy* enemy)
 {
     //!! margin, when is it over the tile? tile center? -> yea, entity is center
     Tile enemyTile = *Game.tile_map.tileAt(entity.x, entity.y);
-    // TODO: multiple targets?
-    Tile target = *Game.tile_map.targets[0];
+    Tile target = *enemy->target;
 
     // check cross center line
-    if (ReachedOverCenterBound(entity, enemyTile, 0.5)) return entity.direction;
+    if (NotOverTileCenterYet(entity, enemyTile, 0.5)) return entity.direction;
 
     // entity is at (around) center of the tile, choose next direction
     u8 neighbours = enemyTile.adjacent;
+    // TODO: for case tilepos = target => Skip this direction
+    // TODO: probably need some lookahead, as soon as enemy is over the center
+    // tile it needs to be counted as beeing over the next tile already
     Direction targetXDir = enemyTile.pos.x < target.pos.x ? EAST : WEST;
     Direction targetYDir = enemyTile.pos.y < target.pos.y ? NORTH : EAST;
 
@@ -61,6 +64,8 @@ Direction GetNextMovementDirection(Entity entity)
 
     u8 possibleDirections = neighbours & (EAST | WEST | NORTH | SOUTH);
     if (possibleDirections & entity.direction) return entity.direction;
+    // TODO: i want him to turn, if that goes into the direction of target
+    // but not turn back right away after that
     if (possibleDirections & targetXDir & notBackDir) return targetXDir;
     if (possibleDirections & targetYDir & notBackDir) return targetYDir;
 
@@ -95,21 +100,24 @@ void MoveEnemies()
 
         if (e->type == ENEMY)
         {
-            Enemy enemy = enemies.units[e->storage_id];
+            Enemy* enemy = &enemies.units[e->storage_id];
             Tile enemyTile = *Game.tile_map.tileAt(e->x, e->y);
-
-            // TODO: multiple targets case?
-            Tile target = *Game.tile_map.targets[0];
+            Tile target = *enemy->target;
 
             if (enemyTile.tile_id != PATH_TILE) continue;
             if (enemyTile.pos.x == target.pos.x &&
                 enemyTile.pos.y == target.pos.y)
             {
-                if (ReachedOverCenterBound(*e, target, 1)) continue;
+                // target reached - stop
+                if (NotOverTileCenterYet(*e, target, 1))
+                {
+                    enemy->state = TARGET_LOCATION;
+                    continue;
+                }
             }
 
-            Direction moveDir = GetNextMovementDirection(*e);
-            float increase = Time.sim_time * enemy.speed;
+            Direction moveDir = GetNextMovementDirection(*e, enemy);
+            float increase = Time.sim_time * enemy->speed;
             switch (moveDir)
             {
                 case NORTH: e->move_y += increase; break;

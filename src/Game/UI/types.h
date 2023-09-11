@@ -56,11 +56,6 @@ struct UiSprite : Sprite
     int hover_start_index;
 };
 
-struct Position
-{
-    int x, y;
-};
-
 struct UniformGrid
 {
     int rows;

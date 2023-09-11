@@ -134,3 +134,5 @@ struct prox2
 {
     float x, y;
 };
+
+typedef v2 Position;

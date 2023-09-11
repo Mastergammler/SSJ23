@@ -53,7 +53,7 @@ void SimulateTower()
                 // break breaking probability of 0 means rnd will never be lower
                 // than it breaking probability 10 = 1/10 chance of hitting that
                 // number etc
-                int rnd = rand() % 101;
+                int rnd = RndInt(100);
                 if (rnd < t->breaking_probability)
                 {
                     t->state = TOWER_BROKEN;
@@ -68,34 +68,60 @@ void SimulateTower()
     }
 }
 
-float timeToFirstWave = 15;
-int timePerWave = 5;
-float timeSinceLastWave = timePerWave - timeToFirstWave;
-float timeSinceLastEnemy = 0;
-float enemyDelay = 0.75;
-float enemyAmount = 1;
-int enemiesSpawnedThisWave = 0;
+// TODO: another usecase for animation system? Not quite right?
+struct SpawnTimer
+{
+    float start_delay = 5;
+    int time_per_wave = 5;
+    float time_since_last_wave = time_per_wave - start_delay;
+    float time_since_last_enemy = 0;
+    float enemy_spacing = 0.75;
+    float spawn_count = 1;
+    int current_wave_spawn_count = 0;
+};
+
+SpawnTimer spawn;
+
+void SpawnEnemy()
+{
+    PlaySoundEffect(&Res.audio.pop_hi);
+
+    assert(Game.tile_map.spawn_count > 0);
+    int spawnIndex = RndInt(Game.tile_map.spawn_count - 1);
+    Tile spawnTile = *Game.tile_map.spawns[spawnIndex];
+
+    v2 centerPos = TileCenterPosition(spawnTile);
+
+    // TODO: real direction and speed?
+    CreateEnemyEntity(centerPos.x,
+                      centerPos.y,
+                      Res.sprites.enemy_a,
+                      SOUTH,
+                      20,
+                      Res.animations.enemy_anim,
+                      Res.animations.enemy_hit);
+}
 
 void SpawningSystem()
 {
-    timeSinceLastWave += Time.sim_time;
+    spawn.time_since_last_wave += Time.sim_time;
 
-    if (timeSinceLastWave > timePerWave)
+    if (spawn.time_since_last_wave > spawn.time_per_wave)
     {
-        timeSinceLastEnemy += Time.sim_time;
-        if (timeSinceLastEnemy > enemyDelay)
+        spawn.time_since_last_enemy += Time.sim_time;
+        if (spawn.time_since_last_enemy > spawn.enemy_spacing)
         {
-            timeSinceLastEnemy -= enemyDelay;
-            Action_SpawnEnemy();
-            enemiesSpawnedThisWave++;
+            spawn.time_since_last_enemy -= spawn.enemy_spacing;
+            SpawnEnemy();
+            spawn.current_wave_spawn_count++;
         }
         // all have spawned
-        if (enemiesSpawnedThisWave >= enemyAmount)
+        if (spawn.current_wave_spawn_count >= spawn.spawn_count)
         {
-            timeSinceLastEnemy = 0;
-            timeSinceLastWave = 0;
-            enemiesSpawnedThisWave = 0;
-            enemyAmount *= 1.5;
+            spawn.time_since_last_enemy = 0;
+            spawn.time_since_last_wave = 0;
+            spawn.current_wave_spawn_count = 0;
+            spawn.spawn_count *= 1.5;
         }
     }
 }
