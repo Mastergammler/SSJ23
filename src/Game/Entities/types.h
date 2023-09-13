@@ -13,6 +13,9 @@ enum EntityType
 /**
  * Direction / Orientation of the player
  * Anchored at Top
+ *
+ * These are bit-shifted for the comparison with the adjacent tiles
+ * So that we can check in which direction they should go
  */
 enum Direction
 {

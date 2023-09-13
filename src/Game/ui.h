@@ -30,3 +30,5 @@ void Action_StartDrag();
 void Action_ResetItemToStartPosition();
 void Action_DoDragging();
 void Action_Drop();
+
+void Debug_ToggleSlowDown();

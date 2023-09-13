@@ -14,12 +14,12 @@ Direction oppositeDirection(Direction dir)
     }
 };
 
-bool NotOverTileCenterYet(Entity entity, Tile targetTile, float offset)
+bool NotOverCenterYet(Entity entity, prox2 pos, Tile targetTile, float offset)
 {
     int tileWidth = Game.tile_map.tile_size.width;
     int tileHeight = Game.tile_map.tile_size.height;
+    // TODO: use util function?!
     int transformY = Game.tile_map.rows - targetTile.pos.y - 1;
-    // TODO: is my x pos wrong? because they don't go right till the end
     int targetPosX = targetTile.pos.x * tileWidth + tileWidth * offset - 1;
     int targetPosY = transformY * tileHeight + tileHeight * offset - 1;
 
@@ -27,47 +27,52 @@ bool NotOverTileCenterYet(Entity entity, Tile targetTile, float offset)
     switch (entity.direction)
     {
         case NORTH:
-            if (entity.y < targetPosY) return true;
+            if (pos.y < targetPosY) return true;
             break;
         case SOUTH:
-            if (entity.y > targetPosY) return true;
+            if (pos.y > targetPosY) return true;
             break;
         case EAST:
-            if (entity.x < targetPosX) return true;
+            if (pos.x < targetPosX) return true;
             break;
         case WEST:
-            if (entity.x > targetPosX) return true;
+            if (pos.x > targetPosX) return true;
             break;
     }
     return false;
 }
 
-Direction GetNextMovementDirection(Entity entity, Enemy* enemy)
+Direction ChooseNextDirection(Entity entity, Tile enemyTile, Tile target)
 {
-    //!! margin, when is it over the tile? tile center? -> yea, entity is center
-    Tile enemyTile = *Game.tile_map.tileAt(entity.x, entity.y);
-    Tile target = *enemy->target;
-
-    // check cross center line
-    if (NotOverTileCenterYet(entity, enemyTile, 0.5)) return entity.direction;
-
     // entity is at (around) center of the tile, choose next direction
     u8 neighbours = enemyTile.adjacent;
-    // TODO: for case tilepos = target => Skip this direction
-    // TODO: probably need some lookahead, as soon as enemy is over the center
-    // tile it needs to be counted as beeing over the next tile already
     Direction targetXDir = enemyTile.pos.x < target.pos.x ? EAST : WEST;
     Direction targetYDir = enemyTile.pos.y < target.pos.y ? NORTH : EAST;
+
+    // there is only one case where a new direction is chosen,
+    // when the he goes over the center?
+    // but this can be mutliple frames -> not if i use the exact position
 
     Direction backDir = oppositeDirection(entity.direction);
     u8 notBackDir = ~backDir;
 
     u8 possibleDirections = neighbours & (EAST | WEST | NORTH | SOUTH);
+
+    // enemy already on right of those, so no need to go further
+    // just needs to go the other direction now
+    bool goTowardX = enemyTile.pos.x != target.pos.x;
+    bool goTowardY = enemyTile.pos.y != target.pos.y;
+    if (goTowardX)
+    {
+        if (possibleDirections & targetXDir & notBackDir) return targetXDir;
+    }
+    if (goTowardY)
+    {
+        if (possibleDirections & targetYDir & notBackDir) return targetYDir;
+    }
+
+    // continue moving in current direction if possible
     if (possibleDirections & entity.direction) return entity.direction;
-    // TODO: i want him to turn, if that goes into the direction of target
-    // but not turn back right away after that
-    if (possibleDirections & targetXDir & notBackDir) return targetXDir;
-    if (possibleDirections & targetYDir & notBackDir) return targetYDir;
 
     // pick one without turning
     if (possibleDirections & (NORTH & notBackDir)) return NORTH;
@@ -77,6 +82,28 @@ Direction GetNextMovementDirection(Entity entity, Enemy* enemy)
 
     // backDir must be the only direction left
     return backDir;
+}
+
+Direction GetNextMovementDirection(Entity entity, Enemy* enemy)
+{
+    //!! margin, when is it over the tile? tile center? -> yea, entity is center
+    Tile enemyTile = *Game.tile_map.tileAt(entity.x, entity.y);
+    // if over the center, than choose the next tile
+    // but only into the direction i'm moving
+
+    // FIXME: the problem is, that we calculate the next position multiple times
+    // per tile
+    //  - but i want it to be only once per tile !!!!
+    //  - but how to do that, how to know that?
+    //  - via the over center thing? NO!
+    //  - that only works for the first half!
+
+    Tile target = *enemy->target;
+
+    // check cross center line
+    // if (NotOverTileCenterYet(entity, enemyTile, 0.5)) return
+    // entity.direction;
+    return ChooseNextDirection(entity, enemyTile, target);
 }
 
 const float SPEED_MOD = 0.1;
@@ -105,20 +132,28 @@ void MoveEnemies()
             Tile target = *enemy->target;
 
             if (enemyTile.tile_id != PATH_TILE) continue;
+            // FIXME: BUG - this is why i don't quite go towards the end
+            //  - becaues i stop here prematurely, becaues not going till center
             if (enemyTile.pos.x == target.pos.x &&
                 enemyTile.pos.y == target.pos.y)
             {
-                // target reached - stop
-                if (NotOverTileCenterYet(*e, target, 1))
+                // still continue moving till over the center line
+                if (!NotOverCenterYet(*e,
+                                      prox2{e->move_x, e->move_y},
+                                      target,
+                                      1))
                 {
-                    enemy->state = TARGET_LOCATION;
+                    if (enemy->state != TARGET_LOCATION)
+                    {
+                        enemy->state = TARGET_LOCATION;
+                        Logf("Enemy reached destination: %d %d", e->x, e->y);
+                    }
                     continue;
                 }
             }
 
-            Direction moveDir = GetNextMovementDirection(*e, enemy);
             float increase = Time.sim_time * enemy->speed;
-            switch (moveDir)
+            switch (e->direction)
             {
                 case NORTH: e->move_y += increase; break;
                 case EAST: e->move_x += increase; break;
@@ -126,10 +161,32 @@ void MoveEnemies()
                 case WEST: e->move_x -= increase; break;
             }
 
+            // checking if at center switch point
+            // before current move we were not over the center
+            // but after current move we are
+            // means now we need to determine a new position
+            if (!NotOverCenterYet(*e,
+                                  prox2{e->move_x, e->move_y},
+                                  enemyTile,
+                                  0.5) &&
+                NotOverCenterYet(*e,
+                                 prox2{(float)e->x, (float)e->y},
+                                 enemyTile,
+                                 0.5))
+            {
+                // FIXME: this never evaluates to true for some reason ...
+                Direction moveDir = GetNextMovementDirection(*e, enemy);
+                Logf("Updating entity %d direction to %d", e->id, moveDir >> 4);
+
+                e->direction = moveDir;
+            }
+
+            // if move y & move-x are over center, and x+y are not
+            // -> chose new position!
+
             // casting to integer position
             e->y = e->move_y;
             e->x = e->move_x;
-            e->direction = moveDir;
 
             Tile* newEnemyTile = Game.tile_map.tileAt(e->x, e->y);
             newEnemyTile->tracker->entity_ids[newEnemyTile->tracker->entity_count++] =
@@ -178,9 +235,6 @@ void MoveProjectiles()
         if (p->state != ACTIVE) continue;
 
         Entity* e = &entities.units[p->entity_id];
-
-        // FIXME: this is not how you calculate vector positions
-        // -> you gotta use the actual angle etc -> and normalize!!
 
         // time in seconds * speed per tile + pixels per tile
         float increase = Time.sim_time * p->speed * Game.tile_size.height;

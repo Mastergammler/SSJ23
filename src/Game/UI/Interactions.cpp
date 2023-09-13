@@ -190,6 +190,10 @@ void Action_StartGame()
     UiElement* towerSelection = &uiElements.elements[ui.placement.tower_selection_panel];
     UiElement* openCrafting = &uiElements.elements[ui.crafting.show_hide_button];
 
+    // TODO: better handling for debug elements
+    UiElement* tmpBtn = &uiElements.elements[ui.tmp_2];
+    tmpBtn->visible = true;
+
     startBtn->visible = false;
     mapsPanel->visible = false;
     exitBtn->visible = false;
@@ -397,6 +401,18 @@ void Action_LoadUserSelectedMap()
                               Game.tile_size.height);
     RecreateUiElements();
     Action_GoToMenu();
+}
+
+void Debug_ToggleSlowDown()
+{
+    if (Time.time_scale == 1)
+    {
+        Time.time_scale = 0.25;
+    }
+    else
+    {
+        Time.time_scale = 1;
+    }
 }
 
 void Action_SelectTowerType()

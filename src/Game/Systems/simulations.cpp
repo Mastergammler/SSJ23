@@ -72,11 +72,11 @@ void SimulateTower()
 struct SpawnTimer
 {
     float start_delay = 5;
-    int time_per_wave = 5;
+    int time_per_wave = 50;
     float time_since_last_wave = time_per_wave - start_delay;
     float time_since_last_enemy = 0;
     float enemy_spacing = 0.75;
-    float spawn_count = 1;
+    float spawn_count = 5;
     int current_wave_spawn_count = 0;
 };
 
@@ -97,7 +97,7 @@ void SpawnEnemy()
                       centerPos.y,
                       Res.sprites.enemy_a,
                       SOUTH,
-                      20,
+                      25,
                       Res.animations.enemy_anim,
                       Res.animations.enemy_hit);
 }

@@ -57,7 +57,7 @@ void RenderEntities(ScreenBuffer buffer)
         if (e.type == ENEMY)
         {
             Enemy enemy = enemies.units[e.storage_id];
-            if (enemy.state == TARGET_LOCATION) continue;
+            //if (enemy.state == TARGET_LOCATION) continue;
         }
 
         int drawStartX = e.x - (Game.tile_size.width / 2 - 1);

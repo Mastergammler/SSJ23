@@ -249,6 +249,10 @@ void CreateGameElements()
     UiSprite itemSlot = UiSprite{1, 1, 19, 0, &Res.bitmaps.ui};
     UiSprite bigItem = UiSprite{2, 2, 27, 29, &Res.bitmaps.ui};
 
+    ui.tmp_2 = CreateButton(Anchor{UPPER_RIGHT, 0.5, 5},
+                            defaultButton,
+                            Debug_ToggleSlowDown);
+
     ui.crafting.tower_panel = CreatePanel(Anchor{UPPER_RIGHT, 0.5, 2},
                                           panel3x10);
     ui.crafting.items_panel = CreatePanel(Anchor{UPPER_MIDDLE, 2, 2},

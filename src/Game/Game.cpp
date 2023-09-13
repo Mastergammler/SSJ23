@@ -209,7 +209,7 @@ void UpdateFrame(ScreenBuffer& buffer)
 #endif
         DrawEntityLayer(buffer);
 
-        // Debug_DrawEntityMovementPossibilities(buffer);
+        Debug_DrawEntityMovementPossibilities(buffer);
     }
 
     if (!navigation.in_transition)
