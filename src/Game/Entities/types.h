@@ -159,6 +159,12 @@ struct Enemy
     int speed;
 
     Tile* target;
+
+    /**
+     * Track weather or not the enemy did turn
+     * For the help of the movement system
+     */
+    bool did_turn;
 };
 
 struct EnemyStore

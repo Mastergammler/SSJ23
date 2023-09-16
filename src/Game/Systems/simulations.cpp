@@ -96,7 +96,7 @@ void SpawnEnemy()
     CreateEnemyEntity(centerPos.x,
                       centerPos.y,
                       Res.sprites.enemy_a,
-                      SOUTH,
+                      EAST,
                       25,
                       Res.animations.enemy_anim,
                       Res.animations.enemy_hit);

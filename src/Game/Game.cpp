@@ -111,8 +111,8 @@ void StartGame()
                                                    shadowSprites};
 
 #if DEBUG
-    Action_GoToMenu();
-    //   Action_StartGame();
+    // Action_GoToMenu();
+    Action_StartGame();
 #endif
 }
 
@@ -166,7 +166,6 @@ void InitGame(HINSTANCE hInstance, HDC hdc)
 // TODO: REFACTOR - with all the transition stuff this gets too messy
 void UpdateFrame(ScreenBuffer& buffer)
 {
-
     // special handling
     if (navigation.in_start_screen)
     {
@@ -198,6 +197,7 @@ void UpdateFrame(ScreenBuffer& buffer)
         MoveEnemies();
         SimulateTower();
         MoveProjectiles();
+
         HandleProjectileCollisions();
         // Debug_PrintEnemyTilePositions();
 
@@ -209,7 +209,7 @@ void UpdateFrame(ScreenBuffer& buffer)
 #endif
         DrawEntityLayer(buffer);
 
-        Debug_DrawEntityMovementPossibilities(buffer);
+        // Debug_DrawEntityMovementPossibilities(buffer);
     }
 
     if (!navigation.in_transition)
