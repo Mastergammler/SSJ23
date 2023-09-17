@@ -135,6 +135,7 @@ void MoveEnemies()
                     if (enemy->state != TARGET_LOCATION)
                     {
                         enemy->state = TARGET_LOCATION;
+                        PlaySoundEffect(&Res.audio.enemy_dmg);
                     }
                     continue;
                 }

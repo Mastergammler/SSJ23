@@ -1,69 +1,11 @@
-//#include "../../operators.h"
+// #include "../../operators.h"
 #include "../internal.h"
 
-ComponentStore components;
-EntityStore entities;
-TowerStore towers;
-EnemyStore enemies;
-ItemStore items;
-CannonTypeStore cannons;
-ProjectileStore projectiles;
-
-void InitializeProjectileStore(int storeCount, int poolSize)
+struct TileArray
 {
-    assert(poolSize <= storeCount);
-
-    // TODO: does this make sense to have a different pool size than general
-    // allocated memory?
-    projectiles.size = storeCount;
-    projectiles.units = new Projectile[storeCount];
-    projectiles.pool_index = 0;
-    projectiles.pool_size = poolSize;
-    memset(projectiles.units, 0, sizeof(Projectile) * storeCount);
-}
-
-void InitializeItemStorage(int storeCount)
-{
-    cannons.size = storeCount;
-    cannons.units = new CannonType[storeCount];
-    memset(cannons.units, 0, sizeof(CannonType) * storeCount);
-}
-
-void InitializeCannonTypeStorage(int storeCount)
-{
-    items.size = storeCount;
-    items.units = new Item[storeCount];
-    memset(items.units, 0, sizeof(Item) * storeCount);
-}
-
-void InitializeEnemyStorage(int storeCount)
-{
-    enemies.size = storeCount;
-    enemies.units = new Enemy[storeCount];
-    memset(enemies.units, 0, sizeof(Enemy) * storeCount);
-}
-
-void InitializeTowerStorage(int storeCount)
-{
-    towers.size = storeCount;
-    towers.units = new Tower[storeCount];
-    memset(towers.units, 0, sizeof(Tower) * storeCount);
-}
-
-void InitializeComponentStorage(int storeCount)
-{
-    components.size = storeCount;
-    components.memory = new EntityComponents[storeCount];
-
-    EntityComponents defaultValue = {};
-
-    // initialize everything with a default value
-    // else the defaults in the animators are overwritten!
-    for (int i = 0; i < storeCount; i++)
-    {
-        memcpy(&components.memory[i], &defaultValue, sizeof(EntityComponents));
-    }
-}
+    Tile** tiles;
+    int count;
+};
 
 void InitEntityZero()
 {
@@ -72,30 +14,24 @@ void InitEntityZero()
     e->y = Scale.render_dim.height / 2;
 }
 
-void InitializeEntities(int storeCount)
-{
-    entities.size = storeCount;
-    entities.units = new Entity[storeCount];
-    memset(entities.units, 0, sizeof(Entity) * storeCount);
-    // TODO: doesn't work with rendering -> because still gets found
-    // crashes then because no sprite
-    // InitEntityZero();
-
-    InitializeComponentStorage(storeCount);
-    InitializeTowerStorage(storeCount);
-    InitializeEnemyStorage(storeCount);
-    InitializeItemStorage(storeCount);
-    InitializeCannonTypeStorage(storeCount);
-    InitializeProjectileStore(storeCount, 512);
-}
+int CycleCount = 0;
+const int MIN_IN_MS = 60000;
 
 Entity* InitNextEntity()
 {
-    if (entities.unit_count % 256 == 0)
+    // performance log every minute
+    int checkAgaints = Time.CheckTimeSinceStart() / MIN_IN_MS;
+    if (checkAgaints > CycleCount)
     {
-        Logf("Entity count reached: %d - Fps Sample: %d",
+        Logf("%d Min - Entity count reached: %d (enemies : %d | projectiles: "
+             "%d) "
+             "- Fps Sample: %d",
+             checkAgaints,
              entities.unit_count,
+             enemies.unit_count,
+             projectiles.unit_count,
              Time.fps);
+        CycleCount++;
     }
     assert(entities.unit_count < entities.size);
 
@@ -108,7 +44,6 @@ Entity* InitNextEntity()
     return e;
 }
 
-// TODO: handle pooling if necessary
 int CreateNewProjectile(int entityId)
 {
     assert(projectiles.unit_count < projectiles.size);
@@ -125,7 +60,9 @@ int CreateNewProjectile(int entityId)
 
 int CreateProjectileEntity()
 {
-    if (projectiles.pool_size <= projectiles.unit_count)
+    Entity* e = NULL;
+    if (projectiles.pool_size <= projectiles.unit_count &&
+        projectiles.pool_size > 0)
     {
         // use pooling - if nothing found after 10, create new
         for (int i = 0; i < 10; i++)
@@ -144,12 +81,21 @@ int CreateProjectileEntity()
                 coll->height = 8;
                 coll->width = 8;
 
-                return p.entity_id;
+                e = &entities.units[p.entity_id];
+                break;
             }
         }
     }
-    Entity* e = InitNextEntity();
-    e->storage_id = CreateNewProjectile(e->id);
+
+    if (!e)
+    {
+        // automatic pooling
+        projectiles.pool_size++;
+        assert(projectiles.pool_size <= projectiles.size);
+
+        e = InitNextEntity();
+        e->storage_id = CreateNewProjectile(e->id);
+    }
 
     e->type = PROJECTILE;
     e->component_mask = (COLLIDER);
@@ -180,12 +126,6 @@ int calculateTileCountFoRange(int range)
 
     return acc;
 }
-
-struct TileArray
-{
-    Tile** tiles;
-    int count;
-};
 
 /**
  * Gets the tile of the cross based on the value, either horizontally or
@@ -294,6 +234,7 @@ int CreateTower(int entityId,
 
     t->storage_id = id;
     t->entity_id = entityId;
+    t->bullet_effects = cannon.bullet_effects;
 
     t->radius = cannon.range;
     t->fire_rate = cannon.fire_rate;
@@ -441,6 +382,7 @@ int CreateCannonType(int entityId, int bulletId, int postId)
                                                           pillar.stability,
                                                           bullet.weight,
                                                           bullet.power);
+    t->bullet_effects = bullet.effects;
     t->storage_id = id;
     t->entity_id = entityId;
 

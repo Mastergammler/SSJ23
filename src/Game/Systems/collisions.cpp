@@ -38,28 +38,78 @@ void ExecuteProjectileAction(int entityId)
     p->state = DESTROYED;
 }
 
-void ExecuteEnemyAction(int entityId)
+void ExecuteEnemyAction(int entityId, Projectile p)
 {
     Entity e = entities.units[entityId];
     Enemy* en = &enemies.units[e.storage_id];
 
-    if (en->state != IS_HIT)
-    {
-        en->state = IS_HIT;
-    }
+    assert(e.component_mask & EFFECT_COUNTER);
 
-    // TODO: this is kind of ok, problem is some towers have single focus now
-    en->speed *= 0.9;
+    FrameTimer* effectTimer = &components.memory[e.id].effect_counter;
+
+    // if he is already hit, we don't need to do anything else
+    // becaues in that state enemy is immune
+    if (en->state >= IS_HIT) return;
+
+    en->state = IS_HIT;
+
     if (e.component_mask & SHADER_ANIM)
     {
         // reset shader anim / or start it
         FrameTimer* anim = &components.memory[e.id].shader_anim;
         if (anim->finished)
         {
+            // TODO: reset HIT state on animation finish
             anim->finished = false;
             anim->frame_index = 0;
             anim->time_since_last_frame = 0;
         }
+    }
+
+    // Enemies should always have the component
+    assert(effectTimer);
+
+    // I only allow single effects for now
+    // bullets should also only have one effect to trigger?
+    // maybe i can implement multi effect later
+    if (p.effect_mask & EFFECT_SLOW)
+    {
+        effectTimer->tracking_value = en->speed;
+        effectTimer->finished = false;
+        effectTimer->time_since_last_frame = 0;
+        effectTimer->looping = false;
+        effectTimer->frame_index = -1;
+        effectTimer->frame_count = 0;
+        effectTimer->time_to_start = 3;
+        effectTimer->time_after_end = 0;
+        effectTimer->frames = NULL;
+
+        en->speed *= 0.45;
+        en->state = IS_SLOWED;
+        // TODO: slow down animation as well
+        // -> for that i have to change the sprite animator first
+        // to also have a speed value
+        // and also reset this one as well -> this is quite problematic, because
+        // i have no good connection for start and end state, both happen just
+        // because i know about this
+        // but there should be one component who knows about both and knows what
+        // to reset -> Not quite sure how to do this yet ...
+    }
+    else if (p.effect_mask & EFFECT_STUN)
+    {
+        effectTimer->tracking_value = en->speed;
+        effectTimer->finished = false;
+        effectTimer->time_since_last_frame = 0;
+        effectTimer->looping = false;
+        // use -1 beacause were just doing the start time
+        effectTimer->frame_index = -1;
+        effectTimer->frame_count = 0;
+        effectTimer->time_to_start = 1.5;
+        effectTimer->time_after_end = 0;
+        effectTimer->frames = NULL;
+
+        en->speed = 0;
+        en->state = IS_STUNNED;
     }
 }
 
@@ -100,13 +150,8 @@ void HandleProjectileCollisions()
                 (xHitRight && (yHitBot || yHitTop)))
             {
                 ExecuteProjectileAction(proE.id);
-                ExecuteEnemyAction(eneE.id);
-                // first collision only -> then the projectile is used
-                // Logf("Projectile at %d,%d hitting enemy at %d,%d",
-                //     proE.x,
-                //     proE.y,
-                //     eneE.x,
-                //     eneE.y);
+                ExecuteEnemyAction(eneE.id, *p);
+
                 break;
             }
         }

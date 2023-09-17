@@ -54,25 +54,35 @@ void RenderEntities(ScreenBuffer buffer)
             if (p.state == DESTROYED) continue;
         }
 
+        Sprite sprite;
+        bool specialSprite = false;
         if (e.type == ENEMY)
         {
             Enemy enemy = enemies.units[e.storage_id];
-            //if (enemy.state == TARGET_LOCATION) continue;
+            if (enemy.state == TARGET_LOCATION) continue;
+
+            if (enemy.state == IS_STUNNED)
+            {
+                sprite = Res.sprites.enemy_frozen;
+                specialSprite = true;
+            }
         }
 
         int drawStartX = e.x - (Game.tile_size.width / 2 - 1);
         int drawStartY = e.y - (Game.tile_size.height / 2 - 1);
         v2 drawPos = {drawStartX, drawStartY};
 
-        Sprite sprite;
-        if (e.component_mask & ANIMATOR)
+        if (!specialSprite)
         {
-            Animator anim = components.memory[e.id].animator;
-            sprite = anim.samples[anim.sample_index];
-        }
-        else
-        {
-            sprite = e.sprite;
+            if (e.component_mask & ANIMATOR)
+            {
+                Animator anim = components.memory[e.id].animator;
+                sprite = anim.samples[anim.sample_index];
+            }
+            else
+            {
+                sprite = e.sprite;
+            }
         }
 
         Shader shader = {};

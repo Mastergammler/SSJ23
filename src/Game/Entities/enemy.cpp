@@ -1,7 +1,7 @@
 #include "../entities.h"
 #include "../internal.h"
 
-int CreateEnemy(int entityId, int speed)
+int CreateNewEnemy(int entityId, int speed)
 {
     assert(enemies.unit_count < enemies.size);
 
@@ -23,29 +23,13 @@ int CreateEnemy(int entityId, int speed)
     return e->storage_id;
 }
 
-// TODO: how to put the animation data in there?
-int CreateEnemyEntity(int x,
-                      int y,
-                      Sprite sprite,
-                      Direction direction,
-                      int speed,
-                      SpriteAnimation animation,
-                      ShaderAnimation shaderAnimation)
+void SetEnemyComponents(Entity* e,
+                        SpriteAnimation animation,
+                        ShaderAnimation shaderAnimation)
 {
-    Entity* e = InitNextEntity();
-    e->storage_id = CreateEnemy(e->id, speed);
-
-    e->x = x;
-    e->y = y;
-    e->move_x = x;
-    e->move_y = y;
-    e->type = ENEMY;
-    e->direction = direction;
-    e->sprite = sprite;
-
     // TODO: should i initialize the components differently? Not together with
     // the entity?
-    e->component_mask = (ANIMATOR | COLLIDER | SHADER_ANIM);
+    e->component_mask = (ANIMATOR | COLLIDER | SHADER_ANIM | EFFECT_COUNTER);
     Animator* anim = &components.memory[e->id].animator;
     anim->initialized = true;
     anim->looping = true;
@@ -64,6 +48,64 @@ int CreateEnemyEntity(int x,
     shaderAnim->looping = false;
     shaderAnim->frames = shaderAnimation.keyframes;
     shaderAnim->frame_count = shaderAnimation.frame_count;
+
+    FrameTimer* effectTimer = &components.memory[e->id].effect_counter;
+    effectTimer->finished = true;
+}
+
+// TODO: how to put the animation data in there?
+int CreateEnemyEntity(int x,
+                      int y,
+                      Sprite sprite,
+                      Direction direction,
+                      int speed,
+                      SpriteAnimation animation,
+                      ShaderAnimation shaderAnimation)
+{
+    Entity* e = NULL;
+    if (enemies.pool_size <= enemies.unit_count && enemies.pool_size > 0)
+    {
+        // search for 10 matches, else create new one
+        for (int i = 0; i < 10; i++)
+        {
+            Enemy* enemy = &enemies.units[enemies.pool_index++];
+
+            // TODO: abstract this -> poolable smth struct?
+            if (enemies.pool_index >= enemies.pool_size)
+            {
+                enemies.pool_index = 0;
+            }
+
+            if (enemy->state == TARGET_LOCATION)
+            {
+                e = &entities.units[enemy->entity_id];
+                enemy->state = WALKING;
+                break;
+            }
+        }
+    }
+
+    if (!e)
+    {
+        // increase the pool size for each new enemy we create
+        // that way we can always use all the enemies in a pool
+        // and not miss any of them
+        enemies.pool_size++;
+        assert(enemies.pool_size <= enemies.size);
+
+        e = InitNextEntity();
+        e->storage_id = CreateNewEnemy(e->id, speed);
+    }
+
+    e->x = x;
+    e->y = y;
+    e->move_x = x;
+    e->move_y = y;
+    e->type = ENEMY;
+    e->direction = direction;
+    e->sprite = sprite;
+
+    SetEnemyComponents(e, animation, shaderAnimation);
 
     return e->id;
 }

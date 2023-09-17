@@ -174,12 +174,27 @@ SoundCache LoadAudioFiles()
     {
         cache.craft_error = craftError;
     }
+
     WaveBuffer craftSuccess = LoadWaveFile(ABSOLUTE_RES_PATH +
                                            "Sounds/Craft-Success.wav");
     if (craftSuccess.loaded)
     {
         cache.craft_success = craftSuccess;
     }
+
+    WaveBuffer towerBreak = LoadWaveFile(ABSOLUTE_RES_PATH +
+                                         "Sounds/Tower-Break.wav");
+    if (towerBreak.loaded)
+    {
+        cache.tower_break = towerBreak;
+    }
+    WaveBuffer enemyDmg = LoadWaveFile(ABSOLUTE_RES_PATH +
+                                       "Sounds/Enemy-Dmg.wav");
+    if (enemyDmg.loaded)
+    {
+        cache.enemy_dmg = enemyDmg;
+    }
+
     return cache;
 }
 

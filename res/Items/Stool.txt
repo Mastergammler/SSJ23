@@ -6,7 +6,7 @@ stability=2.5
 sturdieness=3
 
 # effects encoding
-effects=101011
+effects=101010
 
 # visuals
 hit_sound=click_lo

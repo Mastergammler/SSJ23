@@ -10,6 +10,12 @@ enum EntityType
     TOWER_PROTO = 0x100,
 };
 
+enum BulletEffects
+{
+    EFFECT_SLOW = 0x1,
+    EFFECT_STUN = 0x1 << 1
+};
+
 /**
  * Direction / Orientation of the player
  * Anchored at Top
@@ -25,11 +31,17 @@ enum Direction
     WEST = 0b0100 << 4
 };
 
-enum EntityState
+enum EnemyState
 {
-    WALKING,
-    IS_HIT,
-    TARGET_LOCATION
+    TARGET_LOCATION = 0x0,
+    WALKING = 0x1,
+    /**
+     * Genteral is hit, for new things i guess
+     * Usually i wanna check just if >= is hit state
+     */
+    IS_HIT = 0x2,
+    IS_SLOWED = 0x3,
+    IS_STUNNED = 0x4,
 };
 
 enum TowerState
@@ -95,6 +107,8 @@ struct Tower
     int entity_id;
     int storage_id;
 
+    int bullet_effects;
+
     /**
      * in tiles
      */
@@ -155,7 +169,7 @@ struct Enemy
     int entity_id;
     int storage_id;
 
-    int state;
+    EnemyState state;
     int speed;
 
     Tile* target;
@@ -172,6 +186,9 @@ struct EnemyStore
     Enemy* units;
     int unit_count;
     int size;
+
+    int pool_index;
+    int pool_size;
 };
 
 struct Item
@@ -210,7 +227,6 @@ enum ProjectileState
     ACTIVE = 0x1,
 };
 
-// TODO: everything i need
 struct Projectile
 {
     int entity_id;
@@ -252,6 +268,8 @@ struct CannonType
 
     int bullet_item_id;
     int pillar_item_id;
+
+    int bullet_effects;
 
     /**
      * From 0-100

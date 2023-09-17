@@ -6,7 +6,8 @@ enum Components
 {
     ANIMATOR = 0x1 << 0,
     COLLIDER = 0x1 << 1,
-    SHADER_ANIM = 0x1 << 2
+    SHADER_ANIM = 0x1 << 2,
+    EFFECT_COUNTER = 0x1 << 3
 };
 
 struct Collider
@@ -35,6 +36,12 @@ struct FrameTimer
     bool looping;
     bool finished = true;
     Keyframe* frames;
+
+    /**
+     * value to track during the animation time
+     * for resetting them after the animation has finished
+     */
+    float tracking_value;
 
     float time_since_last_frame;
 
@@ -87,6 +94,11 @@ struct EntityComponents
     Animator animator;
     Collider collider;
     FrameTimer shader_anim;
+    /**
+     * Timer for a effect to time out
+     * = same as immunity counter?
+     */
+    FrameTimer effect_counter;
 };
 
 /**

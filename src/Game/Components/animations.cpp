@@ -4,7 +4,10 @@
 //- change values on the animator
 int NextKeyframeIndex(FrameTimer& anim)
 {
-    assert(anim.frames);
+    if (anim.frame_count > 0)
+    {
+        assert(anim.frames);
+    }
 
     anim.time_since_last_frame += Time.sim_time;
 

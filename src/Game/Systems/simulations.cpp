@@ -13,13 +13,27 @@ void SimulateTower()
         t->time_since_last_shot += Time.sim_time;
         if (t->time_since_last_shot > t->fire_rate)
         {
+            // TODO: REFACTOR, pretty complicated search enemy algorithm
             Tile* targetTile = NULL;
             for (int p = 0; p < t->tile_count; p++)
             {
                 Tile* tile = t->relevant_tiles[p];
+
                 if (tile->tracker->entity_count > 0)
                 {
-                    targetTile = tile;
+                    for (int i = 0; i < tile->tracker->entity_count; i++)
+                    {
+                        int entityId = tile->tracker->entity_ids[i];
+                        Entity e = entities.units[entityId];
+                        assert(e.type == ENEMY);
+
+                        Enemy enemy = enemies.units[e.storage_id];
+                        if (enemy.state == WALKING)
+                        {
+                            targetTile = tile;
+                            break;
+                        }
+                    }
                     break;
                 }
             }
@@ -31,9 +45,9 @@ void SimulateTower()
 
                 Entity tower = entities.units[t->entity_id];
 
-                // TODO: create projectile
                 int projectile = CreateProjectileEntity();
                 Entity* p = &entities.units[projectile];
+                // Item item = items.units[];
                 p->sprite = t->bullet_sprite;
                 p->x = tower.x;
                 p->y = tower.y;
@@ -46,6 +60,7 @@ void SimulateTower()
                 proj->target_x = tileCenterPos.x;
                 proj->target_y = tileCenterPos.y;
                 proj->speed = t->bullet_speed;
+                proj->effect_mask = t->bullet_effects;
 
                 // TODO: animations and sounds etc;
 
@@ -56,12 +71,9 @@ void SimulateTower()
                 int rnd = RndInt(100);
                 if (rnd < t->breaking_probability)
                 {
-                    t->state = TOWER_BROKEN;
                     // TODO: trigger animation event etc
-
-                    // Logf("Tower breaking No %d, probablity %d",
-                    //     rnd,
-                    //     t->breaking_probability);
+                    t->state = TOWER_BROKEN;
+                    PlaySoundEffect(&Res.audio.tower_break);
                 }
             }
         }
@@ -72,7 +84,7 @@ void SimulateTower()
 struct SpawnTimer
 {
     float start_delay = 5;
-    int time_per_wave = 50;
+    int time_per_wave = 15;
     float time_since_last_wave = time_per_wave - start_delay;
     float time_since_last_enemy = 0;
     float enemy_spacing = 0.75;

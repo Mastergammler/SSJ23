@@ -57,6 +57,8 @@ struct SoundCache
     WaveBuffer pop_hi;
     WaveBuffer craft_error;
     WaveBuffer craft_success;
+    WaveBuffer tower_break;
+    WaveBuffer enemy_dmg;
 
     WaveBuffer music;
 };
@@ -66,6 +68,7 @@ struct SpriteCache
     Sprite placeholder;
     Sprite broken_tower;
     Sprite enemy_a;
+    Sprite enemy_frozen;
 };
 
 struct SpriteAnimation

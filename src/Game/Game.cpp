@@ -30,7 +30,8 @@ void StartGame()
     // TODO: TMP
     Res.sprites.placeholder = Sprite{1, 1, 63, &Res.bitmaps.characters};
     Res.sprites.enemy_a = Sprite{1, 1, 24, &Res.bitmaps.characters};
-    Res.sprites.broken_tower = Sprite{1, 1, 11, &Res.bitmaps.characters};
+    Res.sprites.broken_tower = Sprite{1, 1, 14, &Res.bitmaps.characters};
+    Res.sprites.enemy_frozen = Sprite{1, 1, 29 + 8, &Res.bitmaps.characters};
 
     // TODO: simple anim format -> just describe indices of the anim
     // -> the rest only once

@@ -1,4 +1,5 @@
 #include "../imports.h"
+#include <winnt.h>
 
 struct Clock
 {
@@ -37,6 +38,7 @@ struct Clock
     float time_counter;
     LARGE_INTEGER frequency;
     LARGE_INTEGER last_time;
+    LARGE_INTEGER start_time;
 
     Clock()
     {
@@ -44,6 +46,7 @@ struct Clock
         QueryPerformanceFrequency(&frequency);
         // set the initial value
         QueryPerformanceCounter(&last_time);
+        QueryPerformanceCounter(&start_time);
 
         // initial value / can't be 0
         delta_time_real = 0.0166666666f;
@@ -76,6 +79,9 @@ struct Clock
         }
     }
 
+    /**
+     * checks the time since the last update call in ms
+     */
     float CheckDeltaTimeMs()
     {
         LARGE_INTEGER current_time;
@@ -83,6 +89,19 @@ struct Clock
         float deltaTime = (float)(current_time.QuadPart - last_time.QuadPart) /
                           frequency.QuadPart;
         return deltaTime * 1000.;
+    }
+
+    /**
+     * Time since start (of the counter = program strat)
+     * Rounds to the integer value
+     */
+    int CheckTimeSinceStart()
+    {
+        LARGE_INTEGER current_time;
+        QueryPerformanceCounter(&current_time);
+        float deltaTime = (float)(current_time.QuadPart - start_time.QuadPart) /
+                          frequency.QuadPart;
+        return (int)deltaTime * 1000;
     }
 
     bool ShowValue()
