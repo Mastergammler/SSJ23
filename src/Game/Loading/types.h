@@ -75,6 +75,7 @@ struct SpriteAnimation
 {
     int sprite_count;
     float time_per_sprite;
+    Keyframe* keyframes;
     Sprite* sprites;
 };
 

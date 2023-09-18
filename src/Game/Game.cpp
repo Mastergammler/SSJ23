@@ -53,7 +53,15 @@ void StartGame()
                                                  28 + offset,
                                                  &Res.bitmaps.characters}};
 
-    Res.animations.enemy_anim = SpriteAnimation{4, 0.1, enemyWalkAnim};
+    // TODO: doesn't seem necessary to define this here again
+    Keyframe* spriteFrames = new Keyframe[4]{Keyframe{0, 0.1},
+                                             Keyframe{1, 0.1},
+                                             Keyframe{2, 0.1},
+                                             Keyframe{3, 0.1}};
+    Res.animations.enemy_anim = SpriteAnimation{4,
+                                                0.1,
+                                                spriteFrames,
+                                                enemyWalkAnim};
 
     Shader* shaders = new Shader[3]{Shader{COLOR_REPLACE, PALETTE_WHITE},
                                     Shader{COLOR_REPLACE, PALETTE_GRAY},

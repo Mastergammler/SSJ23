@@ -73,8 +73,8 @@ void InitScenes()
 
 void DrawToGameTransition(ScreenBuffer buffer)
 {
-    int keyframeIndex = NextKeyframeIndex(toGameAnim);
-    if (keyframeIndex == -1)
+    int keyframeIndex = NextKeyframeIndex(&toGameAnim);
+    if (toGameAnim.frame_index == -1)
     {
         // finished -> start game
         Action_StartGame();
@@ -98,7 +98,7 @@ void ShowLogoScreen(ScreenBuffer buffer)
     int centerX = Scale.render_dim.width / 2 - Res.bitmaps.logo.width / 2;
     int centerY = Scale.render_dim.height / 2 - Res.bitmaps.logo.height / 2;
 
-    int keyframeIndex = NextKeyframeIndex(logoFadeAnimation);
+    int keyframeIndex = NextKeyframeIndex(&logoFadeAnimation);
 
     if (keyframeIndex == -1)
     {

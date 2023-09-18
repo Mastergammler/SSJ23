@@ -27,7 +27,7 @@ void DrawTowerPreview(ScreenBuffer buffer,
                       Sprite pillarSprite)
 {
     // TODO: should this be in the draw function? probably not!
-    int ret = NextKeyframeIndex(hoverAnimation);
+    int ret = NextKeyframeIndex(&hoverAnimation);
 
     int tileIdxX = mouseState.x / Game.tile_size.width;
     int tileIdxY = mouseState.y / Game.tile_size.height;

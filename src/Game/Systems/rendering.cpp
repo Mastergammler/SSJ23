@@ -74,10 +74,13 @@ void RenderEntities(ScreenBuffer buffer)
 
         if (!specialSprite)
         {
+            // Default animation sprite
             if (e.component_mask & ANIMATOR)
             {
-                Animator anim = components.memory[e.id].animator;
-                sprite = anim.samples[anim.sample_index];
+                // TODO: should i get it the information somewhere else?
+                FrameTimer anim = components.memory[e.id].animator;
+                Sprite* data = (Sprite*)anim.data;
+                sprite = data[anim.frame_index];
             }
             else
             {
@@ -128,8 +131,10 @@ void RenderEntitiesOfType(ScreenBuffer buffer, EntityType type)
         Sprite sprite;
         if (e.component_mask & ANIMATOR)
         {
-            Animator anim = components.memory[e.id].animator;
-            sprite = anim.samples[anim.sample_index];
+            // TODO: should i get it the information somewhere else?
+            FrameTimer anim = components.memory[e.id].animator;
+            Sprite* data = (Sprite*)anim.data;
+            sprite = data[anim.frame_index];
         }
         else
         {

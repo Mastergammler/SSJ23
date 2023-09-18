@@ -59,7 +59,6 @@ void ExecuteEnemyAction(int entityId, Projectile p)
         FrameTimer* anim = &components.memory[e.id].shader_anim;
         if (anim->finished)
         {
-            // TODO: reset HIT state on animation finish
             anim->finished = false;
             anim->frame_index = 0;
             anim->time_since_last_frame = 0;
@@ -86,6 +85,10 @@ void ExecuteEnemyAction(int entityId, Projectile p)
 
         en->speed *= 0.45;
         en->state = IS_SLOWED;
+        FrameTimer* anim = &components.memory[en->entity_id].animator;
+        // TODO: is this a 1:1 scaling? maybe not!
+        anim->time_scale *= 0.45;
+
         // TODO: slow down animation as well
         // -> for that i have to change the sprite animator first
         // to also have a speed value

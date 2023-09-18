@@ -13,10 +13,12 @@ void AnimateEntities()
             FrameTimer* effectTimer = &components.memory[i].effect_counter;
             if (!effectTimer->finished)
             {
-                int keyframe = NextKeyframeIndex(*effectTimer);
+                int keyframe = NextKeyframeIndex(effectTimer);
             }
             else if (entities.units[i].type == ENEMY)
             {
+                // TODO: this is super distributed logic
+                // how would i know how this is connected to the other logic?
                 Entity e = entities.units[i];
                 Enemy* en = &enemies.units[e.storage_id];
                 if (effectTimer->finished && en->state >= IS_HIT)
@@ -24,49 +26,29 @@ void AnimateEntities()
                     // reset walking state
                     en->state = WALKING;
                     en->speed = effectTimer->tracking_value;
+
+                    FrameTimer* anim = &components.memory[en->entity_id].animator;
+                    // TODO: inflecible, doesn't reset to the original value
+                    anim->time_scale = 1;
                 }
             }
         }
 
         if (component_mask & ANIMATOR)
         {
-            Animator* anim = &components.memory[i].animator;
-
-            anim->time_since_last_sample += Time.sim_time;
-            if (anim->time_since_last_sample > anim->time_per_sample)
+            FrameTimer* anim = &components.memory[i].animator;
+            if (!anim->finished)
             {
-                // play next frame
-                anim->sample_index++;
-                anim->time_since_last_sample -= anim->time_per_sample;
-            }
-
-            if (anim->looping)
-            {
-                // reset for the loop
-                if (anim->sample_index >= anim->sample_count)
-                {
-                    anim->sample_index = 0;
-                }
-            }
-            else
-            {
-                // animation ended, correct for index overshoot
-                // TODO: what happens when it ends? revert back to default
-                // sprite?
-                if (anim->sample_index >= anim->sample_count - 1)
-                {
-                    // set to last frame
-                    anim->sample_index = anim->sample_count - 1;
-                }
+                NextKeyframeIndex(anim);
             }
         }
+
         if (component_mask & SHADER_ANIM)
         {
             FrameTimer* timer = &components.memory[i].shader_anim;
             if (!timer->finished)
             {
-                // TODO: do i need to handle the keyframe?
-                int keyframe = NextKeyframeIndex(*timer);
+                NextKeyframeIndex(timer);
             }
         }
     }

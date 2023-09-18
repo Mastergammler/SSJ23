@@ -38,6 +38,19 @@ struct FrameTimer
     Keyframe* frames;
 
     /**
+     * pointer to the actual data the frames refer to
+     * needs to be casted into the appropriate type
+     * TEST: is this good to have it here?
+     */
+    void* data;
+
+    /**
+     * Size of a single element of the data
+     * mostly for debugging purposes
+     */
+    int data_element_size;
+
+    /**
      * value to track during the animation time
      * for resetting them after the animation has finished
      */
@@ -91,7 +104,7 @@ struct Animator
 
 struct EntityComponents
 {
-    Animator animator;
+    FrameTimer animator;
     Collider collider;
     FrameTimer shader_anim;
     /**

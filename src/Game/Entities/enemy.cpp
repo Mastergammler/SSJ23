@@ -30,13 +30,16 @@ void SetEnemyComponents(Entity* e,
     // TODO: should i initialize the components differently? Not together with
     // the entity?
     e->component_mask = (ANIMATOR | COLLIDER | SHADER_ANIM | EFFECT_COUNTER);
-    Animator* anim = &components.memory[e->id].animator;
-    anim->initialized = true;
+
+    FrameTimer* anim = &components.memory[e->id].animator;
     anim->looping = true;
-    anim->sample_index = 0;
-    anim->sample_count = animation.sprite_count;
-    anim->time_per_sample = animation.time_per_sprite;
-    anim->samples = animation.sprites;
+    anim->finished = false;
+    anim->frame_index = -1;
+    anim->time_since_last_frame = 0;
+    anim->frame_count = animation.sprite_count;
+    anim->data = animation.sprites;
+    anim->data_element_size = sizeof(Sprite);
+    anim->frames = animation.keyframes;
 
     Collider* coll = &components.memory[e->id].collider;
     coll->x_offset = 0;
